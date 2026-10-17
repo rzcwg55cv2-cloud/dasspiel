@@ -56,12 +56,26 @@ export default function App() {
   // Malte Spezial: bedrohliches Rot von der Auswahl bis zum Spielende.
   const malteTheme = state.mode === 'malte' && state.status !== 'finished';
   const wasMalte = useRef(malteTheme);
+  const soundEnabled = useRef(settings.soundEnabled);
+  const stopSiren = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    soundEnabled.current = settings.soundEnabled;
+  }, [settings.soundEnabled]);
   useEffect(() => {
     const root = document.documentElement;
     if (malteTheme) root.dataset.theme = 'malte';
     else delete root.dataset.theme;
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', malteTheme ? '#140405' : '#ffffff');
-    if (malteTheme && !wasMalte.current && state.status === 'setup') impact();
+    // Beim Anhaken auf dem Startbildschirm: Beben, Vibration und Sirene.
+    if (malteTheme && !wasMalte.current && state.status === 'setup') {
+      impact();
+      if (soundEnabled.current) stopSiren.current = sounds.playSiren();
+    }
+    // Haken wieder weg: Sirene verstummt sofort.
+    if (!malteTheme) {
+      stopSiren.current?.();
+      stopSiren.current = null;
+    }
     wasMalte.current = malteTheme;
   }, [malteTheme, state.status]);
 

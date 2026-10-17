@@ -96,6 +96,18 @@ class SoundPlayer {
     }
   }
 
+  /** Sirene beim Einschalten von Malte Spezial. Liefert eine Funktion, die sie vorzeitig verstummen lässt. */
+  playSiren(): () => void {
+    const context = this.ensureContext();
+    if (!context || !this.output || this.volume === 0) return () => {};
+    if (context.state !== 'running') context.resume().catch(() => {});
+    try {
+      return playSiren(context, this.output, context.currentTime + 0.03);
+    } catch {
+      return () => {};
+    }
+  }
+
   private ensureContext(): AudioContext | null {
     if (this.context) return this.context;
     if (typeof window === 'undefined') return null;
@@ -243,6 +255,68 @@ function playChime(
       oscillator.stop(t + decay + 0.05);
     }
   });
+}
+
+/**
+ * Bedrohliche Sirene: zwei an- und abschwellende Heultöne (etwa 2,5 Sekunden).
+ * Sägezahn und Rechteck geben den rauen Sirenenklang, ein Dreieck eine Oktave tiefer das Volumen.
+ */
+function playSiren(context: AudioContext, output: AudioNode, start: number): () => void {
+  const duration = 2.5;
+  const low = 420;
+  const high = 1050;
+
+  const filter = context.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 2600;
+  filter.Q.value = 0.5;
+  const gain = context.createGain();
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(0.3, start + 0.18);
+  gain.gain.setValueAtTime(0.3, start + duration - 0.45);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  filter.connect(gain);
+  gain.connect(output);
+
+  const voices: Array<{ type: OscillatorType; detune: number; level: number }> = [
+    { type: 'sawtooth', detune: 0, level: 0.5 },
+    { type: 'square', detune: 8, level: 0.22 },
+    { type: 'triangle', detune: -1200, level: 0.55 },
+  ];
+  const oscillators = voices.map((voice) => {
+    const oscillator = context.createOscillator();
+    oscillator.type = voice.type;
+    oscillator.detune.value = voice.detune;
+    // Heulen: hoch – runter – hoch – runter
+    const f = oscillator.frequency;
+    f.setValueAtTime(low, start);
+    f.exponentialRampToValueAtTime(high, start + 0.6);
+    f.exponentialRampToValueAtTime(low, start + 1.25);
+    f.exponentialRampToValueAtTime(high, start + 1.85);
+    f.exponentialRampToValueAtTime(low * 0.85, start + duration);
+    const level = context.createGain();
+    level.gain.value = voice.level;
+    oscillator.connect(level);
+    level.connect(filter);
+    oscillator.start(start);
+    oscillator.stop(start + duration + 0.05);
+    return oscillator;
+  });
+
+  return () => {
+    const now = context.currentTime;
+    if (now >= start + duration) return;
+    gain.gain.cancelScheduledValues(now);
+    gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+    for (const oscillator of oscillators) {
+      try {
+        oscillator.stop(now + 0.15);
+      } catch {
+        // bereits gestoppt
+      }
+    }
+  };
 }
 
 export const sounds = new SoundPlayer();
