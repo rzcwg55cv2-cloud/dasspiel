@@ -1,13 +1,13 @@
-import { useId } from 'react';
+import { useId, type SVGProps } from 'react';
 
 /** Logo: eine Kölsch-Stange – schlankes, gerades Glas mit goldenem Bier und Schaumkrone. */
-export function KoelschGlass({ className = '' }: { className?: string }) {
+export function KoelschGlass({ className = '', ...props }: SVGProps<SVGSVGElement>) {
   const id = useId();
   const beer = `${id}-beer`;
   const glass = `${id}-glass`;
 
   return (
-    <svg viewBox="0 0 32 64" className={className} aria-hidden="true" focusable="false">
+    <svg viewBox="0 0 32 64" className={className} aria-hidden="true" focusable="false" {...props}>
       <defs>
         <linearGradient id={beer} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#fde68a" />

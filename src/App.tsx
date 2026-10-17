@@ -126,7 +126,6 @@ export default function App() {
       screen = clock && (
         <GameScreen
           state={state}
-          clock={clock}
           errorCounts={errorCounts}
           liveRounds={liveRounds}
           now={now}
