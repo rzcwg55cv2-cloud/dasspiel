@@ -193,7 +193,7 @@ function parseTrack(
 
 /**
  * Prüft gespeicherte Daten vollständig und liefert einen konsistenten Zustand oder null.
- * Spielstände der Version 1 (ohne 15-Minuten-Gruppe) werden übernommen.
+ * Spielstände der Version 1 (ohne 15-Minuten-Takt) werden übernommen.
  */
 export function parseState(data: unknown): GameState | null {
   if (!isRecord(data) || (data.version !== 1 && data.version !== 2)) return null;

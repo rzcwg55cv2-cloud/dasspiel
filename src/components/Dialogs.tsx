@@ -61,7 +61,7 @@ interface MenuProps {
   settings: Settings;
   onChange: (patch: Partial<Settings>) => void;
   onTestSound: (kind: SoundKind, group: GroupId) => void;
-  /** Testknöpfe auch für die eigenen Töne der 15-Minuten-Gruppe zeigen. */
+  /** Testknöpfe auch für die eigenen Töne des 15-Minuten-Takts zeigen. */
   showSlowGroup: boolean;
   onClose: () => void;
   /** Nur während eines Spiels vorhanden. */
@@ -148,10 +148,10 @@ export function MenuSheet({ settings, onChange, onTestSound, showSlowGroup, onCl
               {showSlowGroup && (
                 <p
                   className={`mb-1.5 text-[11px] font-black tracking-[0.2em] ${
-                    group === 'slow' ? 'text-yellow-700' : 'text-green-700'
+                    group === 'slow' ? 'text-green-700' : 'text-yellow-700'
                   }`}
                 >
-                  {group === 'slow' ? '15-MINUTEN-GRUPPE' : '10-MINUTEN-TAKT'}
+                  {group === 'slow' ? '15-MINUTEN-TAKT' : '10-MINUTEN-TAKT'}
                 </p>
               )}
               <div className="grid grid-cols-2 gap-2">

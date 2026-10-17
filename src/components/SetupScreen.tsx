@@ -60,7 +60,7 @@ export function SetupScreen({
   const malte = mode === 'malte';
   const roundMinutes = getRoundDuration(mode) / 60;
   const rounds = getRoundsInPhase(getRoundDuration(mode), 0);
-  // Malte Spezial bleibt extra: Die 15-Minuten-Gruppe gibt es nur im Modus Normal.
+  // Malte Spezial bleibt extra: Den 15-Minuten-Takt gibt es nur im Modus Normal.
   const showGroups = slowGroupEnabled && !malte;
   const slowCount = showGroups ? players.filter((p) => p.group === 'slow').length : 0;
 
@@ -219,8 +219,8 @@ export function SetupScreen({
             <label
               className={`mt-3 flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition ${
                 slowGroupEnabled
-                  ? 'border-yellow-400 bg-linear-to-br from-yellow-50 to-green-50 shadow-md shadow-yellow-500/10'
-                  : 'border-slate-200 bg-white hover:border-yellow-300'
+                  ? 'border-green-400 bg-linear-to-br from-green-50 to-lime-50 shadow-md shadow-green-500/10'
+                  : 'border-slate-200 bg-white hover:border-green-300'
               }`}
             >
               <input
@@ -231,7 +231,7 @@ export function SetupScreen({
               />
               <span
                 className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg border-2 transition peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-amber-500 ${
-                  slowGroupEnabled ? 'border-yellow-400 bg-yellow-400 text-yellow-950' : 'border-slate-300 bg-white'
+                  slowGroupEnabled ? 'border-green-500 bg-green-500 text-white' : 'border-slate-300 bg-white'
                 }`}
                 aria-hidden="true"
               >
@@ -240,16 +240,16 @@ export function SetupScreen({
               <span>
                 <span
                   className={`block text-lg font-extrabold tracking-[0.12em] ${
-                    slowGroupEnabled ? 'text-yellow-800' : 'text-slate-900'
+                    slowGroupEnabled ? 'text-green-700' : 'text-slate-900'
                   }`}
                 >
-                  15-MINUTEN-GRUPPE
+                  15-MINUTEN-TAKT
                 </span>
                 <span className="mt-1 block text-slate-500 italic">
-                  Einzelne spielen im 15-Minuten-Takt mit – mit eigenem Timer.
+                  Einzelne spielen im 15-Minuten-Takt mit – mit eigenem Glas.
                 </span>
                 {slowGroupEnabled && (
-                  <span className="mt-2 block text-sm font-semibold text-yellow-800">
+                  <span className="mt-2 block text-sm font-semibold text-green-700">
                     {slowCount === 0
                       ? 'Tippe oben bei einzelnen Teilnehmern auf „15“.'
                       : `${slowCount} ${slowCount === 1 ? 'Person spielt' : 'Personen spielen'} im 15-Minuten-Takt.`}
@@ -271,7 +271,7 @@ export function SetupScreen({
             </span>
             {slowCount > 0 && (
               <>
-                <span className="rounded-full bg-yellow-100 px-2.5 py-1 text-[11px] font-bold tracking-[0.15em] text-yellow-800">
+                <span className="rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-bold tracking-[0.15em] text-green-700">
                   15 MIN.
                 </span>
                 <span className="tabular font-medium">
@@ -328,8 +328,8 @@ function GroupToggle({ name, group, onChange }: { name: string; group: GroupId; 
   );
   return (
     <div role="group" aria-label={`Takt für ${name}`} className="flex shrink-0 rounded-xl bg-slate-100 p-0.5">
-      {option('main', '10', 'bg-green-500 text-white shadow-sm')}
-      {option('slow', '15', 'bg-yellow-400 text-yellow-950 shadow-sm')}
+      {option('main', '10', 'bg-yellow-400 text-yellow-950 shadow-sm')}
+      {option('slow', '15', 'bg-green-500 text-white shadow-sm')}
     </div>
   );
 }

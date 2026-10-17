@@ -30,21 +30,21 @@ const RANK_BADGES = ['bg-amber-400 text-white', 'bg-slate-400 text-white', 'bg-a
 
 const timeFormat = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' });
 
-/** Überschrift einer Gruppe; ohne 15-Minuten-Gruppe gibt es keine. */
+/** Überschrift eines Takts (10 Minuten gelb, 15 Minuten grün); ohne 15-Minuten-Takt gibt es keine. */
 function GroupHeading({ group, show }: { group: GroupId; show: boolean }) {
   if (!show) return null;
   return (
     <p
       className={`mb-2 w-fit rounded-full px-3 py-1 text-[11px] font-black tracking-[0.2em] ${
-        group === 'slow' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-700'
+        group === 'slow' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-800'
       }`}
     >
-      {group === 'slow' ? '15-MINUTEN-GRUPPE' : '10-MINUTEN-TAKT'}
+      {group === 'slow' ? '15-MINUTEN-TAKT' : '10-MINUTEN-TAKT'}
     </p>
   );
 }
 
-/** „Runde 3“, mit 15-Minuten-Gruppe z. B. „Runde 2, 5 (10 Min.) · 3 (15 Min.)“. */
+/** „Runde 3“, mit 15-Minuten-Takt z. B. „Runde 2, 5 (10 Min.) · 3 (15 Min.)“. */
 function formatWorstRounds(summary: GameSummary, mode: GameMode, showGroups: boolean): string {
   if (!summary.worstRound) return 'Keine';
   const parts = summary.groups
@@ -121,7 +121,7 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
             />
             {showGroups ? (
               <>
-                {/* Je Gruppe, weil die 15-Minuten-Gruppe weniger Runden hat. */}
+                {/* Je Takt, weil der 15-Minuten-Takt weniger Runden hat. */}
                 <StatTile
                   label="Beste je Gruppe"
                   value={summary.groups

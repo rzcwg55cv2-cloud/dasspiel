@@ -1,6 +1,6 @@
 import { useRef, type ReactNode } from 'react';
 import { activeGroups, getClock, getTrack, playersOf, type GameClock } from '../game/engine';
-import { getModeLabel } from '../game/rules';
+import { getGroupLabel, getGroupRoundDuration, getModeLabel } from '../game/rules';
 import type { GameState, GroupId, Player, RoundEvent, RoundResult } from '../game/types';
 import { AnalogClock } from './AnalogClock';
 import { Avatar } from './Avatar';
@@ -68,8 +68,16 @@ export function GameScreen({ state, errorCounts, liveRounds, now, onToggle, onOp
           </button>
         </header>
 
-        {/* Die Restzeit bleibt geheim: nur die Uhrzeit. Runden enden immer zur vollen Minute. */}
-        <AnalogClock now={now} className="mx-auto mt-5 block size-[min(64vw,15rem)] drop-shadow-sm sm:size-72" />
+        {/* Uhrzeit in der Mitte, daneben je Takt ein Kölschglas, das sich mit der Runde leert. */}
+        <div className="mt-5 flex items-center justify-center gap-3 sm:gap-8">
+          <RoundGlass state={state} group={groups[0]} now={now} />
+          <AnalogClock now={now} className="block size-[min(52vw,15rem)] shrink-0 drop-shadow-sm sm:size-72" />
+          {twoGroups ? (
+            <RoundGlass state={state} group={groups[1]} now={now} />
+          ) : (
+            <div className="w-12 shrink-0 sm:w-16" aria-hidden="true" />
+          )}
+        </div>
       </section>
 
       <div className={`mt-6 grid grid-cols-1 gap-4 ${twoGroups ? 'md:grid-cols-2' : ''}`}>
@@ -79,7 +87,14 @@ export function GameScreen({ state, errorCounts, liveRounds, now, onToggle, onOp
           if (!clock || !track) return null;
           const players = playersOf(state, group);
           return (
-            <GroupPanel key={group} group={group} clock={clock} history={track.roundHistory} labelled={twoGroups}>
+            <GroupPanel
+              key={group}
+              group={group}
+              title={`${getGroupRoundDuration(state.mode, group) / 60}-Minuten-Takt`}
+              clock={clock}
+              history={track.roundHistory}
+              labelled={twoGroups}
+            >
               <DeliveryStatus confirmations={track.currentConfirmations} players={players} />
               <ul className={`mt-3 grid grid-cols-1 gap-2 ${twoGroups ? '' : 'md:grid-cols-2'}`}>
                 {players.map((player) => {
@@ -109,6 +124,8 @@ export function GameScreen({ state, errorCounts, liveRounds, now, onToggle, onOp
 
 interface GroupPanelProps {
   group: GroupId;
+  /** z. B. „10-Minuten-Takt“ */
+  title: string;
   clock: GameClock;
   history: RoundResult[];
   /** Bei zwei Gruppen: beschriftet und gleich groß nebeneinander bzw. untereinander. */
@@ -116,27 +133,28 @@ interface GroupPanelProps {
   children: ReactNode;
 }
 
-function GroupPanel({ group, clock, history, labelled, children }: GroupPanelProps) {
+/** Farben der Takte: 10 Minuten gelb, 15 Minuten grün. */
+function GroupPanel({ group, title, clock, history, labelled, children }: GroupPanelProps) {
   const slow = group === 'slow';
   const frame = slow
-    ? 'border-yellow-300 bg-yellow-50/70'
+    ? 'border-green-300 bg-green-50/60'
     : labelled
-      ? 'border-green-200 bg-green-50/50'
+      ? 'border-yellow-300 bg-yellow-50/70'
       : 'border-transparent';
   return (
     <section
-      aria-label={labelled ? (slow ? '15-Minuten-Gruppe' : '10-Minuten-Takt') : 'Teilnehmer'}
+      aria-label={labelled ? title : 'Teilnehmer'}
       className={`rounded-3xl border-2 p-3 transition-colors sm:p-4 ${frame}`}
     >
       <div className="flex items-center justify-between gap-3 px-1 pb-2">
         <div>
           {labelled && (
-            <p className={`text-[11px] font-black tracking-[0.25em] ${slow ? 'text-yellow-800' : 'text-green-700'}`}>
-              {slow ? '15-MINUTEN-GRUPPE' : '10-MINUTEN-TAKT'}
+            <p className={`text-[11px] font-black tracking-[0.25em] ${slow ? 'text-green-700' : 'text-yellow-800'}`}>
+              {title.toUpperCase()}
             </p>
           )}
           <p className={`font-bold text-slate-400 ${labelled ? 'mt-1 text-xs tracking-[0.25em]' : 'text-sm tracking-[0.3em]'}`}>
-            RUNDE <span className={`tabular ${slow ? 'text-yellow-700' : 'text-green-600'}`}>{clock.roundNumber}</span>
+            RUNDE <span className={`tabular ${slow ? 'text-green-600' : 'text-yellow-700'}`}>{clock.roundNumber}</span>
             <span className="tabular ml-2 text-slate-300">/ {clock.lastRoundOfPhase}</span>
           </p>
         </div>
@@ -144,6 +162,35 @@ function GroupPanel({ group, clock, history, labelled, children }: GroupPanelPro
       <RoundStrip clock={clock} history={history} />
       {children}
     </section>
+  );
+}
+
+/** Kölschglas eines Takts: leert sich mit der laufenden Runde und ist zum Rundenende leer. */
+function RoundGlass({ state, group, now }: { state: GameState; group: GroupId; now: number }) {
+  const clock = getClock(state, now, group);
+  if (!clock) return <div className="w-12 shrink-0 sm:w-16" aria-hidden="true" />;
+  // Die erste Runde einer Phase kann bis zu 59 s länger sein – so lange bleibt das Glas voll.
+  const level = Math.min(1, clock.roundRemainingMs / clock.roundDurationMs);
+  const slow = group === 'slow';
+  const minutes = getGroupRoundDuration(state.mode, group) / 60;
+  return (
+    <div className="flex w-12 shrink-0 flex-col items-center gap-2 sm:w-16">
+      <KoelschGlass
+        level={level}
+        tint={slow ? 'green' : 'gold'}
+        className="h-24 w-12 drop-shadow-sm sm:h-32 sm:w-16"
+        role="img"
+        aria-hidden={false}
+        aria-label={`${minutes}-Minuten-Takt: Glas noch zu ${Math.round(level * 100)} % voll`}
+      />
+      <span
+        className={`tabular rounded-full px-2 py-0.5 text-[10px] font-black tracking-[0.06em] whitespace-nowrap ${
+          slow ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-800'
+        }`}
+      >
+        {getGroupLabel(state.mode, group).toUpperCase()}
+      </span>
+    </div>
   );
 }
 
@@ -177,7 +224,7 @@ function DeliveryStatus({ confirmations, players }: { confirmations: Record<stri
       className={`rounded-2xl px-3 py-2.5 text-center text-xs font-bold tracking-[0.12em] transition-colors sm:text-sm ${
         allConfirmed
           ? 'bg-linear-to-r from-ok-600 to-ok-400 text-white shadow-md shadow-ok-600/25'
-          : 'bg-yellow-50 text-yellow-800'
+          : 'bg-white/80 text-slate-500'
       }`}
       aria-live="polite"
     >
@@ -185,8 +232,8 @@ function DeliveryStatus({ confirmations, players }: { confirmations: Record<stri
         'ALLE HABEN GELIEFERT'
       ) : (
         <>
-          <span className="tabular font-black text-yellow-950">{confirmed}</span> VON{' '}
-          <span className="tabular font-black text-yellow-950">{total}</span> {confirmed === 1 ? 'HAT' : 'HABEN'}{' '}
+          <span className="tabular font-black text-slate-900">{confirmed}</span> VON{' '}
+          <span className="tabular font-black text-slate-900">{total}</span> {confirmed === 1 ? 'HAT' : 'HABEN'}{' '}
           GELIEFERT
         </>
       )}

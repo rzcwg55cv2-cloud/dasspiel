@@ -7,7 +7,7 @@ interface Props {
   events: RoundEvent[];
   players: Player[];
   mode: GameMode;
-  /** Gruppen beschriften, wenn eine 15-Minuten-Gruppe mitspielt. */
+  /** Takte beschriften, wenn ein 15-Minuten-Takt mitspielt. */
   showGroups: boolean;
 }
 

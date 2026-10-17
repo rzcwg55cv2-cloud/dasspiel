@@ -25,7 +25,7 @@ const MOOD_STYLE: Record<Mood, { emoji: string; title: string; nameLine: string 
 
 export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenMenu }: Props) {
   const showGroups = state.slow !== null;
-  // Letzte Runde je Gruppe – mit 15-Minuten-Gruppe zwei Zeilen.
+  // Letzte Runde je Takt – mit 15-Minuten-Takt zwei Zeilen.
   const lastRounds = activeGroups(state).flatMap((group) => {
     const round = getTrack(state, group)?.roundHistory.at(-1);
     if (!round) return [];
@@ -123,7 +123,7 @@ export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenM
             <p className="text-center text-xs font-medium text-slate-400">
               {getModeLabel(state.mode)}: {extraRounds} weitere Runden à {getRoundDuration(state.mode) / 60} Minuten
               {showGroups &&
-                ` · 15-Minuten-Gruppe: ${EXTENSION_DURATION / SLOW_ROUND_DURATION} à ${SLOW_ROUND_DURATION / 60} Minuten`}
+                ` · 15-Minuten-Takt: ${EXTENSION_DURATION / SLOW_ROUND_DURATION} à ${SLOW_ROUND_DURATION / 60} Minuten`}
             </p>
             <button
               type="button"

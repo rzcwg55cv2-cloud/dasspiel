@@ -27,22 +27,22 @@ Die App läuft komplett im Browser, braucht kein Konto und kein Internet währen
 
 Ein Gerät dient als Spielzentrale: Dort werden alle Teilnehmer eingetragen und alle Haken vergeben.
 
-Während des Spiels bleibt die Restzeit geheim: Es gibt keinen Countdown, sondern nur eine runde Uhr mit Sekundenzeiger und der aktuellen Uhrzeit. Runden enden immer zur vollen Minute: Beim Start (und nach jeder Verlängerung) wird die erste Runde bis zur nächsten vollen Minute verlängert, danach läuft der normale Takt. Beispiel: Start um 20:43:12 → Rundenenden um 20:54, 21:04, … (15er: 20:59, 21:14, …).
+Während des Spiels gibt es keinen Countdown: In der Mitte steht eine runde Uhr mit Sekundenzeiger und der aktuellen Uhrzeit. Daneben steht für jeden Takt ein Kölschglas, das sich mit der laufenden Runde leert und zum Rundenende leer ist. Gelb (goldenes Kölsch) steht für den 10-Minuten-Takt, Grün für den 15-Minuten-Takt. Mit der nächsten Runde ist das Glas wieder voll. Spielt nur ein Takt, gibt es auch nur ein Glas. Runden enden immer zur vollen Minute: Beim Start (und nach jeder Verlängerung) wird die erste Runde bis zur nächsten vollen Minute verlängert, danach läuft der normale Takt. Beispiel: Start um 20:43:12 → Rundenenden um 20:54, 21:04, … (15er: 20:59, 21:14, …).
 
 ### Malte Spezial
 
 Wer **MALTE SPEZIAL** anhakt, sieht die App sofort in bedrohlichem Dunkelrot: Eine Sirene heult, das Display bebt kurz, das Handy vibriert, der Bildschirmrand glüht im Herzschlag-Takt, und statt „SPIEL STARTEN“ steht **BRACE FOR IMPACT** auf dem Button. Das bleibt das ganze Spiel über inklusive aller Verlängerungsfragen. Erst mit dem Ergebnis färbt sich die App wieder zurück. Grüne Haken bleiben auch im roten Design grün.
 
-### 15-Minuten-Gruppe
+### 15-Minuten-Takt
 
 Im Modus Normal können einzelne Personen im 15-Minuten-Takt mitspielen:
 
-1. Haken bei **15-MINUTEN-GRUPPE** setzen.
+1. Haken bei **15-MINUTEN-TAKT** setzen.
 2. In der Teilnehmerliste bei den betreffenden Personen auf **15** tippen (Umschalter „10 | 15“).
 
-Im Spiel läuft die 15-Minuten-Gruppe unter dem 10-Minuten-Takt mit eigenem Timer: 4 Runden in den ersten 60 Minuten, 2 Runden pro Verlängerung. Beide Gruppen starten gleichzeitig und enden gemeinsam mit jeder Spielphase. Die 15-Minuten-Gruppe hat eigene, ähnliche Töne (Buzzer mit drei statt zwei Stößen, höherer Erfolgston). Bei Minute 30, 60, … enden beide Runden zugleich – dann gibt es eine gemeinsame Einblendung, erst den Ton des 10-Minuten-Takts und kurz danach den der 15er. Die Auswertung zeigt Ranglisten, Übersicht und Verlauf getrennt je Gruppe.
+Im Spiel läuft der 15-Minuten-Takt (grün) neben bzw. unter dem 10-Minuten-Takt (gelb), mit eigenem Timer und eigenem Glas: 4 Runden in den ersten 60 Minuten, 2 Runden pro Verlängerung. Beide Takte starten gleichzeitig und enden gemeinsam mit jeder Spielphase. Der 15-Minuten-Takt hat eigene, ähnliche Töne (Buzzer mit drei statt zwei Stößen, höherer Erfolgston). Bei Minute 30, 60, … enden beide Runden zugleich – dann gibt es eine gemeinsame Einblendung, erst den Ton des 10-Minuten-Takts und kurz danach den der 15er. Die Auswertung zeigt Ranglisten, Übersicht und Verlauf getrennt je Takt.
 
-Malte Spezial bleibt ein eigener Modus ohne 15-Minuten-Gruppe. Mindestens eine Person muss im 10-Minuten-Takt spielen.
+Malte Spezial bleibt ein eigener Modus ohne 15-Minuten-Takt. Mindestens eine Person muss im 10-Minuten-Takt spielen.
 
 ### Sprüche bei der Verlängerungsfrage
 
@@ -114,7 +114,7 @@ src/
     types.ts           Datenmodell
     rules.ts           Rundendauer, Phasen, Verlängerungen
     engine.ts          Zustandsautomat: Start, Haken setzen, Auswertung, Verlängern, Ende –
-                       mit zwei parallelen Rundenspuren (Haupttakt und 15-Minuten-Gruppe)
+                       mit zwei parallelen Rundenspuren (10- und 15-Minuten-Takt)
     feedback.ts        Wann welcher Sound bzw. welche Einblendung kommt
     sayings.ts         Sprüche für die Verlängerungsfrage
     stats.ts           Rangliste und Statistiken (aus der Rundenhistorie berechnet)

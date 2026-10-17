@@ -21,7 +21,7 @@ import { deserializeState, parseState } from './storage';
 import { MIN, T0, setupState } from './test-utils';
 import type { GameState } from './types';
 
-/** Simon (p1) und Marvin (p2) im 10-Minuten-Takt, Anna (p3) und Malte (p4) in der 15-Minuten-Gruppe. */
+/** Simon (p1) und Marvin (p2) im 10-Minuten-Takt, Anna (p3) und Malte (p4) im 15-Minuten-Takt. */
 function mixedSetup(): GameState {
   let state = setupState(['Simon', 'Marvin', 'Anna', 'Malte']);
   state = setSlowGroupEnabled(state, true);
@@ -39,7 +39,7 @@ function toggle(state: GameState, ids: string[], at: number): GameState {
   return next;
 }
 
-describe('15-Minuten-Gruppe: Einrichtung', () => {
+describe('15-Minuten-Takt: Einrichtung', () => {
   it('startet eine zweite Rundenspur nur mit Haken und zugeordneten Personen', () => {
     const game = mixedGame();
     expect(game.slow).toEqual({ currentRound: 1, currentConfirmations: {}, roundHistory: [] });
@@ -51,7 +51,7 @@ describe('15-Minuten-Gruppe: Einrichtung', () => {
     expect(nobodySlow.slow).toBeNull();
   });
 
-  it('Malte Spezial bleibt extra: keine 15-Minuten-Gruppe', () => {
+  it('Malte Spezial bleibt extra: kein 15-Minuten-Takt', () => {
     const malte = setMode(mixedSetup(), 'malte');
     expect(isSlowGroupPlanned(malte)).toBe(false);
     expect(startGame(malte, T0).state.slow).toBeNull();
@@ -72,7 +72,7 @@ describe('15-Minuten-Gruppe: Einrichtung', () => {
   });
 });
 
-describe('15-Minuten-Gruppe: Ablauf', () => {
+describe('15-Minuten-Takt: Ablauf', () => {
   it('eine Runde dauert 15 Minuten, unabhängig vom 10-Minuten-Takt', () => {
     const game = mixedGame();
     expect(getClock(game, T0, 'slow')?.roundRemainingSeconds).toBe(900);
@@ -140,7 +140,7 @@ describe('15-Minuten-Gruppe: Ablauf', () => {
   });
 
   it('X zählen nur in den Runden der eigenen Gruppe', () => {
-    // Niemand setzt einen Haken: 6 X im 10-Minuten-Takt, 4 X in der 15-Minuten-Gruppe.
+    // Niemand setzt einen Haken: 6 X im 10-Minuten-Takt, 4 X im 15-Minuten-Takt.
     const state = advance(mixedGame(), T0 + 60 * MIN).state;
     expect(getErrorCounts(state)).toEqual({ p1: 6, p2: 6, p3: 4, p4: 4 });
   });
@@ -156,7 +156,7 @@ describe('15-Minuten-Gruppe: Ablauf', () => {
   });
 });
 
-describe('15-Minuten-Gruppe: volle Minute', () => {
+describe('15-Minuten-Takt: volle Minute', () => {
   it('auch die erste 15-Minuten-Runde wird bis zur nächsten vollen Minute verlängert', () => {
     const start = T0 + 43 * MIN + 12_000;
     const anchor = T0 + 44 * MIN;
@@ -170,7 +170,7 @@ describe('15-Minuten-Gruppe: volle Minute', () => {
   });
 });
 
-describe('15-Minuten-Gruppe: Auswertung', () => {
+describe('15-Minuten-Takt: Auswertung', () => {
   /** Simon liefert immer, Marvin nie; Anna liefert immer, Malte einmal nicht. */
   function playedGame(): GameState {
     let game = mixedGame();
@@ -214,7 +214,7 @@ describe('15-Minuten-Gruppe: Auswertung', () => {
     });
     expect(summary.bestPlayers.map((p) => p.name)).toEqual(['Simon', 'Anna']);
     expect(summary.mostErrorPlayers.map((p) => p.name)).toEqual(['Marvin']);
-    // Je Gruppe, weil die 15-Minuten-Gruppe weniger Runden hat
+    // Je Takt, weil der 15-Minuten-Takt weniger Runden hat
     expect(summary.groups.map((g) => g.bestPlayers.map((p) => p.name))).toEqual([['Simon'], ['Anna']]);
     expect(summary.groups.map((g) => g.mostErrorPlayers.map((p) => p.name))).toEqual([['Marvin'], ['Malte']]);
   });
@@ -230,7 +230,7 @@ describe('15-Minuten-Gruppe: Auswertung', () => {
   }
 });
 
-describe('15-Minuten-Gruppe: Speichern', () => {
+describe('15-Minuten-Takt: Speichern', () => {
   it('Reload mit beiden Gruppen stellt alles wieder her', () => {
     const game = toggle(advance(mixedGame(), T0 + 20 * MIN).state, ['p2', 'p4'], T0 + 20 * MIN);
     const loaded = deserializeState(JSON.stringify(game));
