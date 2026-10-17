@@ -8,7 +8,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as engine from '../game/engine';
-import { getFeedback, type SoundKind } from '../game/feedback';
+import { getFeedback, type SoundCue } from '../game/feedback';
 import { pluralize } from '../game/format';
 import { STATE_KEY, deserializeState, loadState, saveState } from '../game/storage';
 import type { GameMode, GameState, GroupId, RoundEvent, Transition } from '../game/types';
@@ -57,18 +57,18 @@ function initialise() {
   return { state, now, notice };
 }
 
-export function useGame(onSound: (kind: SoundKind) => void) {
+export function useGame(onSounds: (cues: SoundCue[]) => void) {
   const [initial] = useState(initialise);
   const [state, setState] = useState(initial.state);
   const [now, setNow] = useState(initial.now);
   const [liveRounds, setLiveRounds] = useState<RoundEvent[]>([]);
   const [notice, setNotice] = useState<Notice | null>(initial.notice);
   const stateRef = useRef(state);
-  const onSoundRef = useRef(onSound);
+  const onSoundsRef = useRef(onSounds);
 
   useEffect(() => {
-    onSoundRef.current = onSound;
-  }, [onSound]);
+    onSoundsRef.current = onSounds;
+  }, [onSounds]);
 
   const apply = useCallback((update: Update) => {
     const time = Date.now();
@@ -80,7 +80,7 @@ export function useGame(onSound: (kind: SoundKind) => void) {
     }
     if (events.length > 0) {
       const feedback = getFeedback(events, time);
-      if (feedback.sound) onSoundRef.current(feedback.sound);
+      if (feedback.sounds.length > 0) onSoundsRef.current(feedback.sounds);
       if (feedback.liveRounds.length > 0) setLiveRounds(feedback.liveRounds);
       if (feedback.catchUp) setNotice(catchUpNotice(feedback.catchUp.rounds, feedback.catchUp.errors));
     }

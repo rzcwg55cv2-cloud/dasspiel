@@ -87,6 +87,12 @@ describe('15-Minuten-Gruppe: Ablauf', () => {
     expect(getClock(at15, T0 + 15 * MIN, 'slow')?.roundRemainingSeconds).toBe(900);
   });
 
+  it('die 15er bekommen bei ihrem Rundenende ihren eigenen Ton', () => {
+    const game = advance(mixedGame(), T0 + 10 * MIN).state;
+    const { events } = advance(game, T0 + 15 * MIN);
+    expect(getFeedback(events, T0 + 15 * MIN).sounds).toEqual([{ kind: 'error', group: 'slow' }]);
+  });
+
   it('Haken landen in der Runde der eigenen Gruppe', () => {
     const game = toggle(mixedGame(), ['p1', 'p3'], T0 + MIN);
     expect(game.currentConfirmations).toEqual({ p1: true });
@@ -102,7 +108,7 @@ describe('15-Minuten-Gruppe: Ablauf', () => {
     expect(Object.keys(state.slow!.roundHistory[0].playerResults)).toEqual(['p3', 'p4']);
   });
 
-  it('bei Minute 30 enden beide Runden gleichzeitig: ein Ton, eine gemeinsame Einblendung', () => {
+  it('bei Minute 30 enden beide Runden gleichzeitig: eine Einblendung, je Gruppe ein eigener Ton', () => {
     let game = advance(mixedGame(), T0 + 29 * MIN).state;
     game = toggle(game, ['p1', 'p2', 'p3'], T0 + 29 * MIN);
     const { events } = advance(game, T0 + 30 * MIN);
@@ -111,7 +117,11 @@ describe('15-Minuten-Gruppe: Ablauf', () => {
       ['slow', 2, ['p4']],
     ]);
     const feedback = getFeedback(events, T0 + 30 * MIN);
-    expect(feedback.sound).toBe('error');
+    // Erst der Ton des 10-Minuten-Takts (alle geliefert), dann der eigene X-Ton der 15er
+    expect(feedback.sounds).toEqual([
+      { kind: 'success', group: 'main' },
+      { kind: 'error', group: 'slow' },
+    ]);
     expect(feedback.liveRounds).toHaveLength(2);
     expect(feedback.catchUp).toBeNull();
   });

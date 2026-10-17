@@ -7,7 +7,10 @@ import { ResultsScreen } from './components/ResultsScreen';
 import { RoundBanner } from './components/RoundBanner';
 import { SetupScreen } from './components/SetupScreen';
 import { getClock, getStartBlocker } from './game/engine';
-import type { SoundKind } from './game/feedback';
+
+/** Abstand (Sekunden), wenn beide Gruppen gleichzeitig einen Ton bekommen. */
+const SOUND_GAP = 1.1;
+import type { SoundCue } from './game/feedback';
 import { getErrorCounts } from './game/stats';
 import { useGame } from './hooks/useGame';
 import { useSettings } from './hooks/useSettings';
@@ -15,13 +18,14 @@ import { useWakeLock } from './hooks/useWakeLock';
 
 export default function App() {
   const [settings, updateSettings] = useSettings();
-  const playSound = useCallback(
-    (kind: SoundKind) => {
-      if (settings.soundEnabled) sounds.play(kind);
+  const playSounds = useCallback(
+    (cues: SoundCue[]) => {
+      if (!settings.soundEnabled) return;
+      cues.forEach((cue, index) => sounds.play(cue.kind, cue.group, index * SOUND_GAP));
     },
     [settings.soundEnabled],
   );
-  const { state, now, liveRounds, notice, actions } = useGame(playSound);
+  const { state, now, liveRounds, notice, actions } = useGame(playSounds);
   const [menuOpen, setMenuOpen] = useState(false);
   const inGame = state.status === 'running' || state.status === 'extension-decision';
 
@@ -115,10 +119,11 @@ export default function App() {
         <MenuSheet
           settings={settings}
           onChange={updateSettings}
-          onTestSound={(kind) => {
+          onTestSound={(kind, group) => {
             sounds.unlock();
-            sounds.play(kind);
+            sounds.play(kind, group);
           }}
+          showSlowGroup={state.slow !== null || (state.status === 'setup' && state.slowGroupEnabled && state.mode === 'normal')}
           onClose={closeMenu}
           onCancelGame={inGame ? actions.cancel : undefined}
         />

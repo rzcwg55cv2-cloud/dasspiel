@@ -13,7 +13,7 @@ describe('Sounds und Rundenwechsel', () => {
     expect(events[0].failedPlayerIds).toEqual(['p1', 'p2']);
 
     const feedback = getFeedback(events, T0 + 10 * MIN);
-    expect(feedback.sound).toBe('error');
+    expect(feedback.sounds).toEqual([{ kind: 'error', group: 'main' }]);
     expect(feedback.liveRounds.map((e) => e.roundNumber)).toEqual([1]);
     expect(feedback.catchUp).toBeNull();
   });
@@ -21,18 +21,18 @@ describe('Sounds und Rundenwechsel', () => {
   it('positiver Sound, wenn alle bestätigt wurden', () => {
     const game = confirm(startedGame(PLAYERS), ['p1', 'p2', 'p3'], T0 + MIN);
     const { events } = advance(game, T0 + 10 * MIN + 200);
-    expect(getFeedback(events, T0 + 10 * MIN + 200).sound).toBe('success');
+    expect(getFeedback(events, T0 + 10 * MIN + 200).sounds).toEqual([{ kind: 'success', group: 'main' }]);
   });
 
   it('kein Sound ohne Rundenende', () => {
     const { events } = advance(startedGame(PLAYERS), T0 + 5 * MIN);
-    expect(getFeedback(events, T0 + 5 * MIN)).toEqual({ sound: null, liveRounds: [], catchUp: null });
+    expect(getFeedback(events, T0 + 5 * MIN)).toEqual({ sounds: [], liveRounds: [], catchUp: null });
   });
 
   it('nach längerer Abwesenheit: keine Sounds, sondern eine Zusammenfassung', () => {
     const { events } = advance(startedGame(PLAYERS), T0 + 32 * MIN);
     const feedback = getFeedback(events, T0 + 32 * MIN);
-    expect(feedback.sound).toBeNull();
+    expect(feedback.sounds).toEqual([]);
     expect(feedback.liveRounds).toEqual([]);
     expect(feedback.catchUp).toEqual({ rounds: 3, errors: 9 });
   });
@@ -40,7 +40,7 @@ describe('Sounds und Rundenwechsel', () => {
   it('kurz verspätete Auswertung (z. B. gedrosselter Hintergrund-Tab) zählt noch als live', () => {
     const now = T0 + 10 * MIN + LIVE_EVENT_WINDOW_MS;
     const { events } = advance(startedGame(PLAYERS), now);
-    expect(getFeedback(events, now).sound).toBe('error');
-    expect(getFeedback(events, now + SEC).sound).toBeNull();
+    expect(getFeedback(events, now).sounds).toEqual([{ kind: 'error', group: 'main' }]);
+    expect(getFeedback(events, now + SEC).sounds).toEqual([]);
   });
 });

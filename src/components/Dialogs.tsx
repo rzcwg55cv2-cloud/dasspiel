@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { SoundKind } from '../game/feedback';
-import type { Settings } from '../game/types';
+import type { GroupId, Settings } from '../game/types';
 import { CloseIcon, SpeakerIcon } from './icons';
 
 /** Gemeinsame Grundlage für Menü und Sicherheitsabfrage: Hintergrund, Escape-Taste, Fokus. */
@@ -60,13 +60,15 @@ function Overlay({
 interface MenuProps {
   settings: Settings;
   onChange: (patch: Partial<Settings>) => void;
-  onTestSound: (kind: SoundKind) => void;
+  onTestSound: (kind: SoundKind, group: GroupId) => void;
+  /** Testknöpfe auch für die eigenen Töne der 15-Minuten-Gruppe zeigen. */
+  showSlowGroup: boolean;
   onClose: () => void;
   /** Nur während eines Spiels vorhanden. */
   onCancelGame?: () => void;
 }
 
-export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGame }: MenuProps) {
+export function MenuSheet({ settings, onChange, onTestSound, showSlowGroup, onClose, onCancelGame }: MenuProps) {
   const titleId = useId();
   const volumeId = useId();
   const [confirming, setConfirming] = useState(false);
@@ -141,24 +143,37 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
             onChange={(e) => onChange({ soundVolume: Number(e.target.value) / 100 })}
             className="mt-2 h-8 w-full cursor-pointer accent-green-600"
           />
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              disabled={!settings.soundEnabled}
-              onClick={() => onTestSound('error')}
-              className="h-12 rounded-xl bg-red-50 text-sm font-bold text-red-600 transition hover:bg-red-100"
-            >
-              X-Sound testen
-            </button>
-            <button
-              type="button"
-              disabled={!settings.soundEnabled}
-              onClick={() => onTestSound('success')}
-              className="h-12 rounded-xl bg-green-50 text-sm font-bold text-green-700 transition hover:bg-green-100"
-            >
-              Erfolgssound testen
-            </button>
-          </div>
+          {(showSlowGroup ? (['main', 'slow'] as const) : (['main'] as const)).map((group) => (
+            <div key={group} className="mt-4">
+              {showSlowGroup && (
+                <p
+                  className={`mb-1.5 text-[11px] font-black tracking-[0.2em] ${
+                    group === 'slow' ? 'text-yellow-700' : 'text-green-700'
+                  }`}
+                >
+                  {group === 'slow' ? '15-MINUTEN-GRUPPE' : '10-MINUTEN-TAKT'}
+                </p>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  disabled={!settings.soundEnabled}
+                  onClick={() => onTestSound('error', group)}
+                  className="h-12 rounded-xl bg-red-50 text-sm font-bold text-red-600 transition hover:bg-red-100"
+                >
+                  X-Sound testen
+                </button>
+                <button
+                  type="button"
+                  disabled={!settings.soundEnabled}
+                  onClick={() => onTestSound('success', group)}
+                  className="h-12 rounded-xl bg-green-50 text-sm font-bold text-green-700 transition hover:bg-green-100"
+                >
+                  Erfolgssound testen
+                </button>
+              </div>
+            </div>
+          ))}
           <label className="mt-5 flex cursor-pointer items-center justify-between gap-4">
             <span className="text-sm font-bold text-slate-800">Auch bei lautlos abspielen</span>
             <input

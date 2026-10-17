@@ -34,7 +34,7 @@ Im Modus Normal können einzelne Personen im 15-Minuten-Takt mitspielen:
 1. Haken bei **15-MINUTEN-GRUPPE** setzen.
 2. In der Teilnehmerliste bei den betreffenden Personen auf **15** tippen (Umschalter „10 | 15“).
 
-Im Spiel läuft die 15-Minuten-Gruppe unter dem 10-Minuten-Takt mit eigenem Timer: 4 Runden in den ersten 60 Minuten, 2 Runden pro Verlängerung. Beide Gruppen starten gleichzeitig und enden gemeinsam mit jeder Spielphase. Bei Minute 30, 60, … enden beide Runden zugleich – dann gibt es eine gemeinsame Einblendung und einen Ton. Die Auswertung zeigt Ranglisten, Übersicht und Verlauf getrennt je Gruppe.
+Im Spiel läuft die 15-Minuten-Gruppe unter dem 10-Minuten-Takt mit eigenem Timer: 4 Runden in den ersten 60 Minuten, 2 Runden pro Verlängerung. Beide Gruppen starten gleichzeitig und enden gemeinsam mit jeder Spielphase. Die 15-Minuten-Gruppe hat eigene, ähnliche Töne (Buzzer mit drei statt zwei Stößen, höherer Erfolgston). Bei Minute 30, 60, … enden beide Runden zugleich – dann gibt es eine gemeinsame Einblendung, erst den Ton des 10-Minuten-Takts und kurz danach den der 15er. Die Auswertung zeigt Ranglisten, Übersicht und Verlauf getrennt je Gruppe.
 
 Malte Spezial bleibt ein eigener Modus ohne 15-Minuten-Gruppe. Mindestens eine Person muss im 10-Minuten-Takt spielen.
 

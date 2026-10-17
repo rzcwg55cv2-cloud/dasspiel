@@ -76,7 +76,7 @@ describe('Speichern und Wiederherstellen', () => {
     expect(getErrorCounts(state)).toEqual({ p1: 1, p2: 1, p3: 2, p4: 2 });
 
     // Beim Wiederöffnen gibt es keine Serie von Fehlersounds.
-    expect(getFeedback(events, T0 + 37 * MIN).sound).toBeNull();
+    expect(getFeedback(events, T0 + 37 * MIN).sounds).toEqual([]);
   });
 
   it('Phasenende während die App geschlossen ist: Entscheidung statt automatischer Fortsetzung', () => {

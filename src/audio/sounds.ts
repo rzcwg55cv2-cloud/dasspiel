@@ -7,6 +7,7 @@
  * Wiedergabe fehl, passiert einfach nichts – die Spiellogik ist davon unabhängig.
  */
 import type { SoundKind } from '../game/feedback';
+import type { GroupId } from '../game/types';
 
 type AudioContextConstructor = typeof AudioContext;
 
@@ -78,14 +79,18 @@ class SoundPlayer {
     }
   }
 
-  play(kind: SoundKind): void {
+  /**
+   * Spielt den Ton einer Gruppe. Die 15-Minuten-Gruppe hat eigene, ähnliche Varianten.
+   * `delay` (Sekunden) erlaubt zwei Töne direkt nacheinander, z. B. bei Minute 30.
+   */
+  play(kind: SoundKind, group: GroupId = 'main', delay = 0): void {
     const context = this.ensureContext();
     if (!context || !this.output || this.volume === 0) return;
     if (context.state !== 'running') context.resume().catch(() => {});
     try {
-      const start = context.currentTime + 0.03;
-      if (kind === 'error') playBuzzer(context, this.output, start);
-      else playChime(context, this.output, start);
+      const start = context.currentTime + 0.03 + delay;
+      if (kind === 'error') playBuzzer(context, this.output, start, BUZZERS[group]);
+      else playChime(context, this.output, start, CHIMES[group]);
     } catch {
       // Audio ist optional.
     }
@@ -127,28 +132,50 @@ function envelope(context: AudioContext, start: number, duration: number, peak: 
   return gain;
 }
 
+interface BuzzerSpec {
+  pulses: Array<{ offset: number; duration: number; pitch: number }>;
+  /** Grundtonhöhe (Hz) der beiden leicht verstimmten Sägezahn-Stimmen. */
+  base: number;
+}
+
 /**
- * Negativer Gameshow-Buzzer: zwei tiefe, leicht verstimmte Sägezahn-Impulse („mäp-määp“).
- * Ein Tiefpassfilter nimmt die schrillen Obertöne heraus.
+ * Negativer Gameshow-Buzzer aus tiefen, leicht verstimmten Sägezahn-Impulsen.
+ * - Haupttakt: zwei Stöße („mäp-määp“)
+ * - 15-Minuten-Gruppe: drei kürzere, etwas höhere Stöße („mäp-mäp-määp“)
  */
-function playBuzzer(context: AudioContext, output: AudioNode, start: number): void {
+const BUZZERS: Record<GroupId, BuzzerSpec> = {
+  main: {
+    base: 140,
+    pulses: [
+      { offset: 0, duration: 0.22, pitch: 1 },
+      { offset: 0.3, duration: 0.6, pitch: 0.94 },
+    ],
+  },
+  slow: {
+    base: 182,
+    pulses: [
+      { offset: 0, duration: 0.15, pitch: 1 },
+      { offset: 0.21, duration: 0.15, pitch: 1 },
+      { offset: 0.42, duration: 0.5, pitch: 0.94 },
+    ],
+  },
+};
+
+/** Ein Tiefpassfilter nimmt die schrillen Obertöne heraus. */
+function playBuzzer(context: AudioContext, output: AudioNode, start: number, spec: BuzzerSpec): void {
   const filter = context.createBiquadFilter();
   filter.type = 'lowpass';
   filter.frequency.value = 1500;
   filter.Q.value = 0.8;
   filter.connect(output);
 
-  const pulses = [
-    { offset: 0, duration: 0.22, pitch: 1 },
-    { offset: 0.3, duration: 0.6, pitch: 0.94 },
-  ];
   const voices: Array<{ type: OscillatorType; frequency: number; level: number }> = [
-    { type: 'sawtooth', frequency: 140, level: 0.45 },
-    { type: 'sawtooth', frequency: 147, level: 0.45 },
-    { type: 'square', frequency: 70, level: 0.3 },
+    { type: 'sawtooth', frequency: spec.base, level: 0.45 },
+    { type: 'sawtooth', frequency: spec.base * 1.05, level: 0.45 },
+    { type: 'square', frequency: spec.base / 2, level: 0.3 },
   ];
 
-  for (const pulse of pulses) {
+  for (const pulse of spec.pulses) {
     const t = start + pulse.offset;
     const env = envelope(context, t, pulse.duration, 0.55);
     env.connect(filter);
@@ -167,13 +194,31 @@ function playBuzzer(context: AudioContext, output: AudioNode, start: number): vo
   }
 }
 
-/** Kurzer, heller Erfolgston: aufsteigender Dur-Dreiklang (G5 – C6 – E6). */
-function playChime(context: AudioContext, output: AudioNode, start: number): void {
-  const notes = [
+/**
+ * Kurzer, heller Erfolgston als aufsteigender Dur-Dreiklang.
+ * - Haupttakt: G5 – C6 – E6
+ * - 15-Minuten-Gruppe: höher und mit vier Tönen, A5 – C♯6 – E6 – A6
+ */
+const CHIMES: Record<GroupId, Array<{ frequency: number; offset: number }>> = {
+  main: [
     { frequency: 783.99, offset: 0 },
     { frequency: 1046.5, offset: 0.09 },
     { frequency: 1318.51, offset: 0.18 },
-  ];
+  ],
+  slow: [
+    { frequency: 880, offset: 0 },
+    { frequency: 1108.73, offset: 0.07 },
+    { frequency: 1318.51, offset: 0.14 },
+    { frequency: 1760, offset: 0.21 },
+  ],
+};
+
+function playChime(
+  context: AudioContext,
+  output: AudioNode,
+  start: number,
+  notes: Array<{ frequency: number; offset: number }>,
+): void {
   notes.forEach((note, index) => {
     const t = start + note.offset;
     const decay = index === notes.length - 1 ? 0.9 : 0.35;
