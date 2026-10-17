@@ -137,7 +137,7 @@ export function SetupScreen({
             />
             <button
               type="submit"
-              className="flex h-14 shrink-0 items-center gap-2 rounded-2xl bg-yellow-400 px-5 font-bold text-yellow-950 shadow-md shadow-yellow-500/30 transition hover:bg-yellow-300 active:scale-[0.97]"
+              className="flex h-14 shrink-0 items-center gap-2 rounded-2xl bg-yellow-400 px-5 font-bold text-yellow-950 shadow-md shadow-yellow-500/30 transition hover:brightness-105 active:scale-[0.97]"
             >
               <PlusIcon className="size-5" strokeWidth={2.5} />
               <span>Hinzufügen</span>
@@ -290,15 +290,17 @@ export function SetupScreen({
         )}
       </main>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 bg-linear-to-t from-white from-60% to-transparent pt-10">
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 bg-linear-to-t from-(--page-bg) from-60% to-transparent pt-10">
         <div className="pointer-events-auto mx-auto w-full max-w-xl px-5 pb-safe">
           <button
             type="button"
             onClick={onStart}
             disabled={startBlocker !== null}
-            className="h-16 w-full rounded-2xl bg-green-600 text-lg font-extrabold tracking-[0.14em] text-white shadow-lg shadow-green-600/30 transition hover:bg-green-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
+            className={`h-16 w-full rounded-2xl bg-green-600 text-lg font-extrabold tracking-[0.14em] text-white shadow-lg shadow-green-600/30 transition hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none ${
+              malte && startBlocker === null ? 'hazard' : ''
+            }`}
           >
-            SPIEL STARTEN
+            {malte ? 'BRACE FOR IMPACT' : 'SPIEL STARTEN'}
           </button>
           <p className="mt-2 h-4 text-center text-xs text-slate-400">
             {startBlocker ? BLOCKER_TEXT[startBlocker] : ''}

@@ -17,7 +17,17 @@
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <style>
       html, body { background: #ffffff; }
+      html[data-theme='malte'], html[data-theme='malte'] body { background: #140405; }
     </style>
+    <script>
+      // Malte Spezial sofort rot zeigen, bevor die App geladen ist (kein weißes Aufblitzen).
+      try {
+        var saved = JSON.parse(localStorage.getItem('das-spiel/state/v1') || 'null');
+        if (saved && saved.mode === 'malte' && saved.status !== 'finished') {
+          document.documentElement.dataset.theme = 'malte';
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -17,7 +17,7 @@ interface Props {
 }
 
 const MOOD_STYLE: Record<Mood, { emoji: string; title: string; nameLine: string }> = {
-  perfect: { emoji: '🏆', title: 'brand-text', nameLine: 'bg-green-50 text-green-700' },
+  perfect: { emoji: '🏆', title: 'brand-text', nameLine: 'bg-ok-50 text-ok-700' },
   good: { emoji: '😎', title: 'brand-text', nameLine: 'bg-lime-50 text-lime-800' },
   mixed: { emoji: '🤷', title: 'text-slate-900', nameLine: 'bg-amber-50 text-amber-800' },
   bad: { emoji: '😬', title: 'text-red-600', nameLine: 'bg-red-50 text-red-700' },
@@ -88,7 +88,7 @@ export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenM
             <Stat
               label="X"
               value={String(totalErrors)}
-              tone={totalErrors > 0 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}
+              tone={totalErrors > 0 ? 'bg-red-50 text-red-600' : 'bg-ok-50 text-ok-600'}
             />
           </dl>
 
@@ -96,14 +96,14 @@ export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenM
             <p
               key={group}
               className={`mt-3 rounded-2xl px-5 py-4 text-sm text-slate-600 [overflow-wrap:anywhere] ${
-                errors === 0 ? 'bg-green-50' : 'bg-red-50'
+                errors === 0 ? 'bg-ok-50' : 'bg-red-50'
               }`}
             >
               <span className="font-bold text-slate-900">
                 {showGroups && `${getGroupLabel(state.mode, group)} · `}Runde {round.roundNumber}:
               </span>{' '}
               {errors === 0 ? (
-                <span className="font-semibold text-green-600">alle haben geliefert</span>
+                <span className="font-semibold text-ok-600">alle haben geliefert</span>
               ) : (
                 <>
                   <span className="font-semibold text-red-600">{errors} X</span> – {formatList(names)}
@@ -116,7 +116,7 @@ export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenM
             <button
               type="button"
               onClick={onExtend}
-              className="h-[4.5rem] w-full rounded-2xl text-lg font-extrabold tracking-[0.12em] bg-green-600 text-white shadow-lg shadow-green-600/30 transition hover:bg-green-700 active:scale-[0.98]"
+              className="h-[4.5rem] w-full rounded-2xl text-lg font-extrabold tracking-[0.12em] bg-green-600 text-white shadow-lg shadow-green-600/30 transition hover:brightness-110 active:scale-[0.98]"
             >
               {saying.extendLabel}
             </button>

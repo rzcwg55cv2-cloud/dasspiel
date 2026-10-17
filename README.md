@@ -27,6 +27,10 @@ Die App läuft komplett im Browser, braucht kein Konto und kein Internet währen
 
 Ein Gerät dient als Spielzentrale: Dort werden alle Teilnehmer eingetragen und alle Haken vergeben.
 
+### Malte Spezial
+
+Wer **MALTE SPEZIAL** anhakt, sieht die App sofort in bedrohlichem Dunkelrot: Das Display bebt kurz, das Handy vibriert, der Bildschirmrand glüht im Herzschlag-Takt, und statt „SPIEL STARTEN“ steht **BRACE FOR IMPACT** auf dem Button. Das bleibt das ganze Spiel über inklusive aller Verlängerungsfragen. Erst mit dem Ergebnis färbt sich die App wieder zurück. Grüne Haken bleiben auch im roten Design grün.
+
 ### 15-Minuten-Gruppe
 
 Im Modus Normal können einzelne Personen im 15-Minuten-Takt mitspielen:

@@ -214,7 +214,7 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
           <button
             type="button"
             onClick={onRestart}
-            className="h-16 rounded-2xl px-4 text-base font-extrabold tracking-[0.1em] bg-green-600 text-white shadow-lg shadow-green-600/30 transition hover:bg-green-700 active:scale-[0.98]"
+            className="h-16 rounded-2xl px-4 text-base font-extrabold tracking-[0.1em] bg-green-600 text-white shadow-lg shadow-green-600/30 transition hover:brightness-110 active:scale-[0.98]"
           >
             GLEICHE GRUPPE ERNEUT SPIELEN
           </button>
@@ -276,7 +276,7 @@ function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: num
   return (
     <li
       className={`flex items-center gap-3 rounded-2xl border-2 px-3 py-3 ${
-        flawless ? 'border-green-300 bg-green-50' : 'border-slate-100 bg-white shadow-sm'
+        flawless ? 'border-ok-300 bg-ok-50' : 'border-slate-100 bg-white shadow-sm'
       }`}
     >
       <span
@@ -293,7 +293,7 @@ function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: num
           {stats.player.name}
         </div>
         {flawless ? (
-          <span className="mt-0.5 inline-block rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-bold tracking-[0.15em] text-white">
+          <span className="mt-0.5 inline-block rounded-full bg-ok-500 px-2 py-0.5 text-[10px] font-bold tracking-[0.15em] text-white">
             X-FREI
           </span>
         ) : (
@@ -303,7 +303,7 @@ function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: num
         )}
       </div>
       <div className="shrink-0 text-right">
-        <div className={`tabular text-2xl leading-none font-black ${flawless ? 'text-green-600' : 'text-red-500'}`}>
+        <div className={`tabular text-2xl leading-none font-black ${flawless ? 'text-ok-600' : 'text-red-500'}`}>
           {stats.errors}
           <span className="ml-1 text-base font-black">X</span>
         </div>
@@ -383,7 +383,7 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
         <Avatar name={stats.player.name} index={colorIndex} className="size-8 text-sm" />
         <span className="min-w-0 flex-1 truncate font-extrabold tracking-[0.06em] uppercase">{stats.player.name}</span>
         <span className="tabular shrink-0 text-sm font-semibold text-slate-500">
-          <span className={stats.errors ? 'text-red-500' : 'text-green-600'}>{stats.errors} X</span> ·{' '}
+          <span className={stats.errors ? 'text-red-500' : 'text-ok-600'}>{stats.errors} X</span> ·{' '}
           {formatPercent(stats.successRate)}
         </span>
       </summary>
@@ -393,7 +393,7 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
             <li
               key={result.roundNumber}
               className={`flex items-center justify-between rounded-xl py-1.5 pr-1.5 pl-2.5 ${
-                result.success ? 'bg-green-50' : 'bg-red-50'
+                result.success ? 'bg-ok-50' : 'bg-red-50'
               }`}
             >
               <span className="tabular text-xs font-bold text-slate-500">R{result.roundNumber}</span>
@@ -402,9 +402,9 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
           ))}
         </ul>
         <dl className="tabular mt-4 grid grid-cols-3 gap-2 text-sm">
-          <div className="rounded-xl bg-green-50 px-3 py-2">
-            <dt className="text-xs text-green-700/80">Geliefert</dt>
-            <dd className="text-lg font-black text-green-700">{stats.successes}</dd>
+          <div className="rounded-xl bg-ok-50 px-3 py-2">
+            <dt className="text-xs text-ok-700/80">Geliefert</dt>
+            <dd className="text-lg font-black text-ok-700">{stats.successes}</dd>
           </div>
           <div className="rounded-xl bg-red-50 px-3 py-2">
             <dt className="text-xs text-red-600/80">X</dt>

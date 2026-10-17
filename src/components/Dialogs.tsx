@@ -35,7 +35,7 @@ function Overlay({
 
   return (
     <div
-      className={`fixed inset-0 z-40 flex justify-center bg-slate-900/35 backdrop-blur-sm animate-fade ${
+      className={`fixed inset-0 z-40 flex justify-center bg-black/40 backdrop-blur-sm animate-fade ${
         align === 'center' ? 'items-center p-5' : 'items-end sm:items-center sm:p-5'
       }`}
       onClick={(event) => {
@@ -47,7 +47,7 @@ function Overlay({
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
-        className={`w-full max-w-md animate-sheet bg-white shadow-2xl shadow-slate-900/20 ${
+        className={`w-full max-w-md animate-sheet bg-white shadow-2xl shadow-black/20 ${
           align === 'center' ? 'rounded-3xl' : 'rounded-t-3xl sm:rounded-3xl'
         }`}
       >
@@ -167,7 +167,7 @@ export function MenuSheet({ settings, onChange, onTestSound, showSlowGroup, onCl
                   type="button"
                   disabled={!settings.soundEnabled}
                   onClick={() => onTestSound('success', group)}
-                  className="h-12 rounded-xl bg-green-50 text-sm font-bold text-green-700 transition hover:bg-green-100"
+                  className="h-12 rounded-xl bg-ok-50 text-sm font-bold text-ok-700 transition hover:bg-ok-100"
                 >
                   Erfolgssound testen
                 </button>
@@ -227,7 +227,7 @@ function CancelDialog({ onKeepPlaying, onConfirm }: { onKeepPlaying: () => void;
             type="button"
             onClick={onKeepPlaying}
             data-autofocus
-            className="h-14 rounded-2xl bg-green-600 font-extrabold tracking-[0.12em] text-white shadow-md shadow-green-600/25 transition hover:bg-green-700"
+            className="h-14 rounded-2xl bg-ok-600 font-extrabold tracking-[0.12em] text-white shadow-md shadow-ok-600/25 transition hover:brightness-110"
           >
             WEITERSPIELEN
           </button>
@@ -256,7 +256,7 @@ export function NoticeToast({ title, text, onDismiss }: { title: string; text: s
         type="button"
         onClick={onDismiss}
         role="status"
-        className="pointer-events-auto mt-2 flex w-full max-w-md animate-sheet items-stretch gap-3 rounded-2xl bg-white px-4 py-4 text-left shadow-xl shadow-slate-900/15 ring-1 ring-slate-100"
+        className="pointer-events-auto mt-2 flex w-full max-w-md animate-sheet items-stretch gap-3 rounded-2xl bg-white px-4 py-4 text-left shadow-xl shadow-black/15 ring-1 ring-slate-100"
       >
         <span className="w-1.5 shrink-0 rounded-full bg-linear-to-b from-red-500 via-yellow-400 to-green-500" aria-hidden="true" />
         <span>

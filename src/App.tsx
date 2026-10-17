@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { sounds } from './audio/sounds';
 import { DecisionScreen } from './components/DecisionScreen';
 import { MenuSheet, NoticeToast } from './components/Dialogs';
@@ -10,6 +10,28 @@ import { getClock, getStartBlocker } from './game/engine';
 
 /** Abstand (Sekunden), wenn beide Gruppen gleichzeitig einen Ton bekommen. */
 const SOUND_GAP = 1.1;
+
+/** Kurzes Beben und Vibrieren, wenn Malte Spezial eingeschaltet wird. */
+function impact(): void {
+  try {
+    navigator.vibrate?.([80, 40, 160]);
+  } catch {
+    // nicht unterstützt
+  }
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  document.body.animate?.(
+    [
+      { transform: 'translate(0, 0)' },
+      { transform: 'translate(-8px, 3px)' },
+      { transform: 'translate(7px, -4px)' },
+      { transform: 'translate(-5px, -2px)' },
+      { transform: 'translate(4px, 3px)' },
+      { transform: 'translate(-2px, 1px)' },
+      { transform: 'translate(0, 0)' },
+    ],
+    { duration: 480, easing: 'ease-out' },
+  );
+}
 import type { SoundCue } from './game/feedback';
 import { getErrorCounts } from './game/stats';
 import { useGame } from './hooks/useGame';
@@ -30,6 +52,18 @@ export default function App() {
   const inGame = state.status === 'running' || state.status === 'extension-decision';
 
   useWakeLock(inGame);
+
+  // Malte Spezial: bedrohliches Rot von der Auswahl bis zum Spielende.
+  const malteTheme = state.mode === 'malte' && state.status !== 'finished';
+  const wasMalte = useRef(malteTheme);
+  useEffect(() => {
+    const root = document.documentElement;
+    if (malteTheme) root.dataset.theme = 'malte';
+    else delete root.dataset.theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', malteTheme ? '#140405' : '#ffffff');
+    if (malteTheme && !wasMalte.current && state.status === 'setup') impact();
+    wasMalte.current = malteTheme;
+  }, [malteTheme, state.status]);
 
   // Mobile Browser geben Audio erst nach einer Benutzeraktion frei.
   useEffect(() => {
@@ -106,6 +140,7 @@ export default function App() {
   return (
     <>
       {screen}
+      {malteTheme && <div className="malte-vignette" aria-hidden="true" />}
       {state.status === 'running' && liveRounds.length > 0 && !liveRounds.some((e) => e.phaseEnded) && (
         <RoundBanner
           key={liveRounds.map((e) => `${e.group}-${e.roundNumber}-${e.endedAt}`).join('|')}

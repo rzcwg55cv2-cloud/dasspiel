@@ -24,7 +24,7 @@ export function RoundBanner({ events, players, mode, showGroups }: Props) {
       className={`pointer-events-none fixed inset-0 z-30 flex animate-banner items-center justify-center px-6 text-white ${
         anyErrors
           ? 'bg-linear-to-br from-red-600 via-red-500 to-amber-400'
-          : 'bg-linear-to-br from-green-600 via-green-500 to-lime-400'
+          : 'bg-linear-to-br from-ok-600 via-ok-500 to-ok-400'
       }`}
       aria-live="assertive"
     >
@@ -42,7 +42,7 @@ export function RoundBanner({ events, players, mode, showGroups }: Props) {
             <div key={event.group} className="mt-6">
               <p
                 className={`inline-block rounded-full bg-white px-5 py-2 text-base font-extrabold tracking-[0.12em] shadow-lg ${
-                  errors > 0 ? 'text-red-600' : 'text-green-700'
+                  errors > 0 ? 'text-red-600' : 'text-ok-700'
                 }`}
               >
                 {showGroups && `${getGroupLabel(mode, event.group).toUpperCase()}: `}

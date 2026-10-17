@@ -174,7 +174,7 @@ function DeliveryStatus({
         small ? 'mt-3 py-2 text-xs tracking-[0.12em]' : 'mt-7 py-3 text-sm tracking-[0.12em] sm:tracking-[0.18em]'
       } ${
         allConfirmed
-          ? 'bg-linear-to-r from-green-600 to-lime-500 text-white shadow-md shadow-green-600/25'
+          ? 'bg-linear-to-r from-ok-600 to-ok-400 text-white shadow-md shadow-ok-600/25'
           : small
             ? 'bg-white/80 text-yellow-800'
             : 'bg-yellow-50 text-yellow-800'
@@ -205,7 +205,7 @@ function PhaseProgress({ clock, history }: { clock: GameClock; history: RoundRes
         let style: CSSProperties | undefined;
         if (index < clock.roundInPhase - 1) {
           const perfect = Object.values(phaseRounds[index]?.playerResults ?? {}).every(Boolean);
-          fill = perfect ? 'w-full bg-green-400' : 'w-full bg-red-400';
+          fill = perfect ? 'w-full bg-ok-400' : 'w-full bg-red-400';
         } else if (index === clock.roundInPhase - 1) {
           fill = 'brand-gradient';
           style = { width: `${Math.min(100, Math.max(0, currentProgress * 100))}%` };
@@ -231,7 +231,7 @@ interface PlayerRowProps {
 function PlayerRow({ name, index, errors, mark, onTap }: PlayerRowProps) {
   const tone =
     mark === 'confirmed'
-      ? 'border-green-300 bg-green-50'
+      ? 'border-ok-300 bg-ok-50'
       : mark === 'missed'
         ? 'border-red-300 bg-red-50'
         : 'border-slate-100 bg-white shadow-sm hover:border-slate-200';
