@@ -9,6 +9,7 @@ export function useSettings() {
   useEffect(() => {
     saveSettings(settings);
     sounds.setVolume(settings.soundVolume);
+    sounds.setPlayInSilentMode(settings.playInSilentMode);
   }, [settings]);
 
   const update = useCallback((patch: Partial<Settings>) => {

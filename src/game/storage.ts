@@ -17,7 +17,7 @@ import type { GameMode, GameState, GameStatus, Player, RoundResult, Settings } f
 export const STATE_KEY = 'das-spiel/state/v1';
 export const SETTINGS_KEY = 'das-spiel/settings/v1';
 
-export const DEFAULT_SETTINGS: Settings = { soundEnabled: true, soundVolume: 0.8 };
+export const DEFAULT_SETTINGS: Settings = { soundEnabled: true, soundVolume: 0.8, playInSilentMode: true };
 
 export interface KeyValueStorage {
   getItem(key: string): string | null;
@@ -82,6 +82,8 @@ export function loadSettings(storage: KeyValueStorage | null = defaultStorage())
         typeof data.soundVolume === 'number' && data.soundVolume >= 0 && data.soundVolume <= 1
           ? data.soundVolume
           : DEFAULT_SETTINGS.soundVolume,
+      playInSilentMode:
+        typeof data.playInSilentMode === 'boolean' ? data.playInSilentMode : DEFAULT_SETTINGS.playInSilentMode,
     };
   } catch {
     return DEFAULT_SETTINGS;

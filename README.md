@@ -50,7 +50,7 @@ Pro Stufe gibt es drei Sprüche, dazu Sprüche mit Namen („Malte zahlt den Kra
 Nach dem ersten Öffnen ist alles auf dem Gerät gespeichert. Danach funktioniert die App auch im Flugmodus.
 
 Hinweise:
-- Auf dem iPhone muss der Stummschalter aus sein, damit die Sounds zu hören sind.
+- Die Töne kommen auch, wenn das iPhone auf lautlos steht (ab iOS 16.4). Läuft auf demselben iPhone Musik, wird sie dabei unterbrochen. Das lässt sich im Menü unter „Auch bei lautlos abspielen“ abschalten. Die Medienlautstärke muss aufgedreht sein.
 - Während des Spiels bleibt der Bildschirm nach Möglichkeit an (Screen Wake Lock). Wird das Handy trotzdem gesperrt, läuft die Zeit korrekt weiter. Beim Entsperren werden verpasste Runden nachgetragen.
 
 ## Lokal starten
@@ -75,7 +75,7 @@ Jeder Push auf `main` startet den Workflow `.github/workflows/deploy.yml`. Er f�
 
 - React 19, TypeScript, Vite, Tailwind CSS 4
 - Kein Backend und keine externen Dienste. Der Spielstand liegt im `localStorage`.
-- Sounds werden mit der Web Audio API erzeugt, ohne Audiodateien.
+- Sounds werden mit der Web Audio API erzeugt, ohne Audiodateien. Für den Lautlos-Modus setzt die App auf dem iPhone den Audio-Session-Typ `playback`.
 - Ein eigener Service Worker (beim Build erzeugt) speichert alle Dateien für den Offline-Betrieb.
 - Die Schrift Inter ist lokal eingebunden (SIL Open Font License).
 

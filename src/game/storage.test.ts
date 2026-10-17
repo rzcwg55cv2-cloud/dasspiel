@@ -172,8 +172,11 @@ describe('Ungültige gespeicherte Daten', () => {
 
   it('Sound-Einstellungen werden gespeichert und geprüft', () => {
     const storage = new MemoryStorage();
-    saveSettings({ soundEnabled: false, soundVolume: 0.3 }, storage);
-    expect(loadSettings(storage)).toEqual({ soundEnabled: false, soundVolume: 0.3 });
+    saveSettings({ soundEnabled: false, soundVolume: 0.3, playInSilentMode: false }, storage);
+    expect(loadSettings(storage)).toEqual({ soundEnabled: false, soundVolume: 0.3, playInSilentMode: false });
+    // Ältere Einstellungen ohne das neue Feld: Töne auch bei lautlos (Standard)
+    storage.setItem('das-spiel/settings/v1', JSON.stringify({ soundEnabled: true, soundVolume: 0.5 }));
+    expect(loadSettings(storage)).toEqual({ soundEnabled: true, soundVolume: 0.5, playInSilentMode: true });
     storage.setItem('das-spiel/settings/v1', JSON.stringify({ soundEnabled: 'ja', soundVolume: 7 }));
     expect(loadSettings(storage)).toEqual(DEFAULT_SETTINGS);
   });

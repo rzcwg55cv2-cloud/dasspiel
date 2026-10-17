@@ -56,7 +56,7 @@ export function GameScreen({ state, clock, errorCounts, liveRound, now, onToggle
           </span>
           <span
             className={`mt-1.5 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.25em] ${
-              malte ? 'bg-violet-100 text-violet-700' : 'bg-sky-100 text-sky-700'
+              malte ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
             }`}
           >
             {getModeLabel(state.mode).toUpperCase()}
@@ -73,7 +73,7 @@ export function GameScreen({ state, clock, errorCounts, liveRound, now, onToggle
 
         <div className="mt-5 text-center sm:mt-9">
           <p className="text-sm font-bold tracking-[0.3em] text-slate-400">
-            RUNDE <span className="tabular text-pink-500">{clock.roundNumber}</span>
+            RUNDE <span className="tabular text-green-600">{clock.roundNumber}</span>
             <span className="tabular ml-2 text-slate-300">/ {clock.lastRoundOfPhase}</span>
           </p>
           <Countdown seconds={clock.roundRemainingSeconds} />
@@ -92,8 +92,8 @@ export function GameScreen({ state, clock, errorCounts, liveRound, now, onToggle
         <p
           className={`mt-7 rounded-2xl px-3 py-3 text-center text-sm font-bold tracking-[0.12em] transition-colors sm:tracking-[0.18em] ${
             allConfirmed
-              ? 'bg-linear-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/25'
-              : 'bg-sky-50 text-sky-700'
+              ? 'bg-linear-to-r from-green-600 to-lime-500 text-white shadow-md shadow-green-600/25'
+              : 'bg-yellow-50 text-yellow-800'
           }`}
           aria-live="polite"
         >
@@ -101,8 +101,8 @@ export function GameScreen({ state, clock, errorCounts, liveRound, now, onToggle
             'ALLE HABEN GELIEFERT'
           ) : (
             <>
-              <span className="tabular font-black text-sky-900">{confirmed}</span> VON{' '}
-              <span className="tabular font-black text-sky-900">{total}</span>{' '}
+              <span className="tabular font-black text-yellow-950">{confirmed}</span> VON{' '}
+              <span className="tabular font-black text-yellow-950">{total}</span>{' '}
               {confirmed === 1 ? 'HAT' : 'HABEN'} GELIEFERT
             </>
           )}
@@ -134,7 +134,7 @@ export function GameScreen({ state, clock, errorCounts, liveRound, now, onToggle
 }
 
 function Countdown({ seconds }: { seconds: number }) {
-  const tone = seconds < 30 ? 'text-rose-500' : seconds < 60 ? 'text-amber-500' : 'text-slate-900';
+  const tone = seconds < 30 ? 'text-red-500' : seconds < 60 ? 'text-amber-500' : 'text-slate-900';
   const pulse = seconds <= 10 ? 'animate-soft-pulse' : '';
   return (
     <div
@@ -163,7 +163,7 @@ function PhaseProgress({ rounds, current, currentProgress, history }: PhaseProgr
         let style: CSSProperties | undefined;
         if (index < current - 1) {
           const perfect = Object.values(history[index]?.playerResults ?? {}).every(Boolean);
-          fill = perfect ? 'w-full bg-emerald-400' : 'w-full bg-rose-400';
+          fill = perfect ? 'w-full bg-green-400' : 'w-full bg-red-400';
         } else if (index === current - 1) {
           fill = 'brand-gradient';
           style = { width: `${Math.min(100, Math.max(0, currentProgress * 100))}%` };
@@ -189,9 +189,9 @@ interface PlayerRowProps {
 function PlayerRow({ name, index, errors, mark, onTap }: PlayerRowProps) {
   const tone =
     mark === 'confirmed'
-      ? 'border-emerald-300 bg-emerald-50'
+      ? 'border-green-300 bg-green-50'
       : mark === 'missed'
-        ? 'border-rose-300 bg-rose-50'
+        ? 'border-red-300 bg-red-50'
         : 'border-slate-100 bg-white shadow-sm hover:border-slate-200';
   return (
     <button
@@ -207,7 +207,7 @@ function PlayerRow({ name, index, errors, mark, onTap }: PlayerRowProps) {
           {name}
         </span>
         <span
-          className={`tabular mt-0.5 block text-sm ${errors > 0 ? 'font-semibold text-rose-500' : 'text-slate-400'}`}
+          className={`tabular mt-0.5 block text-sm ${errors > 0 ? 'font-semibold text-red-500' : 'text-slate-400'}`}
         >
           {errors === 0 ? 'Keine X' : `${errors} X`}
         </span>

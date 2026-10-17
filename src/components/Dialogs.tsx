@@ -105,7 +105,7 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
 
         <label className="mt-3 flex cursor-pointer items-center justify-between gap-4 py-2">
           <span className="flex items-center gap-3 text-lg font-bold text-slate-900">
-            <span className="grid size-10 place-items-center rounded-full bg-violet-100 text-violet-600">
+            <span className="grid size-10 place-items-center rounded-full bg-green-100 text-green-700">
               <SpeakerIcon className="size-5" />
             </span>
             Sounds
@@ -119,7 +119,7 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
           />
           <span
             aria-hidden="true"
-            className="relative h-8 w-14 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-emerald-500 peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-violet-500 after:absolute after:top-1 after:left-1 after:size-6 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-6"
+            className="relative h-8 w-14 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-green-500 peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-amber-500 after:absolute after:top-1 after:left-1 after:size-6 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-6"
           />
         </label>
 
@@ -128,7 +128,7 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
             <label htmlFor={volumeId} className="text-sm font-medium text-slate-600">
               Lautstärke
             </label>
-            <span className="tabular text-sm font-bold text-violet-600">{volume}&nbsp;%</span>
+            <span className="tabular text-sm font-bold text-green-700">{volume}&nbsp;%</span>
           </div>
           <input
             id={volumeId}
@@ -139,14 +139,14 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
             value={volume}
             disabled={!settings.soundEnabled}
             onChange={(e) => onChange({ soundVolume: Number(e.target.value) / 100 })}
-            className="mt-2 h-8 w-full cursor-pointer accent-violet-600"
+            className="mt-2 h-8 w-full cursor-pointer accent-green-600"
           />
           <div className="mt-4 grid grid-cols-2 gap-2">
             <button
               type="button"
               disabled={!settings.soundEnabled}
               onClick={() => onTestSound('error')}
-              className="h-12 rounded-xl bg-rose-50 text-sm font-bold text-rose-600 transition hover:bg-rose-100"
+              className="h-12 rounded-xl bg-red-50 text-sm font-bold text-red-600 transition hover:bg-red-100"
             >
               X-Sound testen
             </button>
@@ -154,13 +154,31 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
               type="button"
               disabled={!settings.soundEnabled}
               onClick={() => onTestSound('success')}
-              className="h-12 rounded-xl bg-emerald-50 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100"
+              className="h-12 rounded-xl bg-green-50 text-sm font-bold text-green-700 transition hover:bg-green-100"
             >
               Erfolgssound testen
             </button>
           </div>
-          <p className="mt-3 text-xs leading-relaxed text-slate-500">
-            Auf dem iPhone muss der Stummschalter aus sein, damit die Sounds zu hören sind.
+          <label className="mt-5 flex cursor-pointer items-center justify-between gap-4">
+            <span className="text-sm font-bold text-slate-800">Auch bei lautlos abspielen</span>
+            <input
+              type="checkbox"
+              role="switch"
+              className="peer sr-only"
+              checked={settings.playInSilentMode}
+              disabled={!settings.soundEnabled}
+              onChange={(e) => onChange({ playInSilentMode: e.target.checked })}
+            />
+            <span
+              aria-hidden="true"
+              className="relative h-7 w-12 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-green-500 peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-amber-500 after:absolute after:top-1 after:left-1 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-5"
+            />
+          </label>
+          <p className="mt-2 text-xs leading-relaxed text-slate-500">
+            {settings.playInSilentMode
+              ? 'Die Töne kommen auch, wenn das iPhone auf lautlos steht. Läuft auf demselben iPhone Musik, wird sie dabei unterbrochen.'
+              : 'Auf dem iPhone muss der Lautlos-Schalter aus sein, damit die Töne zu hören sind.'}{' '}
+            Die Medienlautstärke muss aufgedreht sein.
           </p>
         </div>
 
@@ -169,7 +187,7 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
             <button
               type="button"
               onClick={() => setConfirming(true)}
-              className="h-12 w-full rounded-xl text-base font-bold text-rose-600 transition hover:bg-rose-50"
+              className="h-12 w-full rounded-xl text-base font-bold text-red-600 transition hover:bg-red-50"
             >
               Spiel abbrechen
             </button>
@@ -194,14 +212,14 @@ function CancelDialog({ onKeepPlaying, onConfirm }: { onKeepPlaying: () => void;
             type="button"
             onClick={onKeepPlaying}
             data-autofocus
-            className="h-14 rounded-2xl bg-linear-to-r from-emerald-500 to-teal-500 font-extrabold tracking-[0.12em] text-white shadow-md shadow-emerald-500/25 transition hover:brightness-105"
+            className="h-14 rounded-2xl bg-green-600 font-extrabold tracking-[0.12em] text-white shadow-md shadow-green-600/25 transition hover:bg-green-700"
           >
             WEITERSPIELEN
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="h-14 rounded-2xl border-2 border-rose-200 font-extrabold tracking-[0.12em] text-rose-600 transition hover:bg-rose-50"
+            className="h-14 rounded-2xl border-2 border-red-200 font-extrabold tracking-[0.12em] text-red-600 transition hover:bg-red-50"
           >
             SPIEL ABBRECHEN
           </button>
@@ -225,7 +243,7 @@ export function NoticeToast({ title, text, onDismiss }: { title: string; text: s
         role="status"
         className="pointer-events-auto mt-2 flex w-full max-w-md animate-sheet items-stretch gap-3 rounded-2xl bg-white px-4 py-4 text-left shadow-xl shadow-slate-900/15 ring-1 ring-slate-100"
       >
-        <span className="w-1.5 shrink-0 rounded-full bg-linear-to-b from-sky-400 to-violet-500" aria-hidden="true" />
+        <span className="w-1.5 shrink-0 rounded-full bg-linear-to-b from-red-500 via-yellow-400 to-green-500" aria-hidden="true" />
         <span>
           <span className="block text-sm font-bold text-slate-900">{title}</span>
           <span className="mt-0.5 block text-sm text-slate-600">{text}</span>

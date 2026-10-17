@@ -16,10 +16,10 @@ interface Props {
 }
 
 const MOOD_STYLE: Record<Mood, { emoji: string; title: string; nameLine: string }> = {
-  perfect: { emoji: '🏆', title: 'brand-text', nameLine: 'bg-emerald-50 text-emerald-700' },
-  good: { emoji: '😎', title: 'brand-text', nameLine: 'bg-sky-50 text-sky-700' },
+  perfect: { emoji: '🏆', title: 'brand-text', nameLine: 'bg-green-50 text-green-700' },
+  good: { emoji: '😎', title: 'brand-text', nameLine: 'bg-lime-50 text-lime-800' },
   mixed: { emoji: '🤷', title: 'text-slate-900', nameLine: 'bg-amber-50 text-amber-800' },
-  bad: { emoji: '😬', title: 'text-rose-600', nameLine: 'bg-pink-50 text-pink-700' },
+  bad: { emoji: '😬', title: 'text-red-600', nameLine: 'bg-red-50 text-red-700' },
 };
 
 export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenMenu }: Props) {
@@ -73,27 +73,27 @@ export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenM
           )}
 
           <dl className="mt-8 grid grid-cols-3 gap-2">
-            <Stat label="Gespielt" value={formatClock(state.completedPlaySeconds)} tone="bg-sky-50 text-sky-700" />
-            <Stat label="Runden" value={String(state.roundHistory.length)} tone="bg-violet-50 text-violet-700" />
+            <Stat label="Gespielt" value={formatClock(state.completedPlaySeconds)} tone="bg-yellow-50 text-yellow-800" />
+            <Stat label="Runden" value={String(state.roundHistory.length)} tone="bg-green-50 text-green-700" />
             <Stat
               label="X"
               value={String(totalErrors)}
-              tone={totalErrors > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}
+              tone={totalErrors > 0 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}
             />
           </dl>
 
           {lastRound && (
             <p
               className={`mt-3 rounded-2xl px-5 py-4 text-sm text-slate-600 [overflow-wrap:anywhere] ${
-                lastRoundErrors === 0 ? 'bg-emerald-50' : 'bg-rose-50'
+                lastRoundErrors === 0 ? 'bg-green-50' : 'bg-red-50'
               }`}
             >
               <span className="font-bold text-slate-900">Runde {lastRound.roundNumber}:</span>{' '}
               {lastRoundErrors === 0 ? (
-                <span className="font-semibold text-emerald-600">alle haben geliefert</span>
+                <span className="font-semibold text-green-600">alle haben geliefert</span>
               ) : (
                 <>
-                  <span className="font-semibold text-rose-600">{lastRoundErrors} X</span> – {formatList(missedNames)}
+                  <span className="font-semibold text-red-600">{lastRoundErrors} X</span> – {formatList(missedNames)}
                 </>
               )}
             </p>
@@ -103,7 +103,7 @@ export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenM
             <button
               type="button"
               onClick={onExtend}
-              className="brand-gradient h-[4.5rem] w-full rounded-2xl text-lg font-extrabold tracking-[0.12em] text-white shadow-lg shadow-pink-500/30 transition hover:brightness-105 active:scale-[0.98]"
+              className="h-[4.5rem] w-full rounded-2xl text-lg font-extrabold tracking-[0.12em] bg-green-600 text-white shadow-lg shadow-green-600/30 transition hover:bg-green-700 active:scale-[0.98]"
             >
               {saying.extendLabel}
             </button>

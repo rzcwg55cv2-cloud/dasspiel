@@ -10,14 +10,50 @@ import type { SoundKind } from '../game/feedback';
 
 type AudioContextConstructor = typeof AudioContext;
 
+/** Audio Session API (Safari ab iOS 16.4) – noch nicht in den TypeScript-Typen enthalten. */
+type NavigatorWithAudioSession = Navigator & { audioSession?: { type: string } };
+
 class SoundPlayer {
   private context: AudioContext | null = null;
   private output: GainNode | null = null;
   private volume = 0.8;
   private primed = false;
+  private playInSilentMode = true;
+
+  /**
+   * iPhone: Mit dem Audio-Session-Typ „playback“ sind die Töne auch zu hören, wenn das
+   * Telefon auf lautlos steht. Nachteil: Musik, die auf demselben iPhone läuft, wird
+   * dabei unterbrochen. Deshalb ist es abschaltbar. Andere Geräte ignorieren das.
+   */
+  setPlayInSilentMode(enabled: boolean): void {
+    if (this.playInSilentMode === enabled) return;
+    this.playInSilentMode = enabled;
+    this.applyAudioSession();
+    // Ein laufender AudioContext übernimmt den neuen Typ erst nach erneutem Aktivieren.
+    const context = this.context;
+    if (context?.state === 'running') {
+      context
+        .suspend()
+        .then(() => context.resume())
+        .catch(() => {});
+    }
+  }
+
+  private applyAudioSession(): void {
+    if (typeof navigator === 'undefined') return;
+    const session = (navigator as NavigatorWithAudioSession).audioSession;
+    if (!session) return;
+    try {
+      session.type = this.playInSilentMode ? 'playback' : 'auto';
+    } catch {
+      // nicht unterstützt
+    }
+  }
 
   /** Muss aus einer Benutzeraktion heraus aufgerufen werden (Tippen, Klicken, Taste). */
   unlock(): void {
+    // Der Sitzungstyp muss gesetzt sein, bevor die Audioausgabe aktiviert wird.
+    this.applyAudioSession();
     const context = this.ensureContext();
     if (!context) return;
     if (context.state !== 'running') context.resume().catch(() => {});

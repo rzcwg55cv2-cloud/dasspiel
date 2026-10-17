@@ -15,21 +15,17 @@ interface Props {
 
 /** Vollständige Klassennamen, damit Tailwind sie beim Build findet. */
 const TILE_TONES = {
-  violet: 'bg-violet-50 text-violet-700',
-  sky: 'bg-sky-50 text-sky-700',
+  green: 'bg-green-50 text-green-700',
+  lime: 'bg-lime-50 text-lime-800',
+  yellow: 'bg-yellow-50 text-yellow-800',
   amber: 'bg-amber-50 text-amber-700',
-  pink: 'bg-pink-50 text-pink-700',
-  teal: 'bg-teal-50 text-teal-700',
-  emerald: 'bg-emerald-50 text-emerald-700',
-  rose: 'bg-rose-50 text-rose-600',
-  orange: 'bg-orange-50 text-orange-700',
-  indigo: 'bg-indigo-50 text-indigo-700',
+  red: 'bg-red-50 text-red-600',
 } as const;
 
 type Tone = keyof typeof TILE_TONES;
 
 /** Gold, Silber, Bronze – danach neutral. */
-const RANK_BADGES = ['bg-amber-400 text-white', 'bg-slate-400 text-white', 'bg-orange-400 text-white'];
+const RANK_BADGES = ['bg-amber-400 text-white', 'bg-slate-400 text-white', 'bg-amber-700 text-white'];
 
 const timeFormat = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' });
 
@@ -47,7 +43,7 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
       <ColorGlow />
       <div className="mx-auto w-full max-w-3xl px-5 pt-safe pb-safe">
         <header className="animate-fade-up pt-8 sm:pt-12">
-          <p className="w-fit rounded-full bg-pink-100 px-3 py-1 text-xs font-bold tracking-[0.25em] text-pink-600">
+          <p className="w-fit rounded-full bg-yellow-100 px-3 py-1 text-xs font-bold tracking-[0.25em] text-yellow-800">
             ERGEBNIS
           </p>
           <h1 className="brand-text mt-4 pb-1 text-[clamp(2.75rem,12vw,5rem)] leading-[0.95] font-black tracking-[-0.035em]">
@@ -56,11 +52,11 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
         </header>
 
         <dl className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-5">
-          <SummaryItem label="Spielmodus" value={getModeLabel(summary.mode)} tone="violet" />
-          <SummaryItem label="Gesamtdauer" value={formatMinutes(summary.playedSeconds)} tone="sky" />
+          <SummaryItem label="Spielmodus" value={getModeLabel(summary.mode)} tone={summary.mode === 'malte' ? 'red' : 'green'} />
+          <SummaryItem label="Gesamtdauer" value={formatMinutes(summary.playedSeconds)} tone="yellow" />
           <SummaryItem label="Gespielte Runden" value={String(summary.roundsPlayed)} tone="amber" />
-          <SummaryItem label="Teilnehmer" value={String(summary.playerCount)} tone="pink" />
-          <SummaryItem label="Verlängerungen" value={String(summary.extensionCount)} tone="teal" />
+          <SummaryItem label="Teilnehmer" value={String(summary.playerCount)} tone="lime" />
+          <SummaryItem label="Verlängerungen" value={String(summary.extensionCount)} tone="green" />
         </dl>
 
         <Section title="RANGLISTE">
@@ -76,14 +72,14 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
             <StatTile
               label="X gesamt"
               value={String(summary.totalErrors)}
-              tone={summary.totalErrors ? 'rose' : 'emerald'}
+              tone={summary.totalErrors ? 'red' : 'green'}
             />
-            <StatTile label="Perfekte Runden" value={`${summary.perfectRounds} / ${summary.roundsPlayed}`} tone="emerald" />
+            <StatTile label="Perfekte Runden" value={`${summary.perfectRounds} / ${summary.roundsPlayed}`} tone="green" />
             <StatTile
               label="Runde mit den meisten X"
               value={summary.worstRound ? `Runde ${formatList(summary.worstRound.roundNumbers.map(String))}` : 'Keine'}
               detail={summary.worstRound ? `${summary.worstRound.errors} X` : 'Keine einzige Runde mit X'}
-              tone="orange"
+              tone="red"
             />
             <StatTile
               label={summary.bestPlayers.length > 1 ? 'Beste Teilnehmer' : 'Bester Teilnehmer'}
@@ -105,19 +101,19 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
                   ? `${allTied ? 'je ' : ''}${summary.ranking.at(-1)?.errors ?? 0} X`
                   : 'Alle haben immer geliefert'
               }
-              tone="pink"
+              tone="red"
             />
             <StatTile
               label="Verlängerungen"
               value={String(summary.extensionCount)}
               detail={summary.extensionCount ? `${summary.extensionCount} × 30 Minuten` : 'Keine Verlängerung'}
-              tone="teal"
+              tone="lime"
             />
             <StatTile
               label="Tatsächliche Spielzeit"
               value={formatMinutes(summary.playedSeconds)}
               detail={wallClock}
-              tone="indigo"
+              tone="yellow"
               wide
             />
           </dl>
@@ -139,7 +135,7 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
           <button
             type="button"
             onClick={onRestart}
-            className="brand-gradient h-16 rounded-2xl px-4 text-base font-extrabold tracking-[0.1em] text-white shadow-lg shadow-pink-500/30 transition hover:brightness-105 active:scale-[0.98]"
+            className="h-16 rounded-2xl px-4 text-base font-extrabold tracking-[0.1em] bg-green-600 text-white shadow-lg shadow-green-600/30 transition hover:bg-green-700 active:scale-[0.98]"
           >
             GLEICHE GRUPPE ERNEUT SPIELEN
           </button>
@@ -201,7 +197,7 @@ function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: num
   return (
     <li
       className={`flex items-center gap-3 rounded-2xl border-2 px-3 py-3 ${
-        flawless ? 'border-emerald-300 bg-emerald-50' : 'border-slate-100 bg-white shadow-sm'
+        flawless ? 'border-green-300 bg-green-50' : 'border-slate-100 bg-white shadow-sm'
       }`}
     >
       <span
@@ -218,7 +214,7 @@ function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: num
           {stats.player.name}
         </div>
         {flawless ? (
-          <span className="mt-0.5 inline-block rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold tracking-[0.15em] text-white">
+          <span className="mt-0.5 inline-block rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-bold tracking-[0.15em] text-white">
             X-FREI
           </span>
         ) : (
@@ -228,7 +224,7 @@ function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: num
         )}
       </div>
       <div className="shrink-0 text-right">
-        <div className={`tabular text-2xl leading-none font-black ${flawless ? 'text-emerald-600' : 'text-rose-500'}`}>
+        <div className={`tabular text-2xl leading-none font-black ${flawless ? 'text-green-600' : 'text-red-500'}`}>
           {stats.errors}
           <span className="ml-1 text-base font-black">X</span>
         </div>
@@ -308,7 +304,7 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
         <Avatar name={stats.player.name} index={colorIndex} className="size-8 text-sm" />
         <span className="min-w-0 flex-1 truncate font-extrabold tracking-[0.06em] uppercase">{stats.player.name}</span>
         <span className="tabular shrink-0 text-sm font-semibold text-slate-500">
-          <span className={stats.errors ? 'text-rose-500' : 'text-emerald-600'}>{stats.errors} X</span> ·{' '}
+          <span className={stats.errors ? 'text-red-500' : 'text-green-600'}>{stats.errors} X</span> ·{' '}
           {formatPercent(stats.successRate)}
         </span>
       </summary>
@@ -318,7 +314,7 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
             <li
               key={result.roundNumber}
               className={`flex items-center justify-between rounded-xl py-1.5 pr-1.5 pl-2.5 ${
-                result.success ? 'bg-emerald-50' : 'bg-rose-50'
+                result.success ? 'bg-green-50' : 'bg-red-50'
               }`}
             >
               <span className="tabular text-xs font-bold text-slate-500">R{result.roundNumber}</span>
@@ -327,17 +323,17 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
           ))}
         </ul>
         <dl className="tabular mt-4 grid grid-cols-3 gap-2 text-sm">
-          <div className="rounded-xl bg-emerald-50 px-3 py-2">
-            <dt className="text-xs text-emerald-700/80">Geliefert</dt>
-            <dd className="text-lg font-black text-emerald-700">{stats.successes}</dd>
+          <div className="rounded-xl bg-green-50 px-3 py-2">
+            <dt className="text-xs text-green-700/80">Geliefert</dt>
+            <dd className="text-lg font-black text-green-700">{stats.successes}</dd>
           </div>
-          <div className="rounded-xl bg-rose-50 px-3 py-2">
-            <dt className="text-xs text-rose-600/80">X</dt>
-            <dd className="text-lg font-black text-rose-600">{stats.errors}</dd>
+          <div className="rounded-xl bg-red-50 px-3 py-2">
+            <dt className="text-xs text-red-600/80">X</dt>
+            <dd className="text-lg font-black text-red-600">{stats.errors}</dd>
           </div>
-          <div className="rounded-xl bg-violet-50 px-3 py-2">
-            <dt className="text-xs text-violet-700/80">Erfolgsquote</dt>
-            <dd className="text-lg font-black text-violet-700">{formatPercent(stats.successRate)}</dd>
+          <div className="rounded-xl bg-yellow-50 px-3 py-2">
+            <dt className="text-xs text-yellow-800/80">Erfolgsquote</dt>
+            <dd className="text-lg font-black text-yellow-800">{formatPercent(stats.successRate)}</dd>
           </div>
         </dl>
       </div>

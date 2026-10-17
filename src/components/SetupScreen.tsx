@@ -68,7 +68,7 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
         </div>
 
         <header className="mt-6 animate-fade-up sm:mt-10">
-          <h1 className="brand-text pb-1 text-[clamp(3.5rem,17vw,5.5rem)] leading-[0.92] font-black tracking-[-0.04em]">
+          <h1 className="brand-text w-fit pb-1 text-[clamp(3.5rem,17vw,5.5rem)] leading-[0.92] font-black tracking-[-0.04em]">
             DAS
             <br />
             SPIEL
@@ -84,7 +84,7 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
               TEILNEHMER
             </h2>
             {players.length > 0 && (
-              <span className="tabular rounded-full bg-pink-100 px-2.5 py-0.5 text-xs font-bold text-pink-600">
+              <span className="tabular rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-700">
                 {players.length}
               </span>
             )}
@@ -109,17 +109,17 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
               maxLength={MAX_NAME_LENGTH}
               aria-invalid={error !== null}
               aria-describedby={error ? 'player-error' : undefined}
-              className="h-14 min-w-0 flex-1 rounded-2xl border-2 border-slate-200 bg-white px-4 text-[17px] text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-violet-500 focus:outline-none"
+              className="h-14 min-w-0 flex-1 rounded-2xl border-2 border-slate-200 bg-white px-4 text-[17px] text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-green-500 focus:outline-none"
             />
             <button
               type="submit"
-              className="flex h-14 shrink-0 items-center gap-2 rounded-2xl bg-violet-600 px-5 font-bold text-white shadow-md shadow-violet-500/25 transition hover:bg-violet-700 active:scale-[0.97]"
+              className="flex h-14 shrink-0 items-center gap-2 rounded-2xl bg-yellow-400 px-5 font-bold text-yellow-950 shadow-md shadow-yellow-500/30 transition hover:bg-yellow-300 active:scale-[0.97]"
             >
               <PlusIcon className="size-5" strokeWidth={2.5} />
               <span>Hinzufügen</span>
             </button>
           </form>
-          <p id="player-error" role="alert" className="mt-2 min-h-5 text-sm font-medium text-rose-600">
+          <p id="player-error" role="alert" className="mt-2 min-h-5 text-sm font-medium text-red-600">
             {error}
           </p>
 
@@ -141,7 +141,7 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
                   <button
                     type="button"
                     onClick={() => onRemovePlayer(player.id)}
-                    className="grid size-11 shrink-0 place-items-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+                    className="grid size-11 shrink-0 place-items-center rounded-xl text-slate-400 transition hover:bg-red-50 hover:text-red-500"
                     aria-label={`${player.name} entfernen`}
                   >
                     <CloseIcon className="size-5" />
@@ -159,8 +159,8 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
           <label
             className={`mt-3 flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition ${
               malte
-                ? 'border-violet-400 bg-linear-to-br from-violet-50 to-fuchsia-50 shadow-md shadow-violet-500/10'
-                : 'border-slate-200 bg-white hover:border-violet-200'
+                ? 'border-red-400 bg-linear-to-br from-red-50 to-yellow-50 shadow-md shadow-red-500/10'
+                : 'border-slate-200 bg-white hover:border-red-200'
             }`}
           >
             <input
@@ -170,15 +170,15 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
               onChange={(e) => onModeChange(e.target.checked ? 'malte' : 'normal')}
             />
             <span
-              className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg border-2 transition peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-violet-500 ${
-                malte ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white'
+              className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg border-2 transition peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-amber-500 ${
+                malte ? 'border-red-600 bg-red-600 text-white' : 'border-slate-300 bg-white'
               }`}
               aria-hidden="true"
             >
               {malte && <CheckIcon className="size-5 animate-pop" strokeWidth={3} />}
             </span>
             <span>
-              <span className={`block text-lg font-extrabold tracking-[0.12em] ${malte ? 'text-violet-700' : 'text-slate-900'}`}>
+              <span className={`block text-lg font-extrabold tracking-[0.12em] ${malte ? 'text-red-600' : 'text-slate-900'}`}>
                 MALTE SPEZIAL
               </span>
               <span className="mt-1 block text-slate-500 italic">Doppelt so viele Runden. Halb so viel Zeit.</span>
@@ -187,7 +187,7 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
           <p className="mt-3 flex flex-wrap items-center gap-2 px-1 text-sm text-slate-500">
             <span
               className={`rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[0.15em] ${
-                malte ? 'bg-violet-100 text-violet-700' : 'bg-sky-100 text-sky-700'
+                malte ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
               }`}
             >
               {malte ? 'MALTE SPEZIAL' : 'NORMAL'}
@@ -212,7 +212,7 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
             type="button"
             onClick={onStart}
             disabled={players.length === 0}
-            className="brand-gradient h-16 w-full rounded-2xl text-lg font-extrabold tracking-[0.14em] text-white shadow-lg shadow-pink-500/30 transition hover:brightness-105 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-none disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
+            className="h-16 w-full rounded-2xl bg-green-600 text-lg font-extrabold tracking-[0.14em] text-white shadow-lg shadow-green-600/30 transition hover:bg-green-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
           >
             SPIEL STARTEN
           </button>
