@@ -156,6 +156,20 @@ describe('15-Minuten-Gruppe: Ablauf', () => {
   });
 });
 
+describe('15-Minuten-Gruppe: volle Minute', () => {
+  it('auch die erste 15-Minuten-Runde wird bis zur nächsten vollen Minute verlängert', () => {
+    const start = T0 + 43 * MIN + 12_000;
+    const anchor = T0 + 44 * MIN;
+    const game = startGame(mixedSetup(), start).state;
+    expect(advance(game, anchor + 15 * MIN - 1).state.slow?.currentRound).toBe(1);
+    expect(advance(game, anchor + 15 * MIN).state.slow?.currentRound).toBe(2);
+    expect(advance(game, anchor + 30 * MIN).state.slow?.roundHistory.map((r) => r.completedAt)).toEqual([
+      anchor + 15 * MIN,
+      anchor + 30 * MIN,
+    ]);
+  });
+});
+
 describe('15-Minuten-Gruppe: Auswertung', () => {
   /** Simon liefert immer, Marvin nie; Anna liefert immer, Malte einmal nicht. */
   function playedGame(): GameState {

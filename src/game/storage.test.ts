@@ -184,6 +184,8 @@ describe('Ungültige gespeicherte Daten', () => {
   it('speichert unter dem erwarteten Schlüssel', () => {
     const storage = new MemoryStorage();
     saveState(startedGame(['Simon'], 'normal', T0 + SEC), storage);
-    expect(JSON.parse(storage.getItem(STATE_KEY) ?? '{}').phaseStartedAt).toBe(T0 + SEC);
+    const saved = JSON.parse(storage.getItem(STATE_KEY) ?? '{}');
+    expect(saved.startedAt).toBe(T0 + SEC);
+    expect(saved.phaseStartedAt).toBe(T0 + MIN); // Runden enden zur vollen Minute
   });
 });

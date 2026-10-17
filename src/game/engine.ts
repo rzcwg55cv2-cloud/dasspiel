@@ -55,6 +55,17 @@ export function createInitialState(
 
 const unchanged = (state: GameState): Transition => ({ state, events: [] });
 
+const MINUTE_MS = 60_000;
+
+/**
+ * Eine Spielphase beginnt immer zur nächsten vollen Minute. Die erste Runde wird dadurch
+ * um bis zu 59 Sekunden länger, danach enden alle Runden zur vollen Minute – passend zur
+ * Uhr im Spiel, bei der dann der Sekundenzeiger auf 12 steht.
+ */
+export function alignToNextMinute(time: number): number {
+  return Math.ceil(time / MINUTE_MS) * MINUTE_MS;
+}
+
 // ---------------------------------------------------------------------------
 // Taktgruppen
 // ---------------------------------------------------------------------------
@@ -264,7 +275,7 @@ export function startGame(state: GameState, now: number): Transition {
     state: {
       ...setup,
       status: 'running',
-      phaseStartedAt: now,
+      phaseStartedAt: alignToNextMinute(now),
       currentRound: 1,
       slow: isSlowGroupPlanned(setup) ? { currentRound: 1, currentConfirmations: {}, roundHistory: [] } : null,
       startedAt: now,
@@ -302,7 +313,7 @@ export function extendGame(state: GameState, now: number): Transition {
       ...current,
       status: 'running',
       extensionCount,
-      phaseStartedAt: now,
+      phaseStartedAt: alignToNextMinute(now),
       completedPlaySeconds: getPhaseOffset(extensionCount),
       currentRound: firstRound('main'),
       currentConfirmations: {},
@@ -377,7 +388,8 @@ export function getClock(state: GameState, now: number, group: GroupId = 'main')
   const roundInPhase = track.currentRound - roundsBefore;
   const roundEndsAt = state.phaseStartedAt + roundInPhase * roundDurationMs;
   const phaseElapsedMs = clamp(now - state.phaseStartedAt, 0, phaseDurationMs);
-  const roundRemainingMs = clamp(roundEndsAt - now, 0, roundDurationMs);
+  // Die erste Runde einer Phase kann bis zu 59 Sekunden länger sein (Start zur vollen Minute).
+  const roundRemainingMs = Math.max(0, roundEndsAt - now);
 
   return {
     group,

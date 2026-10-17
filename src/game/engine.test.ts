@@ -79,6 +79,53 @@ describe('Teilnehmerverwaltung', () => {
   });
 });
 
+describe('Rundenenden zur vollen Minute', () => {
+  const START = T0 + 43 * MIN + 12 * SEC; // z. B. 20:43:12
+
+  it('die erste Runde wird bis zur nächsten vollen Minute verlängert, danach normaler Takt', () => {
+    const game = startGame(setupState(PLAYERS), START).state;
+    const anchor = T0 + 44 * MIN; // 20:44:00
+    expect(game.phaseStartedAt).toBe(anchor);
+    expect(game.startedAt).toBe(START);
+
+    // Runde 1 dauert 10:48 und endet zur vollen Minute (20:54:00)
+    expect(advance(game, anchor + 10 * MIN - 1).state.currentRound).toBe(1);
+    const round2 = advance(game, anchor + 10 * MIN);
+    expect(round2.state.currentRound).toBe(2);
+    expect(round2.events[0].endedAt).toBe(anchor + 10 * MIN);
+    expect(getClock(game, START, 'main')?.roundRemainingSeconds).toBe(10 * 60 + 48);
+
+    // Danach exakt alle 10 Minuten, immer zur vollen Minute
+    const later = advance(game, anchor + 35 * MIN).state;
+    expect(later.roundHistory.map((r) => (r.completedAt - anchor) / MIN)).toEqual([10, 20, 30]);
+    expect(later.roundHistory.every((r) => r.completedAt % MIN === 0)).toBe(true);
+
+    // Die Phase endet nach 60 Minuten ab der vollen Minute
+    expect(advance(game, anchor + 60 * MIN - 1).state.status).toBe('running');
+    expect(advance(game, anchor + 60 * MIN).state.status).toBe('extension-decision');
+  });
+
+  it('Start genau zur vollen Minute wird nicht verschoben', () => {
+    expect(startGame(setupState(PLAYERS), T0).state.phaseStartedAt).toBe(T0);
+    expect(startGame(setupState(PLAYERS), T0 + 1).state.phaseStartedAt).toBe(T0 + MIN);
+  });
+
+  it('auch nach einer Verlängerung enden die Runden zur vollen Minute', () => {
+    const decision = advance(startedGame(PLAYERS), T0 + 60 * MIN).state;
+    const extended = extendGame(decision, T0 + 72 * MIN + 30 * SEC).state;
+    expect(extended.phaseStartedAt).toBe(T0 + 73 * MIN);
+    expect(advance(extended, T0 + 83 * MIN).state.roundHistory.at(-1)?.completedAt).toBe(T0 + 83 * MIN);
+  });
+
+  it('Malte Spezial: erste Runde bis zur vollen Minute, dann alle 5 Minuten', () => {
+    const game = startGame(setupState(PLAYERS, 'malte'), START).state;
+    const anchor = T0 + 44 * MIN;
+    expect(advance(game, anchor + 5 * MIN - 1).state.currentRound).toBe(1);
+    expect(advance(game, anchor + 5 * MIN).state.currentRound).toBe(2);
+    expect(advance(game, anchor + 10 * MIN).state.currentRound).toBe(3);
+  });
+});
+
 describe('Normaler Modus', () => {
   it('eine Runde dauert exakt zehn Minuten', () => {
     const game = startedGame(PLAYERS);

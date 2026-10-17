@@ -27,7 +27,7 @@ Die App läuft komplett im Browser, braucht kein Konto und kein Internet währen
 
 Ein Gerät dient als Spielzentrale: Dort werden alle Teilnehmer eingetragen und alle Haken vergeben.
 
-Während des Spiels bleibt die Restzeit geheim: Oben steht nur eine runde Uhr mit der aktuellen Uhrzeit. Erst in den letzten 10 Sekunden einer Runde erscheint bei der jeweiligen Gruppe ein großer roter Countdown.
+Während des Spiels bleibt die Restzeit geheim: Es gibt keinen Countdown, sondern nur eine runde Uhr mit Sekundenzeiger und der aktuellen Uhrzeit. Runden enden immer zur vollen Minute: Beim Start (und nach jeder Verlängerung) wird die erste Runde bis zur nächsten vollen Minute verlängert, danach läuft der normale Takt. Beispiel: Start um 20:43:12 → Rundenenden um 20:54, 21:04, … (15er: 20:59, 21:14, …).
 
 ### Malte Spezial
 
