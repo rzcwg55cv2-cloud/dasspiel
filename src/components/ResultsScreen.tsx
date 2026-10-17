@@ -74,25 +74,25 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
         <Section title="STATISTIK">
           <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             <StatTile
-              label="Fehler gesamt"
+              label="X gesamt"
               value={String(summary.totalErrors)}
               tone={summary.totalErrors ? 'rose' : 'emerald'}
             />
             <StatTile label="Perfekte Runden" value={`${summary.perfectRounds} / ${summary.roundsPlayed}`} tone="emerald" />
             <StatTile
-              label="Fehlerhafteste Runde"
+              label="Runde mit den meisten X"
               value={summary.worstRound ? `Runde ${formatList(summary.worstRound.roundNumbers.map(String))}` : 'Keine'}
-              detail={summary.worstRound ? `${summary.worstRound.errors} Fehler` : 'Keine einzige Runde mit Fehlern'}
+              detail={summary.worstRound ? `${summary.worstRound.errors} X` : 'Keine einzige Runde mit X'}
               tone="orange"
             />
             <StatTile
               label={summary.bestPlayers.length > 1 ? 'Beste Teilnehmer' : 'Bester Teilnehmer'}
               value={allTied ? 'Alle gleichauf' : formatList(summary.bestPlayers.map((p) => p.name))}
-              detail={`${allTied ? 'je ' : ''}${summary.ranking[0]?.errors ?? 0} Fehler`}
+              detail={`${allTied ? 'je ' : ''}${summary.ranking[0]?.errors ?? 0} X`}
               tone="amber"
             />
             <StatTile
-              label="Meiste Fehler"
+              label="Meiste X"
               value={
                 summary.mostErrorPlayers.length === 0
                   ? 'Niemand'
@@ -102,7 +102,7 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
               }
               detail={
                 summary.mostErrorPlayers.length
-                  ? `${allTied ? 'je ' : ''}${summary.ranking.at(-1)?.errors ?? 0} Fehler`
+                  ? `${allTied ? 'je ' : ''}${summary.ranking.at(-1)?.errors ?? 0} X`
                   : 'Alle haben immer geliefert'
               }
               tone="pink"
@@ -219,18 +219,18 @@ function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: num
         </div>
         {flawless ? (
           <span className="mt-0.5 inline-block rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold tracking-[0.15em] text-white">
-            FEHLERFREI
+            X-FREI
           </span>
         ) : (
           <div className="tabular mt-0.5 text-sm text-slate-500">
-            {stats.successes} von {stats.rounds} erfolgreich
+            {stats.successes} von {stats.rounds} geliefert
           </div>
         )}
       </div>
       <div className="shrink-0 text-right">
         <div className={`tabular text-2xl leading-none font-black ${flawless ? 'text-emerald-600' : 'text-rose-500'}`}>
           {stats.errors}
-          <span className="ml-1 text-xs font-bold tracking-wider">FEHLER</span>
+          <span className="ml-1 text-base font-black">X</span>
         </div>
         <div className="tabular mt-1 text-sm font-semibold text-slate-500">{formatPercent(stats.successRate)}</div>
       </div>
@@ -308,7 +308,7 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
         <Avatar name={stats.player.name} index={colorIndex} className="size-8 text-sm" />
         <span className="min-w-0 flex-1 truncate font-extrabold tracking-[0.06em] uppercase">{stats.player.name}</span>
         <span className="tabular shrink-0 text-sm font-semibold text-slate-500">
-          <span className={stats.errors ? 'text-rose-500' : 'text-emerald-600'}>{stats.errors} Fehler</span> ·{' '}
+          <span className={stats.errors ? 'text-rose-500' : 'text-emerald-600'}>{stats.errors} X</span> ·{' '}
           {formatPercent(stats.successRate)}
         </span>
       </summary>
@@ -328,11 +328,11 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
         </ul>
         <dl className="tabular mt-4 grid grid-cols-3 gap-2 text-sm">
           <div className="rounded-xl bg-emerald-50 px-3 py-2">
-            <dt className="text-xs text-emerald-700/80">Erfolgreich</dt>
+            <dt className="text-xs text-emerald-700/80">Geliefert</dt>
             <dd className="text-lg font-black text-emerald-700">{stats.successes}</dd>
           </div>
           <div className="rounded-xl bg-rose-50 px-3 py-2">
-            <dt className="text-xs text-rose-600/80">Fehler</dt>
+            <dt className="text-xs text-rose-600/80">X</dt>
             <dd className="text-lg font-black text-rose-600">{stats.errors}</dd>
           </div>
           <div className="rounded-xl bg-violet-50 px-3 py-2">

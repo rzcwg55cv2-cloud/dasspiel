@@ -31,13 +31,13 @@ export function RoundBanner({ event, players }: Props) {
         {errors > 0 ? (
           <>
             <p className="mt-8 inline-block rounded-full bg-white px-5 py-2 text-base font-extrabold tracking-[0.14em] text-rose-600 shadow-lg">
-              {errors} FEHLER IN RUNDE {event.roundNumber}
+              {errors} X IN RUNDE {event.roundNumber}
             </p>
             <p className="mt-3 line-clamp-3 font-medium text-white/95 [overflow-wrap:anywhere]">{formatList(names)}</p>
           </>
         ) : (
-          <p className="mt-8 inline-block rounded-full bg-white px-5 py-2 text-base font-extrabold tracking-[0.14em] text-emerald-600 shadow-lg">
-            RUNDE {event.roundNumber}: ALLE BESTÄTIGT
+          <p className="mt-8 inline-block rounded-full bg-white px-5 py-2 text-base font-extrabold tracking-[0.12em] text-emerald-600 shadow-lg">
+            ALLE HABEN GELIEFERT
           </p>
         )}
       </div>

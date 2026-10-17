@@ -148,7 +148,7 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
               onClick={() => onTestSound('error')}
               className="h-12 rounded-xl bg-rose-50 text-sm font-bold text-rose-600 transition hover:bg-rose-100"
             >
-              Fehlersound testen
+              X-Sound testen
             </button>
             <button
               type="button"

@@ -98,12 +98,12 @@ export function GameScreen({ state, clock, errorCounts, liveRound, now, onToggle
           aria-live="polite"
         >
           {allConfirmed ? (
-            'ALLE BESTÄTIGT'
+            'ALLE HABEN GELIEFERT'
           ) : (
             <>
               <span className="tabular font-black text-sky-900">{confirmed}</span> VON{' '}
               <span className="tabular font-black text-sky-900">{total}</span>{' '}
-              {total === 1 ? 'TEILNEHMER' : 'TEILNEHMERN'} BESTÄTIGT
+              {confirmed === 1 ? 'HAT' : 'HABEN'} GELIEFERT
             </>
           )}
         </p>
@@ -154,7 +154,7 @@ interface PhaseProgressProps {
   history: RoundResult[];
 }
 
-/** Ein Segment pro Runde der aktuellen Spielphase: grün = alle bestätigt, rot = Fehler. */
+/** Ein Segment pro Runde der aktuellen Spielphase: grün = alle haben geliefert, rot = mindestens ein X. */
 function PhaseProgress({ rounds, current, currentProgress, history }: PhaseProgressProps) {
   return (
     <div className="mx-auto mt-4 flex max-w-md gap-1" aria-hidden="true">
@@ -198,7 +198,7 @@ function PlayerRow({ name, index, errors, mark, onTap }: PlayerRowProps) {
       type="button"
       onClick={onTap}
       aria-pressed={mark === 'confirmed'}
-      aria-label={`${name}: ${mark === 'confirmed' ? 'bestätigt' : 'nicht bestätigt'}, ${errors} Fehler`}
+      aria-label={`${name}: ${mark === 'confirmed' ? 'geliefert' : 'noch nicht geliefert'}, ${errors} X`}
       className={`flex min-h-[76px] w-full items-center gap-3.5 rounded-2xl border-2 py-2.5 pr-3 pl-3 text-left transition active:scale-[0.985] ${tone}`}
     >
       <Avatar name={name} index={index} />
@@ -209,7 +209,7 @@ function PlayerRow({ name, index, errors, mark, onTap }: PlayerRowProps) {
         <span
           className={`tabular mt-0.5 block text-sm ${errors > 0 ? 'font-semibold text-rose-500' : 'text-slate-400'}`}
         >
-          {errors === 0 ? 'Keine Fehler' : `${errors} Fehler`}
+          {errors === 0 ? 'Keine X' : `${errors} X`}
         </span>
       </span>
       <StatusMark key={mark} state={mark} className="size-12 shrink-0" />

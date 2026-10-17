@@ -32,7 +32,7 @@ function catchUpNotice(rounds: number, errors: number): Notice {
     id: Date.now(),
     title: 'Willkommen zurück',
     text: `${pluralize(rounds, 'Runde wurde', 'Runden wurden')} nachgetragen – ${
-      errors === 0 ? 'ohne Fehler' : pluralize(errors, 'Fehler', 'Fehler')
+      errors === 0 ? 'ohne X' : `${errors} X`
     }.`,
   };
 }

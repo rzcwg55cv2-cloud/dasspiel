@@ -58,7 +58,7 @@ export const ChevronIcon = (props: IconProps) => (
 
 export type MarkState = 'pending' | 'confirmed' | 'missed';
 
-/** Grauer Kreis, grünes X oder rotes X. */
+/** Grauer Kreis (offen), grüner Haken (geliefert) oder rotes X (verpasst). */
 export function StatusMark({ state, className = '' }: { state: MarkState; className?: string }) {
   if (state === 'pending') {
     return (
@@ -70,24 +70,31 @@ export function StatusMark({ state, className = '' }: { state: MarkState; classN
   return (
     <svg viewBox="0 0 48 48" className={`${className} animate-pop`} aria-hidden="true">
       <circle cx="24" cy="24" r="22" className={state === 'confirmed' ? 'fill-emerald-500' : 'fill-rose-500'} />
-      <path d="M16.5 16.5l15 15m0-15l-15 15" strokeWidth="5" strokeLinecap="round" className="stroke-white" />
+      <path
+        d={state === 'confirmed' ? 'M14.5 24.5l6.5 6.5 12.5-13' : 'M16.5 16.5l15 15m0-15l-15 15'}
+        fill="none"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="stroke-white"
+      />
     </svg>
   );
 }
 
-/** Kleines X für Tabellen und Verlaufsübersichten. */
+/** Kleiner Haken bzw. kleines X für Tabellen und Verlaufsübersichten. */
 export function MiniMark({ success, className = '' }: { success: boolean; className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} role="img" aria-label={success ? 'X erhalten' : 'Fehler'}>
-      <rect
-        x="1"
-        y="1"
-        width="22"
-        height="22"
-        rx="7"
-        className={success ? 'fill-emerald-500' : 'fill-rose-500'}
+    <svg viewBox="0 0 24 24" className={className} role="img" aria-label={success ? 'geliefert' : 'X'}>
+      <rect x="1" y="1" width="22" height="22" rx="7" className={success ? 'fill-emerald-500' : 'fill-rose-500'} />
+      <path
+        d={success ? 'M7 12.5l3.5 3.5 6.5-7' : 'M8.5 8.5l7 7m0-7l-7 7'}
+        fill="none"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="stroke-white"
       />
-      <path d="M8.5 8.5l7 7m0-7l-7 7" strokeWidth="2.6" strokeLinecap="round" className="stroke-white" />
     </svg>
   );
 }

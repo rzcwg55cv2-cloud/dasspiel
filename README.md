@@ -4,7 +4,7 @@
 
 Das zeitbasierte Gruppenspiel zum Vorwärtskommen.
 
-Ein zeitbasiertes Gruppenspiel als Web-App. Mehrere Teilnehmer müssen innerhalb jeder Runde eine Aufgabe in der echten Welt erfüllen. Wer geliefert hat, bekommt sein **X**. Wer am Ende der Runde kein X hat, bekommt einen **Fehler**.
+Ein zeitbasiertes Gruppenspiel als Web-App. Mehrere Teilnehmer müssen innerhalb jeder Runde eine Aufgabe in der echten Welt erfüllen. Wer geliefert hat, bekommt einen grünen **Haken**. Wer am Ende der Runde keinen Haken hat, kassiert ein **X**.
 
 **Spielen:** https://rzcwg55cv2-cloud.github.io/dasspiel/
 
@@ -19,12 +19,28 @@ Die App läuft komplett im Browser, braucht kein Konto und kein Internet währen
 | Jede Verlängerung | +30 Minuten (3 Runden) | +30 Minuten (6 Runden) |
 
 1. Teilnehmer eintragen, Modus wählen, **SPIEL STARTEN**.
-2. Wer seine Aufgabe erfüllt hat, wird angetippt und bekommt ein grünes X. Erneutes Antippen nimmt das X wieder weg, solange die Runde läuft.
-3. Bei 00:00 wird die Runde automatisch ausgewertet. Jedes fehlende X ist ein Fehler. Die nächste Runde startet sofort.
-4. Nach 60 Minuten entscheidet die Gruppe: **+30 MINUTEN VERLÄNGERN** oder **SPIEL BEENDEN**. Während der Entscheidung steht die Zeit still. Verlängern geht beliebig oft.
+2. Wer seine Aufgabe erfüllt hat, wird angetippt und bekommt einen grünen Haken. Erneutes Antippen nimmt den Haken wieder weg, solange die Runde läuft.
+3. Bei 00:00 wird die Runde automatisch ausgewertet. Wer keinen Haken hat, bekommt ein X. Die nächste Runde startet sofort.
+4. Nach 60 Minuten entscheidet die Gruppe: verlängern (+30 Minuten) oder **FEIERABEND**. Während der Entscheidung steht die Zeit still. Verlängern geht beliebig oft.
+   Je nachdem, wie viele X es bisher gab, kommt dabei ein passender Spruch (siehe unten).
 5. Am Ende gibt es eine Rangliste, Statistiken und den kompletten Verlauf jeder Runde.
 
-Ein Gerät dient als Spielzentrale: Dort werden alle Teilnehmer eingetragen und alle X vergeben.
+Ein Gerät dient als Spielzentrale: Dort werden alle Teilnehmer eingetragen und alle Haken vergeben.
+
+### Sprüche bei der Verlängerungsfrage
+
+Die Stufe richtet sich nach dem Anteil der X an allen Teilnehmer-Runden. Weil X eher selten sind, liegen die Grenzen niedrig:
+
+| Stufe | X-Anteil | Button |
+|---|---|---|
+| 🏆 Perfekt | kein einziges X | EHRENRUNDE! (+30 MIN.) |
+| 😎 Läuft gut | genau 1 X oder bis 6 % | EHRENRUNDE! (+30 MIN.) |
+| 🤷 Durchwachsen | bis 15 % | WEITER GEHT’S (+30 MIN.) |
+| 😬 Viele X | über 15 % | REVANCHE! (+30 MIN.) |
+
+Beispiel mit 4 Teilnehmern und 6 Runden (24 Teilnehmer-Runden): 1 X = läuft gut, 2–3 X = durchwachsen, ab 4 X = viele X.
+
+Pro Stufe gibt es drei Sprüche, dazu Sprüche mit Namen („Malte zahlt den Kranz.“) und ab der zweiten Verlängerung eigene Überschriften. Alle Texte und Grenzen stehen in `src/game/sayings.ts`.
 
 ## Auf dem Smartphone installieren
 
@@ -71,7 +87,7 @@ Daraus folgt:
 - Standby, Hintergrund, Neuladen oder Schließen der App verfälschen die Zeit nicht.
 - Beim Wiederöffnen wird jede verpasste Runde einzeln und genau einmal ausgewertet. Ein X gilt immer nur für die Runde, in der es gesetzt wurde.
 - Endet eine Spielphase, während die App geschlossen ist, erscheint beim Öffnen der Verlängerungsdialog. Es geht nicht automatisch weiter.
-- Beim Wiederöffnen gibt es keine Serie von Fehlersounds, sondern eine kurze Zusammenfassung.
+- Beim Wiederöffnen gibt es keine Serie von X-Sounds, sondern eine kurze Zusammenfassung.
 
 ### Projektstruktur
 
@@ -82,6 +98,7 @@ src/
     rules.ts           Rundendauer, Phasen, Verlängerungen
     engine.ts          Zustandsautomat: Start, X setzen, Auswertung, Verlängern, Ende
     feedback.ts        Wann welcher Sound bzw. welche Einblendung kommt
+    sayings.ts         Sprüche für die Verlängerungsfrage
     stats.ts           Rangliste und Statistiken (aus der Rundenhistorie berechnet)
     storage.ts         Speichern/Laden mit Prüfung auf ungültige Daten
     format.ts          Zeit- und Prozentformatierung
@@ -94,4 +111,4 @@ build/
   service-worker-plugin.ts   erzeugt sw.js mit allen Dateien der App
 ```
 
-Die Fehlerzahlen werden nicht separat gespeichert, sondern immer aus der Rundenhistorie berechnet. So können sie nicht auseinanderlaufen.
+Die X-Zahlen werden nicht separat gespeichert, sondern immer aus der Rundenhistorie berechnet. So können sie nicht auseinanderlaufen.
