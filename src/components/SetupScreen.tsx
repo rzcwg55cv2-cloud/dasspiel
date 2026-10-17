@@ -314,7 +314,6 @@ export function SetupScreen({
               Bierbedarf für 60 Minuten:{' '}
               <span className="font-semibold text-slate-500">{formatLiters(beer.glasses * GLASS_LITERS)}</span> (
               {beer.glasses} × 0,2 l)
-              <br />+ {formatLiters(beer.extensionGlasses * GLASS_LITERS)} je Verlängerung, Strafbiere extra
             </p>
           )}
         </div>

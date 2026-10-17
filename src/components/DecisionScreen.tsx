@@ -1,5 +1,6 @@
-import { formatClock, formatList } from '../game/format';
-import { activeGroups, getTrack, playersOf } from '../game/engine';
+import { GLASS_LITERS, estimateBeer } from '../game/beer';
+import { formatClock, formatList, formatLiters } from '../game/format';
+import { activeGroups, getPenalties, getTrack, playersOf } from '../game/engine';
 import { EXTENSION_DURATION, SLOW_ROUND_DURATION, getGroupLabel, getModeLabel, getRoundDuration } from '../game/rules';
 import { getDecisionText, type Mood } from '../game/sayings';
 import { getRoundErrorCount } from '../game/stats';
@@ -33,6 +34,12 @@ export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenM
     return [{ group, round, errors: getRoundErrorCount(state, round.roundNumber, group), names: missed.map((p) => p.name) }];
   });
   const extraRounds = EXTENSION_DURATION / getRoundDuration(state.mode);
+  const extraGlasses = estimateBeer(state).extensionGlasses;
+  // Strafbiere aus der letzten Runde sind in der ersten Runde nach der Verlängerung fällig.
+  const openPenalties = activeGroups(state).reduce(
+    (sum, group) => sum + Object.values(getPenalties(state, group)).reduce((a, b) => a + b, 0),
+    0,
+  );
   const saying = getDecisionText(state);
   const style = MOOD_STYLE[saying.mood];
   const titleSize =
@@ -124,6 +131,17 @@ export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenM
               {getModeLabel(state.mode)}: {extraRounds} weitere Runden à {getRoundDuration(state.mode) / 60} Minuten
               {showGroups &&
                 ` · 15-Minuten-Takt: ${EXTENSION_DURATION / SLOW_ROUND_DURATION} à ${SLOW_ROUND_DURATION / 60} Minuten`}
+            </p>
+            <p className="tabular text-center text-xs font-medium text-slate-400">
+              <KoelschGlass className="mr-1 mb-0.5 inline-block h-3.5 w-[0.4375rem] align-middle" />
+              Bierbedarf für die Verlängerung:{' '}
+              <span className="font-semibold text-slate-500">{formatLiters(extraGlasses * GLASS_LITERS)}</span> (
+              {extraGlasses} × 0,2 l)
+              {openPenalties > 0 && (
+                <span className="block">
+                  + {openPenalties} {openPenalties === 1 ? 'offenes Strafbier' : 'offene Strafbiere'}
+                </span>
+              )}
             </p>
             <button
               type="button"
