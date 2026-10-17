@@ -2,36 +2,55 @@ export type GameMode = 'normal' | 'malte';
 
 export type GameStatus = 'setup' | 'running' | 'extension-decision' | 'finished';
 
+/**
+ * Taktgruppe eines Teilnehmers:
+ * - 'main': Haupttakt (10 Minuten, bei Malte Spezial 5 Minuten)
+ * - 'slow': 15-Minuten-Gruppe, läuft parallel mit (nur im Modus Normal)
+ */
+export type GroupId = 'main' | 'slow';
+
 export interface Player {
   id: string;
   name: string;
+  group: GroupId;
 }
 
 /** Ergebnis einer ausgewerteten Runde. */
 export interface RoundResult {
   roundNumber: number;
-  /** Spieler-ID → true (X erhalten) oder false (Fehler). */
+  /** Spieler-ID → true (geliefert) oder false (X). */
   playerResults: Record<string, boolean>;
   /** Planmäßiges Ende der Runde in ms seit Epoch. */
   completedAt: number;
 }
 
-export interface GameState {
-  version: 1;
+/** Rundenstand einer Taktgruppe. */
+export interface TrackState {
+  /** Runde, zu der currentConfirmations gehören (1-basiert, über alle Phasen durchgezählt). */
+  currentRound: number;
+  /** Haken der aktuellen Runde. */
+  currentConfirmations: Record<string, boolean>;
+  roundHistory: RoundResult[];
+}
+
+export interface GameState extends TrackState {
+  version: 2;
   status: GameStatus;
   mode: GameMode;
   players: Player[];
+  /** Haken „15-Minuten-Gruppe“ auf dem Startbildschirm (wirkt nur im Modus Normal). */
+  slowGroupEnabled: boolean;
   /** Anzahl der +30-Minuten-Verlängerungen. Entspricht dem Index der aktuellen Spielphase. */
   extensionCount: number;
   /** Startzeitpunkt der laufenden Spielphase in ms seit Epoch; null, solange keine Phase läuft. */
   phaseStartedAt: number | null;
   /** Spielzeit in Sekunden aus allen bereits abgeschlossenen Spielphasen. */
   completedPlaySeconds: number;
-  /** Runde, zu der currentConfirmations gehören (1-basiert, über alle Phasen durchgezählt). */
-  currentRound: number;
-  /** Bestätigungen (X) der aktuellen Runde. */
-  currentConfirmations: Record<string, boolean>;
-  roundHistory: RoundResult[];
+  /**
+   * Rundenstand der 15-Minuten-Gruppe; null, wenn im Spiel niemand im 15-Minuten-Takt spielt.
+   * Der Haupttakt steht direkt in currentRound, currentConfirmations und roundHistory.
+   */
+  slow: TrackState | null;
   startedAt: number | null;
   finishedAt: number | null;
 }
@@ -46,6 +65,7 @@ export interface Settings {
 
 /** Wird erzeugt, wenn eine Runde ausgewertet wurde. */
 export interface RoundEvent {
+  group: GroupId;
   roundNumber: number;
   endedAt: number;
   failedPlayerIds: string[];

@@ -15,24 +15,26 @@ export interface CatchUpSummary {
 }
 
 export interface Feedback {
-  /** Höchstens ein Sound pro Auswertung – auch bei mehreren Fehlern in einer Runde. */
+  /** Höchstens ein Sound pro Auswertung – auch bei mehreren X oder zwei Gruppen gleichzeitig. */
   sound: SoundKind | null;
-  /** Live ausgewertete Runde für die Rundenwechsel-Animation. */
-  liveRound: RoundEvent | null;
+  /** Live ausgewertete Runden für die Rundenwechsel-Animation (bei Minute 30/60 beide Gruppen). */
+  liveRounds: RoundEvent[];
   /** Runden, die ohne Live-Rückmeldung nachgetragen wurden. */
   catchUp: CatchUpSummary | null;
 }
 
 export function getFeedback(events: RoundEvent[], now: number): Feedback {
   const last = events.at(-1);
-  if (!last) return { sound: null, liveRound: null, catchUp: null };
+  if (!last) return { sound: null, liveRounds: [], catchUp: null };
 
   const live = now - last.endedAt <= LIVE_EVENT_WINDOW_MS;
-  const missed = live ? events.slice(0, -1) : events;
+  const liveRounds = live ? events.filter((e) => e.endedAt === last.endedAt) : [];
+  const missed = events.filter((e) => !liveRounds.includes(e));
 
   return {
-    sound: live ? (last.failedPlayerIds.length > 0 ? 'error' : 'success') : null,
-    liveRound: live ? last : null,
+    sound:
+      liveRounds.length === 0 ? null : liveRounds.some((e) => e.failedPlayerIds.length > 0) ? 'error' : 'success',
+    liveRounds,
     catchUp:
       missed.length > 0
         ? { rounds: missed.length, errors: missed.reduce((sum, e) => sum + e.failedPlayerIds.length, 0) }

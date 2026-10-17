@@ -6,13 +6,14 @@
 import { createInitialState } from './engine';
 import {
   MAX_NAME_LENGTH,
+  getGroupRoundDuration,
   getPhaseOffset,
   getRoundsBeforePhase,
   getRoundsInPhase,
   getTotalDuration,
   getTotalRounds,
 } from './rules';
-import type { GameMode, GameState, GameStatus, Player, RoundResult, Settings } from './types';
+import type { GameMode, GameState, GameStatus, Player, RoundResult, Settings, TrackState } from './types';
 
 export const STATE_KEY = 'das-spiel/state/v1';
 export const SETTINGS_KEY = 'das-spiel/settings/v1';
@@ -123,11 +124,13 @@ function parsePlayers(value: unknown): Player[] | null {
   const ids = new Set<string>();
   for (const item of value) {
     if (!isRecord(item)) return null;
-    const { id, name } = item;
+    const { id, name, group = 'main' } = item;
     if (typeof id !== 'string' || id === '' || ids.has(id)) return null;
     if (typeof name !== 'string' || name.trim() === '' || name.length > MAX_NAME_LENGTH) return null;
+    // Version 1 kannte noch keine Gruppen: Dann spielen alle im Haupttakt.
+    if (group !== 'main' && group !== 'slow') return null;
     ids.add(id);
-    players.push({ id, name });
+    players.push({ id, name, group });
   }
   return players;
 }
@@ -160,9 +163,40 @@ function parseConfirmations(value: unknown, players: Player[]): Record<string, b
   return confirmations;
 }
 
-/** Prüft gespeicherte Daten vollständig und liefert einen konsistenten Zustand oder null. */
+/** Prüft den Rundenstand einer Taktgruppe gegen Spielstatus, Phase und Rundendauer. */
+function parseTrack(
+  raw: unknown,
+  players: Player[],
+  roundDuration: number,
+  status: GameStatus,
+  extensionCount: number,
+): TrackState | null {
+  if (!isRecord(raw) || !isNonNegativeInt(raw.currentRound)) return null;
+  const roundHistory = parseRoundHistory(raw.roundHistory, players);
+  const currentConfirmations = parseConfirmations(raw.currentConfirmations, players);
+  if (!roundHistory || !currentConfirmations) return null;
+
+  if (status === 'running') {
+    const roundsBefore = getRoundsBeforePhase(roundDuration, extensionCount);
+    const roundsInPhase = getRoundsInPhase(roundDuration, extensionCount);
+    const { currentRound } = raw;
+    if (currentRound < roundsBefore + 1 || currentRound > roundsBefore + roundsInPhase) return null;
+    if (roundHistory.length !== currentRound - 1) return null;
+    return { currentRound, currentConfirmations, roundHistory };
+  }
+
+  // Verlängerungsentscheidung oder beendetes Spiel: Die aktuelle Phase ist vollständig ausgewertet.
+  const totalRounds = getTotalRounds(roundDuration, extensionCount);
+  if (roundHistory.length !== totalRounds) return null;
+  return { currentRound: totalRounds, currentConfirmations: {}, roundHistory };
+}
+
+/**
+ * Prüft gespeicherte Daten vollständig und liefert einen konsistenten Zustand oder null.
+ * Spielstände der Version 1 (ohne 15-Minuten-Gruppe) werden übernommen.
+ */
 export function parseState(data: unknown): GameState | null {
-  if (!isRecord(data) || data.version !== 1) return null;
+  if (!isRecord(data) || (data.version !== 1 && data.version !== 2)) return null;
 
   const status = data.status as GameStatus;
   const mode = data.mode as GameMode;
@@ -170,45 +204,41 @@ export function parseState(data: unknown): GameState | null {
 
   const players = parsePlayers(data.players);
   if (!players) return null;
-  if (status === 'setup') return createInitialState(players, mode);
+  const slowGroupEnabled = data.slowGroupEnabled === true;
+  if (status === 'setup') return createInitialState(players, mode, slowGroupEnabled);
   if (players.length === 0) return null;
 
-  const { extensionCount, phaseStartedAt, currentRound, startedAt, finishedAt } = data;
-  if (!isNonNegativeInt(extensionCount) || !isNonNegativeInt(currentRound)) return null;
-  if (!isTimestamp(startedAt)) return null;
-
-  const roundHistory = parseRoundHistory(data.roundHistory, players);
-  const currentConfirmations = parseConfirmations(data.currentConfirmations, players);
-  if (!roundHistory || !currentConfirmations) return null;
-
-  const base = { version: 1 as const, status, mode, players, extensionCount, startedAt, roundHistory };
-
-  if (status === 'running') {
-    const roundsBefore = getRoundsBeforePhase(mode, extensionCount);
-    const roundsInPhase = getRoundsInPhase(mode, extensionCount);
-    if (!isTimestamp(phaseStartedAt)) return null;
-    if (currentRound < roundsBefore + 1 || currentRound > roundsBefore + roundsInPhase) return null;
-    if (roundHistory.length !== currentRound - 1) return null;
-    return {
-      ...base,
-      phaseStartedAt,
-      completedPlaySeconds: getPhaseOffset(extensionCount),
-      currentRound,
-      currentConfirmations,
-      finishedAt: null,
-    };
-  }
-
-  // Verlängerungsentscheidung oder beendetes Spiel: Die aktuelle Phase ist vollständig ausgewertet.
-  const totalRounds = getTotalRounds(mode, extensionCount);
-  if (roundHistory.length !== totalRounds) return null;
+  const { extensionCount, phaseStartedAt, startedAt, finishedAt } = data;
+  if (!isNonNegativeInt(extensionCount) || !isTimestamp(startedAt)) return null;
+  if (status === 'running' && !isTimestamp(phaseStartedAt)) return null;
   if (status === 'finished' && !isTimestamp(finishedAt)) return null;
+
+  // 15-Minuten-Spur: nur im Modus Normal und nur mit Teilnehmern in beiden Gruppen.
+  const rawSlow = data.slow ?? null;
+  const slowPlayers = players.filter((p) => p.group === 'slow');
+  const mainPlayers = rawSlow === null ? players : players.filter((p) => p.group === 'main');
+  let slow: TrackState | null = null;
+  if (rawSlow !== null) {
+    if (mode !== 'normal' || slowPlayers.length === 0 || mainPlayers.length === 0) return null;
+    slow = parseTrack(rawSlow, slowPlayers, getGroupRoundDuration(mode, 'slow'), status, extensionCount);
+    if (!slow) return null;
+  }
+  const main = parseTrack(data, mainPlayers, getGroupRoundDuration(mode, 'main'), status, extensionCount);
+  if (!main) return null;
+
   return {
-    ...base,
-    phaseStartedAt: null,
-    completedPlaySeconds: getTotalDuration(extensionCount),
-    currentRound: totalRounds,
-    currentConfirmations: {},
+    version: 2,
+    status,
+    mode,
+    players,
+    slowGroupEnabled,
+    extensionCount,
+    phaseStartedAt: status === 'running' ? (phaseStartedAt as number) : null,
+    completedPlaySeconds:
+      status === 'running' ? getPhaseOffset(extensionCount) : getTotalDuration(extensionCount),
+    ...main,
+    slow,
+    startedAt,
     finishedAt: status === 'finished' ? (finishedAt as number) : null,
   };
 }

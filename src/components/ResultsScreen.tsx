@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 import { formatList, formatMinutes, formatPercent } from '../game/format';
-import { getModeLabel } from '../game/rules';
-import { computeSummary, type PlayerStats } from '../game/stats';
-import type { GameState } from '../game/types';
+import { getTrack } from '../game/engine';
+import { getGroupLabel, getModeLabel } from '../game/rules';
+import { computeSummary, type GameSummary, type PlayerStats } from '../game/stats';
+import type { GameMode, GameState, GroupId, RoundResult } from '../game/types';
 import { Avatar, getPlayerColor } from './Avatar';
 import { ColorGlow } from './Decor';
 import { ChevronIcon, MiniMark } from './icons';
@@ -29,10 +30,38 @@ const RANK_BADGES = ['bg-amber-400 text-white', 'bg-slate-400 text-white', 'bg-a
 
 const timeFormat = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' });
 
+/** Überschrift einer Gruppe; ohne 15-Minuten-Gruppe gibt es keine. */
+function GroupHeading({ group, show }: { group: GroupId; show: boolean }) {
+  if (!show) return null;
+  return (
+    <p
+      className={`mb-2 w-fit rounded-full px-3 py-1 text-[11px] font-black tracking-[0.2em] ${
+        group === 'slow' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-700'
+      }`}
+    >
+      {group === 'slow' ? '15-MINUTEN-GRUPPE' : '10-MINUTEN-TAKT'}
+    </p>
+  );
+}
+
+/** „Runde 3“, mit 15-Minuten-Gruppe z. B. „Runde 2, 5 (10 Min.) · 3 (15 Min.)“. */
+function formatWorstRounds(summary: GameSummary, mode: GameMode, showGroups: boolean): string {
+  if (!summary.worstRound) return 'Keine';
+  const parts = summary.groups
+    .map(({ group }) => {
+      const numbers = summary.worstRound!.rounds.filter((r) => r.group === group).map((r) => String(r.roundNumber));
+      if (numbers.length === 0) return null;
+      return showGroups ? `${formatList(numbers)} (${getGroupLabel(mode, group)})` : formatList(numbers);
+    })
+    .filter(Boolean);
+  return `Runde ${parts.join(' · ')}`;
+}
+
 export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
   const summary = computeSummary(state);
   const allTied = summary.playerCount > 1 && summary.bestPlayers.length === summary.playerCount;
   const colorIndex = new Map(state.players.map((p, i) => [p.id, i]));
+  const showGroups = summary.groups.length > 1;
   const wallClock =
     state.startedAt !== null && state.finishedAt !== null
       ? `${timeFormat.format(state.startedAt)}–${timeFormat.format(state.finishedAt)} Uhr inkl. Pausen`
@@ -54,17 +83,26 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
         <dl className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-5">
           <SummaryItem label="Spielmodus" value={getModeLabel(summary.mode)} tone={summary.mode === 'malte' ? 'red' : 'green'} />
           <SummaryItem label="Gesamtdauer" value={formatMinutes(summary.playedSeconds)} tone="yellow" />
-          <SummaryItem label="Gespielte Runden" value={String(summary.roundsPlayed)} tone="amber" />
+          <SummaryItem
+            label={showGroups ? 'Runden 10 / 15 Min.' : 'Gespielte Runden'}
+            value={summary.groups.map((g) => g.roundsPlayed).join(' / ')}
+            tone="amber"
+          />
           <SummaryItem label="Teilnehmer" value={String(summary.playerCount)} tone="lime" />
           <SummaryItem label="Verlängerungen" value={String(summary.extensionCount)} tone="green" />
         </dl>
 
         <Section title="RANGLISTE">
-          <ol className="space-y-2">
-            {summary.ranking.map((stats) => (
-              <RankingRow key={stats.player.id} stats={stats} colorIndex={colorIndex.get(stats.player.id) ?? 0} />
-            ))}
-          </ol>
+          {summary.groups.map(({ group, ranking }) => (
+            <div key={group} className="mt-6 first:mt-0">
+              <GroupHeading group={group} show={showGroups} />
+              <ol className="space-y-2">
+                {ranking.map((stats) => (
+                  <RankingRow key={stats.player.id} stats={stats} colorIndex={colorIndex.get(stats.player.id) ?? 0} />
+                ))}
+              </ol>
+            </div>
+          ))}
         </Section>
 
         <Section title="STATISTIK">
@@ -74,35 +112,66 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
               value={String(summary.totalErrors)}
               tone={summary.totalErrors ? 'red' : 'green'}
             />
-            <StatTile label="Perfekte Runden" value={`${summary.perfectRounds} / ${summary.roundsPlayed}`} tone="green" />
+            <StatTile label="Perfekte Runden" value={`${summary.perfectRounds} / ${summary.totalRounds}`} tone="green" />
             <StatTile
               label="Runde mit den meisten X"
-              value={summary.worstRound ? `Runde ${formatList(summary.worstRound.roundNumbers.map(String))}` : 'Keine'}
+              value={formatWorstRounds(summary, state.mode, showGroups)}
               detail={summary.worstRound ? `${summary.worstRound.errors} X` : 'Keine einzige Runde mit X'}
               tone="red"
             />
-            <StatTile
-              label={summary.bestPlayers.length > 1 ? 'Beste Teilnehmer' : 'Bester Teilnehmer'}
-              value={allTied ? 'Alle gleichauf' : formatList(summary.bestPlayers.map((p) => p.name))}
-              detail={`${allTied ? 'je ' : ''}${summary.ranking[0]?.errors ?? 0} X`}
-              tone="amber"
-            />
-            <StatTile
-              label="Meiste X"
-              value={
-                summary.mostErrorPlayers.length === 0
-                  ? 'Niemand'
-                  : allTied
-                    ? 'Alle gleichauf'
-                    : formatList(summary.mostErrorPlayers.map((p) => p.name))
-              }
-              detail={
-                summary.mostErrorPlayers.length
-                  ? `${allTied ? 'je ' : ''}${summary.ranking.at(-1)?.errors ?? 0} X`
-                  : 'Alle haben immer geliefert'
-              }
-              tone="red"
-            />
+            {showGroups ? (
+              <>
+                {/* Je Gruppe, weil die 15-Minuten-Gruppe weniger Runden hat. */}
+                <StatTile
+                  label="Beste je Gruppe"
+                  value={summary.groups
+                    .map((g) => `${formatList(g.bestPlayers.map((p) => p.name))} (${getGroupLabel(state.mode, g.group)})`)
+                    .join(' · ')}
+                  detail={summary.groups
+                    .map((g) => `${getGroupLabel(state.mode, g.group)}: ${g.ranking[0]?.errors ?? 0} X`)
+                    .join(' · ')}
+                  tone="amber"
+                />
+                <StatTile
+                  label="Meiste X je Gruppe"
+                  value={summary.groups
+                    .map(
+                      (g) =>
+                        `${g.mostErrorPlayers.length ? formatList(g.mostErrorPlayers.map((p) => p.name)) : 'Niemand'} (${getGroupLabel(state.mode, g.group)})`,
+                    )
+                    .join(' · ')}
+                  detail={summary.groups
+                    .map((g) => `${getGroupLabel(state.mode, g.group)}: ${g.ranking.at(-1)?.errors ?? 0} X`)
+                    .join(' · ')}
+                  tone="red"
+                />
+              </>
+            ) : (
+              <>
+                <StatTile
+                  label={summary.bestPlayers.length > 1 ? 'Beste Teilnehmer' : 'Bester Teilnehmer'}
+                  value={allTied ? 'Alle gleichauf' : formatList(summary.bestPlayers.map((p) => p.name))}
+                  detail={`${allTied ? 'je ' : ''}${summary.ranking[0]?.errors ?? 0} X`}
+                  tone="amber"
+                />
+                <StatTile
+                  label="Meiste X"
+                  value={
+                    summary.mostErrorPlayers.length === 0
+                      ? 'Niemand'
+                      : allTied
+                        ? 'Alle gleichauf'
+                        : formatList(summary.mostErrorPlayers.map((p) => p.name))
+                  }
+                  detail={
+                    summary.mostErrorPlayers.length
+                      ? `${allTied ? 'je ' : ''}${summary.ranking.at(-1)?.errors ?? 0} X`
+                      : 'Alle haben immer geliefert'
+                  }
+                  tone="red"
+                />
+              </>
+            )}
             <StatTile
               label="Verlängerungen"
               value={String(summary.extensionCount)}
@@ -120,15 +189,25 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
         </Section>
 
         <Section title="ÜBERSICHT">
-          <ResultMatrix state={state} ranking={summary.ranking} colorIndex={colorIndex} />
+          {summary.groups.map(({ group, ranking }) => (
+            <div key={group} className="mt-6 first:mt-0">
+              <GroupHeading group={group} show={showGroups} />
+              <ResultMatrix rounds={getTrack(state, group)?.roundHistory ?? []} ranking={ranking} colorIndex={colorIndex} />
+            </div>
+          ))}
         </Section>
 
         <Section title="VERLAUF JE TEILNEHMER">
-          <div className="space-y-2">
-            {summary.ranking.map((stats) => (
-              <PlayerHistory key={stats.player.id} stats={stats} colorIndex={colorIndex.get(stats.player.id) ?? 0} />
-            ))}
-          </div>
+          {summary.groups.map(({ group, ranking }) => (
+            <div key={group} className="mt-6 first:mt-0">
+              <GroupHeading group={group} show={showGroups} />
+              <div className="space-y-2">
+                {ranking.map((stats) => (
+                  <PlayerHistory key={stats.player.id} stats={stats} colorIndex={colorIndex.get(stats.player.id) ?? 0} />
+                ))}
+              </div>
+            </div>
+          ))}
         </Section>
 
         <div className="mt-14 grid gap-3 sm:grid-cols-2">
@@ -236,11 +315,11 @@ function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: num
 
 /** Kompakte Matrix: Spieler × Runden. Bei vielen Runden horizontal scrollbar. */
 function ResultMatrix({
-  state,
+  rounds,
   ranking,
   colorIndex,
 }: {
-  state: GameState;
+  rounds: RoundResult[];
   ranking: PlayerStats[];
   colorIndex: Map<string, number>;
 }) {
@@ -255,7 +334,7 @@ function ResultMatrix({
             >
               SPIELER
             </th>
-            {state.roundHistory.map((round) => (
+            {rounds.map((round) => (
               <th
                 key={round.roundNumber}
                 scope="col"

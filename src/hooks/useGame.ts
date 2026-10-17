@@ -11,7 +11,7 @@ import * as engine from '../game/engine';
 import { getFeedback, type SoundKind } from '../game/feedback';
 import { pluralize } from '../game/format';
 import { STATE_KEY, deserializeState, loadState, saveState } from '../game/storage';
-import type { GameMode, GameState, RoundEvent, Transition } from '../game/types';
+import type { GameMode, GameState, GroupId, RoundEvent, Transition } from '../game/types';
 
 const TICK_MS = 250;
 
@@ -61,7 +61,7 @@ export function useGame(onSound: (kind: SoundKind) => void) {
   const [initial] = useState(initialise);
   const [state, setState] = useState(initial.state);
   const [now, setNow] = useState(initial.now);
-  const [liveRound, setLiveRound] = useState<RoundEvent | null>(null);
+  const [liveRounds, setLiveRounds] = useState<RoundEvent[]>([]);
   const [notice, setNotice] = useState<Notice | null>(initial.notice);
   const stateRef = useRef(state);
   const onSoundRef = useRef(onSound);
@@ -81,7 +81,7 @@ export function useGame(onSound: (kind: SoundKind) => void) {
     if (events.length > 0) {
       const feedback = getFeedback(events, time);
       if (feedback.sound) onSoundRef.current(feedback.sound);
-      if (feedback.liveRound) setLiveRound(feedback.liveRound);
+      if (feedback.liveRounds.length > 0) setLiveRounds(feedback.liveRounds);
       if (feedback.catchUp) setNotice(catchUpNotice(feedback.catchUp.rounds, feedback.catchUp.errors));
     }
     setNow(time);
@@ -138,20 +138,22 @@ export function useGame(onSound: (kind: SoundKind) => void) {
       },
       removePlayer: (id: string) => apply((s) => engine.removePlayer(s, id)),
       setMode: (mode: GameMode) => apply((s) => engine.setMode(s, mode)),
+      setSlowGroupEnabled: (enabled: boolean) => apply((s) => engine.setSlowGroupEnabled(s, enabled)),
+      setPlayerGroup: (id: string, group: GroupId) => apply((s) => engine.setPlayerGroup(s, id, group)),
       start() {
-        setLiveRound(null);
+        setLiveRounds([]);
         apply(engine.startGame);
       },
       toggle: (playerId: string) => apply((s, t) => engine.toggleConfirmation(s, playerId, t)),
       extend: () => apply(engine.extendGame),
       finish: () => apply(engine.finishGame),
       cancel() {
-        setLiveRound(null);
+        setLiveRounds([]);
         apply((s) => engine.cancelGame(s));
       },
       newGame: () => apply((s) => engine.newGame(s)),
       restart() {
-        setLiveRound(null);
+        setLiveRounds([]);
         apply(engine.restartWithSameGroup);
       },
       dismissNotice: () => setNotice(null),
@@ -159,5 +161,5 @@ export function useGame(onSound: (kind: SoundKind) => void) {
     [apply],
   );
 
-  return { state, now, liveRound, notice, actions };
+  return { state, now, liveRounds, notice, actions };
 }

@@ -220,7 +220,9 @@ describe('Bestätigungen und Fehler', () => {
     const { state, events } = advance(game, T0 + 10 * MIN);
 
     expect(state.roundHistory[0].playerResults).toEqual({ p1: true, p2: true, p3: false, p4: true });
-    expect(events).toEqual([{ roundNumber: 1, endedAt: T0 + 10 * MIN, failedPlayerIds: ['p3'], phaseEnded: false }]);
+    expect(events).toEqual([
+      { group: 'main', roundNumber: 1, endedAt: T0 + 10 * MIN, failedPlayerIds: ['p3'], phaseEnded: false },
+    ]);
     expect(getErrorCounts(state)).toEqual({ p1: 0, p2: 0, p3: 1, p4: 0 });
   });
 

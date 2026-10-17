@@ -6,7 +6,7 @@ import { GameScreen } from './components/GameScreen';
 import { ResultsScreen } from './components/ResultsScreen';
 import { RoundBanner } from './components/RoundBanner';
 import { SetupScreen } from './components/SetupScreen';
-import { getClock } from './game/engine';
+import { getClock, getStartBlocker } from './game/engine';
 import type { SoundKind } from './game/feedback';
 import { getErrorCounts } from './game/stats';
 import { useGame } from './hooks/useGame';
@@ -21,7 +21,7 @@ export default function App() {
     },
     [settings.soundEnabled],
   );
-  const { state, now, liveRound, notice, actions } = useGame(playSound);
+  const { state, now, liveRounds, notice, actions } = useGame(playSound);
   const [menuOpen, setMenuOpen] = useState(false);
   const inGame = state.status === 'running' || state.status === 'extension-decision';
 
@@ -61,6 +61,10 @@ export default function App() {
           onAddPlayer={actions.addPlayer}
           onRemovePlayer={actions.removePlayer}
           onModeChange={actions.setMode}
+          slowGroupEnabled={state.slowGroupEnabled}
+          onSlowGroupChange={actions.setSlowGroupEnabled}
+          onPlayerGroupChange={actions.setPlayerGroup}
+          startBlocker={getStartBlocker(state)}
           onStart={withAudio(actions.start)}
           onOpenMenu={openMenu}
         />
@@ -72,7 +76,7 @@ export default function App() {
           state={state}
           clock={clock}
           errorCounts={errorCounts}
-          liveRound={liveRound}
+          liveRounds={liveRounds}
           now={now}
           onToggle={actions.toggle}
           onOpenMenu={openMenu}
@@ -98,8 +102,14 @@ export default function App() {
   return (
     <>
       {screen}
-      {state.status === 'running' && liveRound && !liveRound.phaseEnded && (
-        <RoundBanner key={`${liveRound.roundNumber}-${liveRound.endedAt}`} event={liveRound} players={state.players} />
+      {state.status === 'running' && liveRounds.length > 0 && !liveRounds.some((e) => e.phaseEnded) && (
+        <RoundBanner
+          key={liveRounds.map((e) => `${e.group}-${e.roundNumber}-${e.endedAt}`).join('|')}
+          events={liveRounds}
+          players={state.players}
+          mode={state.mode}
+          showGroups={state.slow !== null}
+        />
       )}
       {menuOpen && state.status !== 'finished' && (
         <MenuSheet

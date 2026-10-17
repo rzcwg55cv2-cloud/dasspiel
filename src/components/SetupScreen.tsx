@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react';
-import type { AddPlayerError } from '../game/engine';
-import { MAX_NAME_LENGTH, getRoundDuration, getRoundsInPhase } from '../game/rules';
-import type { GameMode, Player } from '../game/types';
+import type { AddPlayerError, StartBlocker } from '../game/engine';
+import { MAX_NAME_LENGTH, SLOW_ROUND_DURATION, getRoundDuration, getRoundsInPhase } from '../game/rules';
+import type { GameMode, GroupId, Player } from '../game/types';
 import { Avatar } from './Avatar';
 import { ColorGlow } from './Decor';
 import { KoelschGlass } from './KoelschGlass';
@@ -13,9 +13,18 @@ interface Props {
   onAddPlayer: (name: string) => AddPlayerError | null;
   onRemovePlayer: (id: string) => void;
   onModeChange: (mode: GameMode) => void;
+  slowGroupEnabled: boolean;
+  onSlowGroupChange: (enabled: boolean) => void;
+  onPlayerGroupChange: (id: string, group: GroupId) => void;
+  startBlocker: StartBlocker | null;
   onStart: () => void;
   onOpenMenu: () => void;
 }
+
+const BLOCKER_TEXT: Record<StartBlocker, string> = {
+  'no-players': 'Mindestens ein Teilnehmer wird benötigt.',
+  'no-main-players': 'Mindestens eine Person muss im 10-Minuten-Takt spielen.',
+};
 
 const ERROR_TEXT: Record<AddPlayerError, (name: string) => string> = {
   empty: () => 'Bitte einen Namen eingeben.',
@@ -32,13 +41,28 @@ function isStandalone(): boolean {
   );
 }
 
-export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onModeChange, onStart, onOpenMenu }: Props) {
+export function SetupScreen({
+  players,
+  mode,
+  onAddPlayer,
+  onRemovePlayer,
+  onModeChange,
+  slowGroupEnabled,
+  onSlowGroupChange,
+  onPlayerGroupChange,
+  startBlocker,
+  onStart,
+  onOpenMenu,
+}: Props) {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const malte = mode === 'malte';
   const roundMinutes = getRoundDuration(mode) / 60;
-  const rounds = getRoundsInPhase(mode, 0);
+  const rounds = getRoundsInPhase(getRoundDuration(mode), 0);
+  // Malte Spezial bleibt extra: Die 15-Minuten-Gruppe gibt es nur im Modus Normal.
+  const showGroups = slowGroupEnabled && !malte;
+  const slowCount = showGroups ? players.filter((p) => p.group === 'slow').length : 0;
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -138,6 +162,13 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
                   <span className="min-w-0 flex-1 truncate text-lg font-semibold" title={player.name}>
                     {player.name}
                   </span>
+                  {showGroups && (
+                    <GroupToggle
+                      name={player.name}
+                      group={player.group}
+                      onChange={(group) => onPlayerGroupChange(player.id, group)}
+                    />
+                  )}
                   <button
                     type="button"
                     onClick={() => onRemovePlayer(player.id)}
@@ -184,6 +215,49 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
               <span className="mt-1 block text-slate-500 italic">Doppelt so viele Runden. Halb so viel Zeit.</span>
             </span>
           </label>
+          {!malte && (
+            <label
+              className={`mt-3 flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition ${
+                slowGroupEnabled
+                  ? 'border-yellow-400 bg-linear-to-br from-yellow-50 to-green-50 shadow-md shadow-yellow-500/10'
+                  : 'border-slate-200 bg-white hover:border-yellow-300'
+              }`}
+            >
+              <input
+                type="checkbox"
+                className="peer sr-only"
+                checked={slowGroupEnabled}
+                onChange={(e) => onSlowGroupChange(e.target.checked)}
+              />
+              <span
+                className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg border-2 transition peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-amber-500 ${
+                  slowGroupEnabled ? 'border-yellow-400 bg-yellow-400 text-yellow-950' : 'border-slate-300 bg-white'
+                }`}
+                aria-hidden="true"
+              >
+                {slowGroupEnabled && <CheckIcon className="size-5 animate-pop" strokeWidth={3} />}
+              </span>
+              <span>
+                <span
+                  className={`block text-lg font-extrabold tracking-[0.12em] ${
+                    slowGroupEnabled ? 'text-yellow-800' : 'text-slate-900'
+                  }`}
+                >
+                  15-MINUTEN-GRUPPE
+                </span>
+                <span className="mt-1 block text-slate-500 italic">
+                  Einzelne spielen im 15-Minuten-Takt mit – mit eigenem Timer.
+                </span>
+                {slowGroupEnabled && (
+                  <span className="mt-2 block text-sm font-semibold text-yellow-800">
+                    {slowCount === 0
+                      ? 'Tippe oben bei einzelnen Teilnehmern auf „15“.'
+                      : `${slowCount} ${slowCount === 1 ? 'Person spielt' : 'Personen spielen'} im 15-Minuten-Takt.`}
+                  </span>
+                )}
+              </span>
+            </label>
+          )}
           <p className="mt-3 flex flex-wrap items-center gap-2 px-1 text-sm text-slate-500">
             <span
               className={`rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[0.15em] ${
@@ -195,6 +269,16 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
             <span className="tabular font-medium">
               {rounds} Runden à {roundMinutes} Minuten
             </span>
+            {slowCount > 0 && (
+              <>
+                <span className="rounded-full bg-yellow-100 px-2.5 py-1 text-[11px] font-bold tracking-[0.15em] text-yellow-800">
+                  15 MIN.
+                </span>
+                <span className="tabular font-medium">
+                  {getRoundsInPhase(SLOW_ROUND_DURATION, 0)} Runden à {SLOW_ROUND_DURATION / 60} Minuten
+                </span>
+              </>
+            )}
           </p>
         </section>
 
@@ -211,16 +295,39 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
           <button
             type="button"
             onClick={onStart}
-            disabled={players.length === 0}
+            disabled={startBlocker !== null}
             className="h-16 w-full rounded-2xl bg-green-600 text-lg font-extrabold tracking-[0.14em] text-white shadow-lg shadow-green-600/30 transition hover:bg-green-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
           >
             SPIEL STARTEN
           </button>
           <p className="mt-2 h-4 text-center text-xs text-slate-400">
-            {players.length === 0 ? 'Mindestens ein Teilnehmer wird benötigt.' : ''}
+            {startBlocker ? BLOCKER_TEXT[startBlocker] : ''}
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Umschalter „10 | 15“: In welchem Takt spielt diese Person? */
+function GroupToggle({ name, group, onChange }: { name: string; group: GroupId; onChange: (group: GroupId) => void }) {
+  const option = (value: GroupId, label: string, active: string) => (
+    <button
+      type="button"
+      onClick={() => onChange(value)}
+      aria-pressed={group === value}
+      aria-label={`${name}: ${label}-Minuten-Takt`}
+      className={`tabular h-9 w-10 rounded-lg text-sm font-black transition ${
+        group === value ? active : 'text-slate-400 hover:text-slate-700'
+      }`}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div role="group" aria-label={`Takt für ${name}`} className="flex shrink-0 rounded-xl bg-slate-100 p-0.5">
+      {option('main', '10', 'bg-green-500 text-white shadow-sm')}
+      {option('slow', '15', 'bg-yellow-400 text-yellow-950 shadow-sm')}
     </div>
   );
 }

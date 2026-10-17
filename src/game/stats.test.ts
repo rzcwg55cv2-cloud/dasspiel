@@ -73,7 +73,7 @@ describe('Statistik', () => {
 
   it('zählt perfekte Runden und findet die fehlerhafteste Runde', () => {
     expect(summary.perfectRounds).toBe(2);
-    expect(summary.worstRound).toEqual({ roundNumbers: [4], errors: 2 });
+    expect(summary.worstRound).toEqual({ rounds: [{ group: 'main', roundNumber: 4 }], errors: 2 });
     expect(summary.bestPlayers.map((p) => p.name)).toEqual(['Simon']);
     expect(summary.mostErrorPlayers.map((p) => p.name)).toEqual(['Malte']);
   });
@@ -97,7 +97,13 @@ describe('Statistik', () => {
     ]);
     expect(tie.bestPlayers.map((p) => p.name)).toEqual(['Anna', 'Ben']);
     expect(tie.mostErrorPlayers.map((p) => p.name)).toEqual(['Cem', 'Dana']);
-    expect(tie.worstRound).toEqual({ roundNumbers: [1, 6], errors: 2 });
+    expect(tie.worstRound).toEqual({
+      rounds: [
+        { group: 'main', roundNumber: 1 },
+        { group: 'main', roundNumber: 6 },
+      ],
+      errors: 2,
+    });
     expect(tie.perfectRounds).toBe(4);
   });
 

@@ -27,6 +27,17 @@ Die App läuft komplett im Browser, braucht kein Konto und kein Internet währen
 
 Ein Gerät dient als Spielzentrale: Dort werden alle Teilnehmer eingetragen und alle Haken vergeben.
 
+### 15-Minuten-Gruppe
+
+Im Modus Normal können einzelne Personen im 15-Minuten-Takt mitspielen:
+
+1. Haken bei **15-MINUTEN-GRUPPE** setzen.
+2. In der Teilnehmerliste bei den betreffenden Personen auf **15** tippen (Umschalter „10 | 15“).
+
+Im Spiel läuft die 15-Minuten-Gruppe unter dem 10-Minuten-Takt mit eigenem Timer: 4 Runden in den ersten 60 Minuten, 2 Runden pro Verlängerung. Beide Gruppen starten gleichzeitig und enden gemeinsam mit jeder Spielphase. Bei Minute 30, 60, … enden beide Runden zugleich – dann gibt es eine gemeinsame Einblendung und einen Ton. Die Auswertung zeigt Ranglisten, Übersicht und Verlauf getrennt je Gruppe.
+
+Malte Spezial bleibt ein eigener Modus ohne 15-Minuten-Gruppe. Mindestens eine Person muss im 10-Minuten-Takt spielen.
+
 ### Sprüche bei der Verlängerungsfrage
 
 Die Stufe richtet sich nach dem Anteil der X an allen Teilnehmer-Runden. Weil X eher selten sind, liegen die Grenzen niedrig:
@@ -96,7 +107,8 @@ src/
   game/                Spiellogik ohne React (vollständig getestet)
     types.ts           Datenmodell
     rules.ts           Rundendauer, Phasen, Verlängerungen
-    engine.ts          Zustandsautomat: Start, X setzen, Auswertung, Verlängern, Ende
+    engine.ts          Zustandsautomat: Start, Haken setzen, Auswertung, Verlängern, Ende –
+                       mit zwei parallelen Rundenspuren (Haupttakt und 15-Minuten-Gruppe)
     feedback.ts        Wann welcher Sound bzw. welche Einblendung kommt
     sayings.ts         Sprüche für die Verlängerungsfrage
     stats.ts           Rangliste und Statistiken (aus der Rundenhistorie berechnet)

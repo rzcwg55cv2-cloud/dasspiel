@@ -1,5 +1,6 @@
 import { formatClock, formatList } from '../game/format';
-import { EXTENSION_DURATION, getModeLabel, getRoundDuration } from '../game/rules';
+import { activeGroups, getTrack, playersOf } from '../game/engine';
+import { EXTENSION_DURATION, SLOW_ROUND_DURATION, getGroupLabel, getModeLabel, getRoundDuration } from '../game/rules';
 import { getDecisionText, type Mood } from '../game/sayings';
 import { getRoundErrorCount } from '../game/stats';
 import type { GameState } from '../game/types';
@@ -23,9 +24,14 @@ const MOOD_STYLE: Record<Mood, { emoji: string; title: string; nameLine: string 
 };
 
 export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenMenu }: Props) {
-  const lastRound = state.roundHistory.at(-1);
-  const lastRoundErrors = lastRound ? getRoundErrorCount(state, lastRound.roundNumber) : 0;
-  const missedNames = lastRound ? state.players.filter((p) => !lastRound.playerResults[p.id]).map((p) => p.name) : [];
+  const showGroups = state.slow !== null;
+  // Letzte Runde je Gruppe – mit 15-Minuten-Gruppe zwei Zeilen.
+  const lastRounds = activeGroups(state).flatMap((group) => {
+    const round = getTrack(state, group)?.roundHistory.at(-1);
+    if (!round) return [];
+    const missed = playersOf(state, group).filter((p) => !round.playerResults[p.id]);
+    return [{ group, round, errors: getRoundErrorCount(state, round.roundNumber, group), names: missed.map((p) => p.name) }];
+  });
   const extraRounds = EXTENSION_DURATION / getRoundDuration(state.mode);
   const saying = getDecisionText(state);
   const style = MOOD_STYLE[saying.mood];
@@ -74,7 +80,11 @@ export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenM
 
           <dl className="mt-8 grid grid-cols-3 gap-2">
             <Stat label="Gespielt" value={formatClock(state.completedPlaySeconds)} tone="bg-yellow-50 text-yellow-800" />
-            <Stat label="Runden" value={String(state.roundHistory.length)} tone="bg-green-50 text-green-700" />
+            <Stat
+              label="Runden"
+              value={showGroups ? `${state.roundHistory.length} / ${state.slow!.roundHistory.length}` : String(state.roundHistory.length)}
+              tone="bg-green-50 text-green-700"
+            />
             <Stat
               label="X"
               value={String(totalErrors)}
@@ -82,22 +92,25 @@ export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenM
             />
           </dl>
 
-          {lastRound && (
+          {lastRounds.map(({ group, round, errors, names }) => (
             <p
+              key={group}
               className={`mt-3 rounded-2xl px-5 py-4 text-sm text-slate-600 [overflow-wrap:anywhere] ${
-                lastRoundErrors === 0 ? 'bg-green-50' : 'bg-red-50'
+                errors === 0 ? 'bg-green-50' : 'bg-red-50'
               }`}
             >
-              <span className="font-bold text-slate-900">Runde {lastRound.roundNumber}:</span>{' '}
-              {lastRoundErrors === 0 ? (
+              <span className="font-bold text-slate-900">
+                {showGroups && `${getGroupLabel(state.mode, group)} · `}Runde {round.roundNumber}:
+              </span>{' '}
+              {errors === 0 ? (
                 <span className="font-semibold text-green-600">alle haben geliefert</span>
               ) : (
                 <>
-                  <span className="font-semibold text-red-600">{lastRoundErrors} X</span> – {formatList(missedNames)}
+                  <span className="font-semibold text-red-600">{errors} X</span> – {formatList(names)}
                 </>
               )}
             </p>
-          )}
+          ))}
 
           <div className="mt-10 space-y-3">
             <button
@@ -109,6 +122,8 @@ export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenM
             </button>
             <p className="text-center text-xs font-medium text-slate-400">
               {getModeLabel(state.mode)}: {extraRounds} weitere Runden à {getRoundDuration(state.mode) / 60} Minuten
+              {showGroups &&
+                ` · 15-Minuten-Gruppe: ${EXTENSION_DURATION / SLOW_ROUND_DURATION} à ${SLOW_ROUND_DURATION / 60} Minuten`}
             </p>
             <button
               type="button"

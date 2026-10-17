@@ -14,7 +14,7 @@ describe('Sounds und Rundenwechsel', () => {
 
     const feedback = getFeedback(events, T0 + 10 * MIN);
     expect(feedback.sound).toBe('error');
-    expect(feedback.liveRound?.roundNumber).toBe(1);
+    expect(feedback.liveRounds.map((e) => e.roundNumber)).toEqual([1]);
     expect(feedback.catchUp).toBeNull();
   });
 
@@ -26,14 +26,14 @@ describe('Sounds und Rundenwechsel', () => {
 
   it('kein Sound ohne Rundenende', () => {
     const { events } = advance(startedGame(PLAYERS), T0 + 5 * MIN);
-    expect(getFeedback(events, T0 + 5 * MIN)).toEqual({ sound: null, liveRound: null, catchUp: null });
+    expect(getFeedback(events, T0 + 5 * MIN)).toEqual({ sound: null, liveRounds: [], catchUp: null });
   });
 
   it('nach längerer Abwesenheit: keine Sounds, sondern eine Zusammenfassung', () => {
     const { events } = advance(startedGame(PLAYERS), T0 + 32 * MIN);
     const feedback = getFeedback(events, T0 + 32 * MIN);
     expect(feedback.sound).toBeNull();
-    expect(feedback.liveRound).toBeNull();
+    expect(feedback.liveRounds).toEqual([]);
     expect(feedback.catchUp).toEqual({ rounds: 3, errors: 9 });
   });
 

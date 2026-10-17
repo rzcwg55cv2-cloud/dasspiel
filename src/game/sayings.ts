@@ -105,7 +105,8 @@ export function getNameLines(state: GameState): string[] {
 export function getDecisionText(state: GameState): DecisionText {
   const stats = getPlayerStats(state);
   const xCount = stats.reduce((sum, s) => sum + s.errors, 0);
-  const mood = getMood(xCount, state.players.length * state.roundHistory.length);
+  // Jeder Teilnehmer zählt mit den Runden seiner eigenen Gruppe.
+  const mood = getMood(xCount, stats.reduce((sum, s) => sum + s.rounds, 0));
   const seed = Math.floor((state.startedAt ?? 0) / 1000) + state.extensionCount * 7;
 
   const entry = pick(SAYINGS[mood], seed);
