@@ -138,6 +138,20 @@ class SoundPlayer {
     return clip;
   }
 
+  /**
+   * Wartet, bis die Audioausgabe läuft und die Datei dekodiert ist – höchstens `timeoutMs`.
+   * Auf dem Handy kann beides nach längerer Stille einen Moment dauern.
+   */
+  prepare(url: string, timeoutMs: number): Promise<boolean> {
+    const context = this.ensureContext();
+    if (!context) return Promise.resolve(false);
+    const ready = Promise.all([context.state === 'running' ? undefined : context.resume(), this.preload(url)])
+      .then(([, buffer]) => buffer !== null)
+      .catch(() => false);
+    const timeout = new Promise<boolean>((resolve) => window.setTimeout(() => resolve(false), timeoutMs));
+    return Promise.race([ready, timeout]);
+  }
+
   /** Spielt eine Audiodatei ab. Liefert eine Funktion, die sie vorzeitig ausblendet. */
   playClip(url: string, delay = 0): () => void {
     const context = this.ensureContext();
