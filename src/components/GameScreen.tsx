@@ -49,8 +49,8 @@ export function GameScreen({ state, errorCounts, liveRounds, now, onToggle, onTo
       <section aria-label="Uhrzeit">
         <header className="relative flex flex-col items-center pt-1 text-center">
           <span className="flex items-end gap-0.5">
-            <span className="brand-text text-sm font-black tracking-[0.3em]">DAS BIERSPIEL</span>
-            <KoelschGlass className="mb-0.5 h-[1.375rem] w-[0.6875rem]" />
+            <span className="brand-text text-[1.05rem] leading-6 font-black tracking-[0.3em]">DAS BIERSPIEL</span>
+            <KoelschGlass className="mb-[0.15rem] h-[1.65rem] w-[0.825rem]" />
           </span>
           <span
             className={`mt-1.5 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.25em] ${
