@@ -51,7 +51,7 @@ export function DecisionScreen({ state, totalErrors, onExtend, onFinish, onOpenM
       <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-5 pt-safe pb-safe">
         <div className="relative flex justify-center pt-1">
           <span className="flex items-end gap-0.5">
-            <span className="brand-text text-sm font-black tracking-[0.3em]">DAS SPIEL</span>
+            <span className="brand-text text-sm font-black tracking-[0.3em]">DAS BIERSPIEL</span>
             <KoelschGlass className="mb-0.5 h-[1.375rem] w-[0.6875rem]" />
           </span>
           <button

@@ -62,7 +62,7 @@ function listFiles(dir: string): string[] {
 }
 
 function renderServiceWorker(version: string, files: string[]): string {
-  return `/* Das Spiel – Service Worker (automatisch erzeugt) */
+  return `/* Das Bierspiel – Service Worker (automatisch erzeugt) */
 const CACHE = 'das-spiel-${version}';
 const FILES = ${JSON.stringify(files, null, 2)};
 

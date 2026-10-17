@@ -76,7 +76,7 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
             ERGEBNIS
           </p>
           <h1 className="brand-text mt-4 pb-1 text-[clamp(2.75rem,12vw,5rem)] leading-[0.95] font-black tracking-[-0.035em]">
-            DAS SPIEL IST VORBEI
+            DAS BIERSPIEL IST VORBEI
           </h1>
         </header>
 

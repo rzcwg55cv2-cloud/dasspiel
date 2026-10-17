@@ -1,6 +1,6 @@
 {
-  "name": "Das Spiel",
-  "short_name": "Das Spiel",
+  "name": "Das Bierspiel",
+  "short_name": "Das Bierspiel",
   "description": "60 Minuten. Alle müssen liefern! Das zeitbasierte Gruppenspiel zum Vorwärtskommen.",
   "lang": "de",
   "start_url": "./",

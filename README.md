@@ -1,4 +1,4 @@
-# DAS SPIEL
+# DAS BIERSPIEL
 
 *60 Minuten. Alle müssen liefern!*
 

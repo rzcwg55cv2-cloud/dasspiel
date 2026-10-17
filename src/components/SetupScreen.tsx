@@ -96,10 +96,10 @@ export function SetupScreen({
         </div>
 
         <header className="mt-6 animate-fade-up sm:mt-10">
-          <h1 className="brand-text w-fit pb-1 text-[clamp(3.5rem,17vw,5.5rem)] leading-[0.92] font-black tracking-[-0.04em]">
+          <h1 className="brand-text w-fit pb-1 text-[clamp(2.5rem,15.5vw,5.5rem)] leading-[0.92] font-black tracking-[-0.04em]">
             DAS
             <br />
-            SPIEL
+            BIERSPIEL
             <KoelschGlass className="ml-[0.12em] inline-block h-[0.9em] w-[0.45em] align-[-0.02em]" />
           </h1>
           <p className="mt-4 text-xl font-bold text-slate-800 italic">60 Minuten. Alle müssen liefern!</p>
@@ -288,7 +288,7 @@ export function SetupScreen({
 
         {!isStandalone() && (
           <p className="mt-12 px-1 text-xs leading-relaxed text-slate-400">
-            Tipp: Über „Teilen“ bzw. das Browsermenü → „Zum Home-Bildschirm“ wird Das Spiel zur App und
+            Tipp: Über „Teilen“ bzw. das Browsermenü → „Zum Home-Bildschirm“ wird Das Bierspiel zur App und
             funktioniert auch ohne Internet.
           </p>
         )}
