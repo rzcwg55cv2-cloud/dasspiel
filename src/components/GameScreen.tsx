@@ -5,6 +5,7 @@ import { getModeLabel } from '../game/rules';
 import type { GameState, RoundEvent, RoundResult } from '../game/types';
 import { Avatar } from './Avatar';
 import { MenuIcon, StatusMark, type MarkState } from './icons';
+import { KoelschGlass } from './KoelschGlass';
 
 /** So lange wird ein rotes X nach Rundenende angezeigt, bevor der graue Kreis zurückkehrt. */
 const MISSED_FLASH_MS = 4500;
@@ -49,7 +50,10 @@ export function GameScreen({ state, clock, errorCounts, liveRound, now, onToggle
     <div className="mx-auto min-h-dvh w-full max-w-6xl px-5 pt-safe pb-safe lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start lg:gap-14 lg:px-10">
       <section className="lg:sticky lg:top-0 lg:pt-6" aria-label="Zeit">
         <header className="relative flex flex-col items-center pt-1 text-center">
-          <span className="brand-text text-sm font-black tracking-[0.3em]">DAS SPIEL</span>
+          <span className="flex items-end gap-0.5">
+            <span className="brand-text text-sm font-black tracking-[0.3em]">DAS SPIEL</span>
+            <KoelschGlass className="mb-0.5 h-[1.375rem] w-[0.6875rem]" />
+          </span>
           <span
             className={`mt-1.5 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.25em] ${
               malte ? 'bg-violet-100 text-violet-700' : 'bg-sky-100 text-sky-700'

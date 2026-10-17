@@ -4,6 +4,7 @@ import { MAX_NAME_LENGTH, getRoundDuration, getRoundsInPhase } from '../game/rul
 import type { GameMode, Player } from '../game/types';
 import { Avatar } from './Avatar';
 import { ColorGlow } from './Decor';
+import { KoelschGlass } from './KoelschGlass';
 import { CheckIcon, CloseIcon, MenuIcon, PlusIcon } from './icons';
 
 interface Props {
@@ -71,6 +72,7 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
             DAS
             <br />
             SPIEL
+            <KoelschGlass className="ml-[0.12em] inline-block h-[0.9em] w-[0.45em] align-[-0.02em]" />
           </h1>
           <p className="mt-4 text-xl font-bold text-slate-800 italic">60 Minuten. Alle müssen liefern!</p>
           <p className="mt-1.5 text-base font-medium text-slate-500">Das zeitbasierte Gruppenspiel zum Vorwärtskommen.</p>
