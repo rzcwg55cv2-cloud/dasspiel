@@ -1,4 +1,4 @@
-import { KoelschGlass } from './KoelschGlass';
+import wappen from '../assets/wappen.png';
 
 const timeFormat = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' });
 
@@ -45,7 +45,8 @@ export function AnalogClock({ now, className = '' }: { now: number; className?: 
           {label}
         </text>
       ))}
-      <KoelschGlass x="93" y="118" width="14" height="28" />
+      {/* Wappen in der oberen Hälfte des Zifferblatts, unter den Zeigern */}
+      <image href={wappen} x="83" y="50" width="34" height="38.1" aria-hidden="true" />
 
       <line
         x1="100"
