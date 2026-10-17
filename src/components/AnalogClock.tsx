@@ -45,8 +45,8 @@ export function AnalogClock({ now, className = '' }: { now: number; className?: 
           {label}
         </text>
       ))}
-      {/* Wappen in der oberen Hälfte des Zifferblatts, unter den Zeigern */}
-      <image href={wappen} x="83" y="50" width="34" height="38.1" aria-hidden="true" />
+      {/* Wappen in der oberen Hälfte des Zifferblatts, unter den Zeigern – leicht durchscheinend */}
+      <image href={wappen} x="83" y="50" width="34" height="38.1" opacity="0.8" aria-hidden="true" />
 
       <line
         x1="100"
