@@ -1,0 +1,211 @@
+import { useRef, useState, type FormEvent } from 'react';
+import type { AddPlayerError } from '../game/engine';
+import { MAX_NAME_LENGTH, getRoundDuration, getRoundsInPhase } from '../game/rules';
+import type { GameMode, Player } from '../game/types';
+import { CheckIcon, CloseIcon, MenuIcon, PlusIcon } from './icons';
+
+interface Props {
+  players: Player[];
+  mode: GameMode;
+  onAddPlayer: (name: string) => AddPlayerError | null;
+  onRemovePlayer: (id: string) => void;
+  onModeChange: (mode: GameMode) => void;
+  onStart: () => void;
+  onOpenMenu: () => void;
+}
+
+const ERROR_TEXT: Record<AddPlayerError, (name: string) => string> = {
+  empty: () => 'Bitte einen Namen eingeben.',
+  duplicate: (name) => `„${name.trim()}“ ist schon dabei.`,
+  'too-long': () => `Der Name ist zu lang (höchstens ${MAX_NAME_LENGTH} Zeichen).`,
+  locked: () => 'Während eines Spiels können keine Teilnehmer hinzugefügt werden.',
+};
+
+function isStandalone(): boolean {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  );
+}
+
+export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onModeChange, onStart, onOpenMenu }: Props) {
+  const [name, setName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const malte = mode === 'malte';
+  const roundMinutes = getRoundDuration(mode) / 60;
+  const rounds = getRoundsInPhase(mode, 0);
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    const result = onAddPlayer(name);
+    if (result) {
+      setError(ERROR_TEXT[result](name));
+    } else {
+      setName('');
+      setError(null);
+    }
+    inputRef.current?.focus();
+  };
+
+  return (
+    <div className="min-h-dvh">
+      <main className="mx-auto w-full max-w-xl px-5 pt-safe pb-48">
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={onOpenMenu}
+            className="-mr-2 grid size-11 place-items-center rounded-full text-ink-400 transition hover:bg-ink-800 hover:text-white"
+            aria-label="Einstellungen"
+          >
+            <MenuIcon className="size-6" />
+          </button>
+        </div>
+
+        <header className="mt-6 animate-fade-up sm:mt-10">
+          <h1 className="text-[clamp(3.5rem,17vw,5.5rem)] leading-[0.9] font-black tracking-[-0.04em]">
+            DAS
+            <br />
+            SPIEL
+          </h1>
+          <p className="mt-5 text-lg text-ink-400 italic">60 Minuten. Alle müssen liefern.</p>
+        </header>
+
+        <section className="mt-12" aria-labelledby="players-heading">
+          <div className="flex items-baseline justify-between">
+            <h2 id="players-heading" className="text-xs font-bold tracking-[0.25em] text-ink-400">
+              TEILNEHMER
+            </h2>
+            <span className="tabular text-xs font-semibold text-ink-500">{players.length}</span>
+          </div>
+
+          <form onSubmit={submit} className="mt-3 flex gap-2">
+            <label htmlFor="player-name" className="sr-only">
+              Name des Teilnehmers
+            </label>
+            <input
+              ref={inputRef}
+              id="player-name"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (error) setError(null);
+              }}
+              placeholder="Name eingeben"
+              autoComplete="off"
+              autoCapitalize="words"
+              enterKeyHint="done"
+              maxLength={MAX_NAME_LENGTH}
+              aria-invalid={error !== null}
+              aria-describedby={error ? 'player-error' : undefined}
+              className="h-14 min-w-0 flex-1 rounded-2xl border border-ink-700 bg-ink-850 px-4 text-[17px] text-white placeholder:text-ink-500 focus:border-ink-400 focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="flex h-14 shrink-0 items-center gap-2 rounded-2xl bg-ink-700 px-5 font-semibold text-white transition hover:bg-ink-600 active:scale-[0.97]"
+            >
+              <PlusIcon className="size-5" />
+              <span>Hinzufügen</span>
+            </button>
+          </form>
+          <p id="player-error" role="alert" className="mt-2 min-h-5 text-sm text-miss">
+            {error}
+          </p>
+
+          {players.length === 0 ? (
+            <p className="mt-2 rounded-2xl border border-dashed border-ink-700 px-5 py-6 text-center text-ink-400">
+              Noch niemand dabei. Füge mindestens einen Teilnehmer hinzu.
+            </p>
+          ) : (
+            <ol className="mt-2 space-y-2">
+              {players.map((player, index) => (
+                <li
+                  key={player.id}
+                  className="flex animate-fade-up items-center gap-4 rounded-2xl bg-ink-850 py-2 pr-2 pl-5"
+                >
+                  <span className="tabular w-5 shrink-0 text-sm font-semibold text-ink-500">{index + 1}</span>
+                  <span className="min-w-0 flex-1 truncate text-lg font-semibold" title={player.name}>
+                    {player.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onRemovePlayer(player.id)}
+                    className="grid size-11 shrink-0 place-items-center rounded-xl text-ink-400 transition hover:bg-ink-700 hover:text-white"
+                    aria-label={`${player.name} entfernen`}
+                  >
+                    <CloseIcon className="size-5" />
+                  </button>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
+
+        <section className="mt-12" aria-labelledby="mode-heading">
+          <h2 id="mode-heading" className="text-xs font-bold tracking-[0.25em] text-ink-400">
+            SPIELMODUS
+          </h2>
+          <label
+            className={`mt-3 flex cursor-pointer items-start gap-4 rounded-2xl border p-5 transition ${
+              malte ? 'border-malte/60 bg-malte/[0.07]' : 'border-ink-700 bg-ink-850 hover:border-ink-600'
+            }`}
+          >
+            <input
+              type="checkbox"
+              className="peer sr-only"
+              checked={malte}
+              onChange={(e) => onModeChange(e.target.checked ? 'malte' : 'normal')}
+            />
+            <span
+              className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg border-2 transition peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-white ${
+                malte ? 'border-malte bg-malte text-ink-950' : 'border-ink-500'
+              }`}
+              aria-hidden="true"
+            >
+              {malte && <CheckIcon className="size-5 animate-pop" strokeWidth={3} />}
+            </span>
+            <span>
+              <span className={`block text-lg font-extrabold tracking-[0.12em] ${malte ? 'text-malte' : ''}`}>
+                MALTE SPEZIAL
+              </span>
+              <span className="mt-1 block text-ink-400 italic">Doppelt so viele Runden. Halb so viel Zeit.</span>
+            </span>
+          </label>
+          <p className="mt-3 px-1 text-sm text-ink-400">
+            <span className={`font-bold tracking-[0.1em] ${malte ? 'text-malte' : 'text-white'}`}>
+              {malte ? 'MALTE SPEZIAL' : 'NORMAL'}
+            </span>
+            <span className="mx-2 text-ink-600">·</span>
+            <span className="tabular">
+              {rounds} Runden à {roundMinutes} Minuten
+            </span>
+          </p>
+        </section>
+
+        {!isStandalone() && (
+          <p className="mt-12 px-1 text-xs leading-relaxed text-ink-500">
+            Tipp: Über „Teilen“ bzw. das Browsermenü → „Zum Home-Bildschirm“ wird Das Spiel zur App und
+            funktioniert auch ohne Internet.
+          </p>
+        )}
+      </main>
+
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 bg-gradient-to-t from-ink-950 from-60% to-transparent pt-10">
+        <div className="pointer-events-auto mx-auto w-full max-w-xl px-5 pb-safe">
+          <button
+            type="button"
+            onClick={onStart}
+            disabled={players.length === 0}
+            className="h-16 w-full rounded-2xl bg-white text-lg font-extrabold tracking-[0.14em] text-ink-950 shadow-[0_10px_40px_-10px_rgba(255,255,255,0.35)] transition hover:bg-ink-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-ink-800 disabled:text-ink-500 disabled:shadow-none"
+          >
+            SPIEL STARTEN
+          </button>
+          <p className="mt-2 h-4 text-center text-xs text-ink-500">
+            {players.length === 0 ? 'Mindestens ein Teilnehmer wird benötigt.' : ''}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
