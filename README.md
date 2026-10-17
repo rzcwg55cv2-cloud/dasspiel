@@ -27,6 +27,8 @@ Die App läuft komplett im Browser, braucht kein Konto und kein Internet währen
 
 Ein Gerät dient als Spielzentrale: Dort werden alle Teilnehmer eingetragen und alle Haken vergeben.
 
+Unter dem Start-Button steht klein der **Bierbedarf** für die ersten 60 Minuten: 0,2 l pro Person und Runde ihres Takts, also z. B. 4 Personen im Modus Normal = 24 × 0,2 l = 4,8 l. Dazu kommt, was jede Verlängerung um 30 Minuten zusätzlich braucht. Malte Spezial braucht doppelt so viel, Personen im 15-Minuten-Takt zählen mit 4 statt 6 Runden. Strafbiere sind nicht eingerechnet.
+
 Während des Spiels gibt es keinen Countdown: In der Mitte steht eine runde Uhr mit Sekundenzeiger und der aktuellen Uhrzeit. Daneben steht für jeden Takt ein Kölschglas, das sich mit der laufenden Runde leert und zum Rundenende leer ist: links der 10-Minuten-Takt, rechts der 15-Minuten-Takt. Mit der nächsten Runde ist das Glas wieder voll. Spielt nur ein Takt, gibt es auch nur ein Glas. Runden enden immer zur vollen Minute: Beim Start (und nach jeder Verlängerung) wird die erste Runde bis zur nächsten vollen Minute verlängert, danach läuft der normale Takt. Beispiel: Start um 20:43:12 → Rundenenden um 20:54, 21:04, … (15er: 20:59, 21:14, …).
 
 ### Strafbier
@@ -123,6 +125,7 @@ src/
                        mit zwei parallelen Rundenspuren (10- und 15-Minuten-Takt)
     feedback.ts        Wann welcher Sound bzw. welche Einblendung kommt
     penalties.ts       Strafbiere (aus der Rundenhistorie abgeleitet)
+    beer.ts            Bierbedarf vor Spielbeginn
     sayings.ts         Sprüche für die Verlängerungsfrage
     stats.ts           Rangliste und Statistiken (aus der Rundenhistorie berechnet)
     storage.ts         Speichern/Laden mit Prüfung auf ungültige Daten

@@ -6,6 +6,7 @@ import { GameScreen } from './components/GameScreen';
 import { ResultsScreen } from './components/ResultsScreen';
 import { RoundBanner } from './components/RoundBanner';
 import { SetupScreen } from './components/SetupScreen';
+import { estimateBeer } from './game/beer';
 import { getClock, getStartBlocker } from './game/engine';
 
 /** Abstand (Sekunden), wenn beide Gruppen gleichzeitig einen Ton bekommen. */
@@ -117,6 +118,7 @@ export default function App() {
           onSlowGroupChange={actions.setSlowGroupEnabled}
           onPlayerGroupChange={actions.setPlayerGroup}
           startBlocker={getStartBlocker(state)}
+          beer={estimateBeer(state)}
           onStart={withAudio(actions.start)}
           onOpenMenu={openMenu}
         />

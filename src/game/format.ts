@@ -12,6 +12,13 @@ export function formatPercent(rate: number): string {
   return `${percentFormat.format(Math.round(rate * 1000) / 10)} %`;
 }
 
+const literFormat = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
+
+/** Litermenge, z. B. „4,8 l“. */
+export function formatLiters(liters: number): string {
+  return `${literFormat.format(liters)} l`;
+}
+
 export function formatMinutes(seconds: number): string {
   const minutes = Math.round(seconds / 60);
   return `${minutes} ${minutes === 1 ? 'Minute' : 'Minuten'}`;

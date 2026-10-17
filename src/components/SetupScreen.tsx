@@ -1,5 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react';
+import { GLASS_LITERS, type BeerEstimate } from '../game/beer';
 import type { AddPlayerError, StartBlocker } from '../game/engine';
+import { formatLiters } from '../game/format';
 import { MAX_NAME_LENGTH, SLOW_ROUND_DURATION, getRoundDuration, getRoundsInPhase } from '../game/rules';
 import type { GameMode, GroupId, Player } from '../game/types';
 import { Avatar } from './Avatar';
@@ -17,6 +19,7 @@ interface Props {
   onSlowGroupChange: (enabled: boolean) => void;
   onPlayerGroupChange: (id: string, group: GroupId) => void;
   startBlocker: StartBlocker | null;
+  beer: BeerEstimate;
   onStart: () => void;
   onOpenMenu: () => void;
 }
@@ -51,6 +54,7 @@ export function SetupScreen({
   onSlowGroupChange,
   onPlayerGroupChange,
   startBlocker,
+  beer,
   onStart,
   onOpenMenu,
 }: Props) {
@@ -302,9 +306,17 @@ export function SetupScreen({
           >
             {malte ? 'BRACE FOR IMPACT' : 'SPIEL STARTEN'}
           </button>
-          <p className="mt-2 h-4 text-center text-xs text-slate-400">
-            {startBlocker ? BLOCKER_TEXT[startBlocker] : ''}
-          </p>
+          {startBlocker ? (
+            <p className="mt-2 h-4 text-center text-xs text-slate-400">{BLOCKER_TEXT[startBlocker]}</p>
+          ) : (
+            <p className="tabular mt-2 text-center text-xs leading-4 text-slate-400">
+              <KoelschGlass className="mr-1 mb-0.5 inline-block h-3.5 w-[0.4375rem] align-middle" />
+              Bierbedarf für 60 Minuten:{' '}
+              <span className="font-semibold text-slate-500">{formatLiters(beer.glasses * GLASS_LITERS)}</span> (
+              {beer.glasses} × 0,2 l)
+              <br />+ {formatLiters(beer.extensionGlasses * GLASS_LITERS)} je Verlängerung, Strafbiere extra
+            </p>
+          )}
         </div>
       </div>
     </div>
