@@ -149,7 +149,10 @@ function parseRoundHistory(value: unknown, players: Player[]): RoundResult[] | n
       if (typeof result !== 'boolean') return null;
       playerResults[player.id] = result;
     }
-    history.push({ roundNumber: index + 1, playerResults, completedAt: item.completedAt });
+    // Ältere Spielstände kennen noch keine Strafbiere.
+    const penaltiesPaid = parseConfirmations(item.penaltiesPaid ?? {}, players);
+    if (!penaltiesPaid) return null;
+    history.push({ roundNumber: index + 1, playerResults, completedAt: item.completedAt, penaltiesPaid });
   }
   return history;
 }
@@ -174,7 +177,8 @@ function parseTrack(
   if (!isRecord(raw) || !isNonNegativeInt(raw.currentRound)) return null;
   const roundHistory = parseRoundHistory(raw.roundHistory, players);
   const currentConfirmations = parseConfirmations(raw.currentConfirmations, players);
-  if (!roundHistory || !currentConfirmations) return null;
+  const currentPenaltiesPaid = parseConfirmations(raw.currentPenaltiesPaid ?? {}, players);
+  if (!roundHistory || !currentConfirmations || !currentPenaltiesPaid) return null;
 
   if (status === 'running') {
     const roundsBefore = getRoundsBeforePhase(roundDuration, extensionCount);
@@ -182,13 +186,13 @@ function parseTrack(
     const { currentRound } = raw;
     if (currentRound < roundsBefore + 1 || currentRound > roundsBefore + roundsInPhase) return null;
     if (roundHistory.length !== currentRound - 1) return null;
-    return { currentRound, currentConfirmations, roundHistory };
+    return { currentRound, currentConfirmations, currentPenaltiesPaid, roundHistory };
   }
 
   // Verlängerungsentscheidung oder beendetes Spiel: Die aktuelle Phase ist vollständig ausgewertet.
   const totalRounds = getTotalRounds(roundDuration, extensionCount);
   if (roundHistory.length !== totalRounds) return null;
-  return { currentRound: totalRounds, currentConfirmations: {}, roundHistory };
+  return { currentRound: totalRounds, currentConfirmations: {}, currentPenaltiesPaid: {}, roundHistory };
 }
 
 /**

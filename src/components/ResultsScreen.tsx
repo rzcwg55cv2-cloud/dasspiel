@@ -179,6 +179,17 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
               tone="lime"
             />
             <StatTile
+              label="Strafbiere getrunken"
+              value={String(summary.penaltiesDrunk)}
+              detail={
+                summary.openPenalties.length
+                  ? `Noch offen: ${formatList(summary.openPenalties.map((o) => `${o.player.name} (${o.count})`))}`
+                  : 'Keine offenen Strafbiere'
+              }
+              tone="amber"
+              wide
+            />
+            <StatTile
               label="Tatsächliche Spielzeit"
               value={formatMinutes(summary.playedSeconds)}
               detail={wallClock}
@@ -271,6 +282,15 @@ function StatTile({
   );
 }
 
+/** „2 Strafbiere getrunken · 1 offen“ bzw. null, wenn es keine gab. */
+function penaltyText({ penaltiesDrunk: drunk, penaltiesOpen: open }: PlayerStats): string | null {
+  const beers = (n: number) => `${n} ${n === 1 ? 'Strafbier' : 'Strafbiere'}`;
+  if (drunk && open) return `${beers(drunk)} getrunken · ${open} offen`;
+  if (drunk) return `${beers(drunk)} getrunken`;
+  if (open) return `${beers(open)} offen`;
+  return null;
+}
+
 function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: number }) {
   const flawless = stats.errors === 0;
   return (
@@ -300,6 +320,9 @@ function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: num
           <div className="tabular mt-0.5 text-sm text-slate-500">
             {stats.successes} von {stats.rounds} geliefert
           </div>
+        )}
+        {penaltyText(stats) && (
+          <div className="tabular mt-0.5 text-xs font-semibold text-amber-700">{penaltyText(stats)}</div>
         )}
       </div>
       <div className="shrink-0 text-right">

@@ -29,6 +29,12 @@ Ein Gerät dient als Spielzentrale: Dort werden alle Teilnehmer eingetragen und 
 
 Während des Spiels gibt es keinen Countdown: In der Mitte steht eine runde Uhr mit Sekundenzeiger und der aktuellen Uhrzeit. Daneben steht für jeden Takt ein Kölschglas, das sich mit der laufenden Runde leert und zum Rundenende leer ist: links der 10-Minuten-Takt, rechts der 15-Minuten-Takt. Mit der nächsten Runde ist das Glas wieder voll. Spielt nur ein Takt, gibt es auch nur ein Glas. Runden enden immer zur vollen Minute: Beim Start (und nach jeder Verlängerung) wird die erste Runde bis zur nächsten vollen Minute verlängert, danach läuft der normale Takt. Beispiel: Start um 20:43:12 → Rundenenden um 20:54, 21:04, … (15er: 20:59, 21:14, …).
 
+### Strafbier
+
+Wer ein X bekommt, hat in der nächsten Runde seines Takts ein **STRAFBIER** offen: rot umrandet neben dem Namen. Wer es getrunken hat, tippt auf das Strafbier – es wird grün abgehakt (erneutes Antippen nimmt den Haken zurück). Das Strafbier ist ein eigener Knopf; Antippen der übrigen Zeile hakt wie gewohnt die Lieferung ab.
+
+Ist das Strafbier am Rundenende nicht abgehakt, werden zwei draus – und wieder nicht abgehakt vier, dann acht. Ein neues X kommt jeweils noch obendrauf (zwei offene, nicht getrunken, plus neues X = fünf). Verdoppelte Strafbiere stehen ausgefüllt rot als „2× STRAFBIER“ in der Zeile, und die Rundenwechsel-Einblendung meldet „STRAFBIER VERDOPPELT“. Strafbiere aus der letzten Runde vor der Verlängerungsfrage gelten in der ersten Runde nach der Verlängerung. Die Auswertung zeigt, wer wie viele Strafbiere getrunken hat und was bei Feierabend noch offen ist.
+
 ### Malte Spezial
 
 Wer **MALTE SPEZIAL** anhakt, sieht die App sofort in bedrohlichem Dunkelrot: Eine Sirene heult, das Display bebt kurz, das Handy vibriert, der Bildschirmrand glüht im Herzschlag-Takt, und statt „SPIEL STARTEN“ steht **BRACE FOR IMPACT** auf dem Button. Das bleibt das ganze Spiel über inklusive aller Verlängerungsfragen. Erst mit dem Ergebnis färbt sich die App wieder zurück. Grüne Haken bleiben auch im roten Design grün.
@@ -116,6 +122,7 @@ src/
     engine.ts          Zustandsautomat: Start, Haken setzen, Auswertung, Verlängern, Ende –
                        mit zwei parallelen Rundenspuren (10- und 15-Minuten-Takt)
     feedback.ts        Wann welcher Sound bzw. welche Einblendung kommt
+    penalties.ts       Strafbiere (aus der Rundenhistorie abgeleitet)
     sayings.ts         Sprüche für die Verlängerungsfrage
     stats.ts           Rangliste und Statistiken (aus der Rundenhistorie berechnet)
     storage.ts         Speichern/Laden mit Prüfung auf ungültige Daten

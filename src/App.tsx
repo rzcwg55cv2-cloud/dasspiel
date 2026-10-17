@@ -130,6 +130,7 @@ export default function App() {
           liveRounds={liveRounds}
           now={now}
           onToggle={actions.toggle}
+          onTogglePenalty={actions.togglePenalty}
           onOpenMenu={openMenu}
         />
       );

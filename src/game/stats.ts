@@ -3,6 +3,7 @@
  * Es gibt keine separat gespeicherten X-Zähler, die auseinanderlaufen könnten.
  */
 import { activeGroups, getTrack, groupOf, playersOf } from './engine';
+import { getPenaltyTotals } from './penalties';
 import type { GameMode, GameState, GroupId, Player, RoundResult } from './types';
 
 export interface PlayerRound {
@@ -20,6 +21,10 @@ export interface PlayerStats {
   /** Erfolgsquote zwischen 0 und 1. */
   successRate: number;
   results: PlayerRound[];
+  /** Abgehakte Strafbiere. */
+  penaltiesDrunk: number;
+  /** Strafbiere, die bei Spielende noch offen sind. */
+  penaltiesOpen: number;
 }
 
 export interface RoundRef {
@@ -65,6 +70,10 @@ export interface GameSummary {
   /** Gesamtrangliste über alle Teilnehmer. */
   ranking: PlayerStats[];
   groups: GroupSummary[];
+  /** Abgehakte Strafbiere aller Teilnehmer. */
+  penaltiesDrunk: number;
+  /** Teilnehmer mit noch offenen Strafbieren (meiste zuerst). */
+  openPenalties: { player: Player; count: number }[];
 }
 
 function historyOf(state: GameState, group: GroupId): RoundResult[] {
@@ -90,7 +99,9 @@ export function getErrorCounts(state: GameState): Record<string, number> {
 export function getPlayerStats(state: GameState, group?: GroupId): PlayerStats[] {
   const players = group ? playersOf(state, group) : state.players;
   const unranked = players.map((player) => {
-    const results = historyOf(state, groupOf(state, player)).map((round) => ({
+    const history = historyOf(state, groupOf(state, player));
+    const penalties = getPenaltyTotals(history, [player.id])[player.id];
+    const results = history.map((round) => ({
       roundNumber: round.roundNumber,
       success: round.playerResults[player.id] === true,
     }));
@@ -104,6 +115,8 @@ export function getPlayerStats(state: GameState, group?: GroupId): PlayerStats[]
       rounds,
       successRate: rounds === 0 ? 0 : successes / rounds,
       results,
+      penaltiesDrunk: penalties.drunk,
+      penaltiesOpen: penalties.open,
     };
   });
 
@@ -164,6 +177,11 @@ export function computeSummary(state: GameState): GameSummary {
         ...extremes(groupRanking),
       };
     }),
+    penaltiesDrunk: ranking.reduce((sum, s) => sum + s.penaltiesDrunk, 0),
+    openPenalties: ranking
+      .filter((s) => s.penaltiesOpen > 0)
+      .map((s) => ({ player: s.player, count: s.penaltiesOpen }))
+      .sort((a, b) => b.count - a.count),
   };
 }
 

@@ -10,6 +10,7 @@
  * Es gibt bis zu zwei Rundenspuren, die parallel laufen: den Haupttakt (10 bzw. 5 Minuten)
  * und optional die 15-Minuten-Gruppe. Beide beginnen und enden mit der Spielphase.
  */
+import { getOpenPenalties } from './penalties';
 import {
   MAX_NAME_LENGTH,
   getGroupRoundDuration,
@@ -46,6 +47,7 @@ export function createInitialState(
     completedPlaySeconds: 0,
     currentRound: 0,
     currentConfirmations: {},
+    currentPenaltiesPaid: {},
     roundHistory: [],
     slow: null,
     startedAt: null,
@@ -95,8 +97,14 @@ export function getTrack(state: GameState, group: GroupId): TrackState | null {
   return {
     currentRound: state.currentRound,
     currentConfirmations: state.currentConfirmations,
+    currentPenaltiesPaid: state.currentPenaltiesPaid,
     roundHistory: state.roundHistory,
   };
+}
+
+/** Offene Strafbiere der Taktgruppe – während des Spiels die der laufenden Runde. */
+export function getPenalties(state: GameState, group: GroupId): Record<string, number> {
+  return getOpenPenalties(getTrack(state, group)?.roundHistory ?? []);
 }
 
 function withTrack(state: GameState, group: GroupId, track: TrackState): GameState {
@@ -134,7 +142,8 @@ export function advance(state: GameState, now: number): Transition {
       phaseStartedAt: null,
       completedPlaySeconds: getTotalDuration(state.extensionCount),
       currentConfirmations: {},
-      slow: next.slow && { ...next.slow, currentConfirmations: {} },
+      currentPenaltiesPaid: {},
+      slow: next.slow && { ...next.slow, currentConfirmations: {}, currentPenaltiesPaid: {} },
     };
   }
 
@@ -160,28 +169,37 @@ function advanceTrack(state: GameState, group: GroupId, phaseStartedAt: number, 
     if (now < endedAt) break;
     if (track.roundHistory.some((r) => r.roundNumber === track!.currentRound)) break;
 
+    const open = getOpenPenalties(track.roundHistory);
     const playerResults: Record<string, boolean> = {};
-    for (const player of players) playerResults[player.id] = track.currentConfirmations[player.id] === true;
-    const result: RoundResult = { roundNumber: track.currentRound, playerResults, completedAt: endedAt };
+    const penaltiesPaid: Record<string, boolean> = {};
+    for (const player of players) {
+      playerResults[player.id] = track.currentConfirmations[player.id] === true;
+      if (open[player.id] && track.currentPenaltiesPaid[player.id]) penaltiesPaid[player.id] = true;
+    }
+    const result: RoundResult = { roundNumber: track.currentRound, playerResults, completedAt: endedAt, penaltiesPaid };
+    const roundHistory: RoundResult[] = [...track.roundHistory, result];
     const phaseEnded = indexInPhase + 1 >= roundsInPhase;
     events.push({
       group,
       roundNumber: track.currentRound,
       endedAt,
       failedPlayerIds: players.filter((p) => !playerResults[p.id]).map((p) => p.id),
+      doubledPenaltyIds: players.filter((p) => open[p.id] && !penaltiesPaid[p.id]).map((p) => p.id),
+      penalties: getOpenPenalties(roundHistory),
       phaseEnded,
     });
     changed = true;
 
     if (phaseEnded) {
       // Die letzte Runde der Phase bleibt die aktuelle, bis verlängert wird.
-      track = { ...track, roundHistory: [...track.roundHistory, result], currentConfirmations: {} };
+      track = { ...track, roundHistory, currentConfirmations: {}, currentPenaltiesPaid: {} };
       break;
     }
     track = {
       currentRound: track.currentRound + 1,
       currentConfirmations: {},
-      roundHistory: [...track.roundHistory, result],
+      currentPenaltiesPaid: {},
+      roundHistory,
     };
   }
 
@@ -277,7 +295,9 @@ export function startGame(state: GameState, now: number): Transition {
       status: 'running',
       phaseStartedAt: alignToNextMinute(now),
       currentRound: 1,
-      slow: isSlowGroupPlanned(setup) ? { currentRound: 1, currentConfirmations: {}, roundHistory: [] } : null,
+      slow: isSlowGroupPlanned(setup)
+        ? { currentRound: 1, currentConfirmations: {}, currentPenaltiesPaid: {}, roundHistory: [] }
+        : null,
       startedAt: now,
     },
     events: [],
@@ -300,6 +320,26 @@ export function toggleConfirmation(state: GameState, playerId: string, now: numb
   return { state: withTrack(current, group, { ...track, currentConfirmations }), events };
 }
 
+/**
+ * Hakt das offene Strafbier eines Teilnehmers für die laufende Runde ab – oder nimmt den
+ * Haken wieder weg. Ohne offenes Strafbier passiert nichts.
+ */
+export function togglePenalty(state: GameState, playerId: string, now: number): Transition {
+  const { state: current, events } = advance(state, now);
+  if (current.status !== 'running') return { state: current, events };
+  const player = current.players.find((p) => p.id === playerId);
+  if (!player) return { state: current, events };
+
+  const group = groupOf(current, player);
+  if (!getPenalties(current, group)[playerId]) return { state: current, events };
+  const track = getTrack(current, group)!;
+  const currentPenaltiesPaid = { ...track.currentPenaltiesPaid };
+  if (currentPenaltiesPaid[playerId]) delete currentPenaltiesPaid[playerId];
+  else currentPenaltiesPaid[playerId] = true;
+
+  return { state: withTrack(current, group, { ...track, currentPenaltiesPaid }), events };
+}
+
 /** Startet eine weitere 30-Minuten-Phase. Nur während der Verlängerungsentscheidung möglich. */
 export function extendGame(state: GameState, now: number): Transition {
   const { state: current, events } = advance(state, now);
@@ -317,7 +357,13 @@ export function extendGame(state: GameState, now: number): Transition {
       completedPlaySeconds: getPhaseOffset(extensionCount),
       currentRound: firstRound('main'),
       currentConfirmations: {},
-      slow: current.slow && { ...current.slow, currentRound: firstRound('slow'), currentConfirmations: {} },
+      currentPenaltiesPaid: {},
+      slow: current.slow && {
+        ...current.slow,
+        currentRound: firstRound('slow'),
+        currentConfirmations: {},
+        currentPenaltiesPaid: {},
+      },
     },
     events,
   };

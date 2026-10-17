@@ -22,6 +22,8 @@ export interface RoundResult {
   playerResults: Record<string, boolean>;
   /** Planmäßiges Ende der Runde in ms seit Epoch. */
   completedAt: number;
+  /** Spieler-ID → true, wenn das offene Strafbier in dieser Runde abgehakt wurde. */
+  penaltiesPaid: Record<string, boolean>;
 }
 
 /** Rundenstand einer Taktgruppe. */
@@ -30,6 +32,8 @@ export interface TrackState {
   currentRound: number;
   /** Haken der aktuellen Runde. */
   currentConfirmations: Record<string, boolean>;
+  /** In der aktuellen Runde abgehakte Strafbiere. */
+  currentPenaltiesPaid: Record<string, boolean>;
   roundHistory: RoundResult[];
 }
 
@@ -69,6 +73,10 @@ export interface RoundEvent {
   roundNumber: number;
   endedAt: number;
   failedPlayerIds: string[];
+  /** Nicht abgehakte Strafbiere, die sich mit dieser Runde verdoppelt haben. */
+  doubledPenaltyIds: string[];
+  /** Offene Strafbiere je Teilnehmer für die nächste Runde (nur Werte > 0). */
+  penalties: Record<string, number>;
   /** true, wenn mit dieser Runde eine Spielphase (60 bzw. 30 Minuten) endete. */
   phaseEnded: boolean;
 }

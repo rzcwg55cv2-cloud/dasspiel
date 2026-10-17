@@ -38,6 +38,9 @@ export function RoundBanner({ events, players, mode, showGroups }: Props) {
         {events.map((event) => {
           const errors = event.failedPlayerIds.length;
           const names = players.filter((p) => event.failedPlayerIds.includes(p.id)).map((p) => p.name);
+          const doubled = players
+            .filter((p) => event.doubledPenaltyIds.includes(p.id))
+            .map((p) => `${p.name} (${event.penalties[p.id]}×)`);
           return (
             <div key={event.group} className="mt-6">
               <p
@@ -50,6 +53,16 @@ export function RoundBanner({ events, players, mode, showGroups }: Props) {
               </p>
               {errors > 0 && (
                 <p className="mt-2 line-clamp-3 font-medium text-white/95 [overflow-wrap:anywhere]">{formatList(names)}</p>
+              )}
+              {doubled.length > 0 && (
+                <>
+                  <p className="mt-4 inline-block rounded-full border-2 border-white px-4 py-1.5 text-sm font-extrabold tracking-[0.12em]">
+                    STRAFBIER VERDOPPELT
+                  </p>
+                  <p className="mt-2 line-clamp-3 font-medium text-white/95 [overflow-wrap:anywhere]">
+                    {formatList(doubled)}
+                  </p>
+                </>
               )}
             </div>
           );

@@ -1,10 +1,10 @@
 import { useRef, type ReactNode } from 'react';
-import { activeGroups, getClock, getTrack, playersOf, type GameClock } from '../game/engine';
+import { activeGroups, getClock, getPenalties, getTrack, playersOf, type GameClock } from '../game/engine';
 import { getGroupLabel, getGroupRoundDuration, getModeLabel } from '../game/rules';
 import type { GameState, GroupId, Player, RoundEvent, RoundResult } from '../game/types';
 import { AnalogClock } from './AnalogClock';
 import { Avatar } from './Avatar';
-import { MenuIcon, StatusMark, type MarkState } from './icons';
+import { CheckIcon, MenuIcon, StatusMark, type MarkState } from './icons';
 import { KoelschGlass } from './KoelschGlass';
 
 /** So lange wird ein rotes X nach Rundenende angezeigt, bevor der graue Kreis zurückkehrt. */
@@ -18,10 +18,11 @@ interface Props {
   liveRounds: RoundEvent[];
   now: number;
   onToggle: (playerId: string) => void;
+  onTogglePenalty: (playerId: string) => void;
   onOpenMenu: () => void;
 }
 
-export function GameScreen({ state, errorCounts, liveRounds, now, onToggle, onOpenMenu }: Props) {
+export function GameScreen({ state, errorCounts, liveRounds, now, onToggle, onTogglePenalty, onOpenMenu }: Props) {
   const lastTap = useRef<Record<string, number>>({});
   const malte = state.mode === 'malte';
   const groups = activeGroups(state);
@@ -31,16 +32,16 @@ export function GameScreen({ state, errorCounts, liveRounds, now, onToggle, onOp
   );
   const colorIndex = new Map(state.players.map((p, i) => [p.id, i]));
 
-  const handleTap = (playerId: string) => {
+  const handleTap = (key: string, action: () => void) => {
     const time = performance.now();
-    if (time - (lastTap.current[playerId] ?? -Infinity) < TAP_GUARD_MS) return;
-    lastTap.current[playerId] = time;
+    if (time - (lastTap.current[key] ?? -Infinity) < TAP_GUARD_MS) return;
+    lastTap.current[key] = time;
     try {
       navigator.vibrate?.(8);
     } catch {
       // nicht unterstützt
     }
-    onToggle(playerId);
+    action();
   };
 
   return (
@@ -86,6 +87,7 @@ export function GameScreen({ state, errorCounts, liveRounds, now, onToggle, onOp
           const track = getTrack(state, group);
           if (!clock || !track) return null;
           const players = playersOf(state, group);
+          const penalties = getPenalties(state, group);
           return (
             <GroupPanel
               key={group}
@@ -108,7 +110,10 @@ export function GameScreen({ state, errorCounts, liveRounds, now, onToggle, onOp
                         index={colorIndex.get(player.id) ?? 0}
                         errors={errorCounts[player.id] ?? 0}
                         mark={markState}
-                        onTap={() => handleTap(player.id)}
+                        penalty={penalties[player.id] ?? 0}
+                        penaltyPaid={track.currentPenaltiesPaid[player.id] === true}
+                        onTap={() => handleTap(player.id, () => onToggle(player.id))}
+                        onPenaltyTap={() => handleTap(`strafbier:${player.id}`, () => onTogglePenalty(player.id))}
                       />
                     </li>
                   );
@@ -245,10 +250,18 @@ interface PlayerRowProps {
   index: number;
   errors: number;
   mark: MarkState;
+  /** Offene Strafbiere in dieser Runde. */
+  penalty: number;
+  penaltyPaid: boolean;
   onTap: () => void;
+  onPenaltyTap: () => void;
 }
 
-function PlayerRow({ name, index, errors, mark, onTap }: PlayerRowProps) {
+/**
+ * Die ganze Zeile ist ein Knopf zum Abhaken der Lieferung. Das Strafbier neben dem Namen
+ * ist ein eigener Knopf, der über der Zeile liegt.
+ */
+function PlayerRow({ name, index, errors, mark, penalty, penaltyPaid, onTap, onPenaltyTap }: PlayerRowProps) {
   const tone =
     mark === 'confirmed'
       ? 'border-ok-300 bg-ok-50'
@@ -256,25 +269,62 @@ function PlayerRow({ name, index, errors, mark, onTap }: PlayerRowProps) {
         ? 'border-red-300 bg-red-50'
         : 'border-slate-100 bg-white shadow-sm hover:border-slate-200';
   return (
-    <button
-      type="button"
-      onClick={onTap}
-      aria-pressed={mark === 'confirmed'}
-      aria-label={`${name}: ${mark === 'confirmed' ? 'geliefert' : 'noch nicht geliefert'}, ${errors} X`}
-      className={`flex min-h-[76px] w-full items-center gap-3.5 rounded-2xl border-2 py-2.5 pr-3 pl-3 text-left transition active:scale-[0.985] ${tone}`}
+    <div
+      className={`relative flex min-h-[76px] w-full items-center gap-3.5 rounded-2xl border-2 py-2.5 pr-3 pl-3 text-left transition [&:has(>button:active)]:scale-[0.985] ${tone}`}
     >
-      <Avatar name={name} index={index} />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-xl font-bold text-slate-900" title={name}>
-          {name}
+      <button
+        type="button"
+        onClick={onTap}
+        aria-pressed={mark === 'confirmed'}
+        aria-label={`${name}: ${mark === 'confirmed' ? 'geliefert' : 'noch nicht geliefert'}, ${errors} X`}
+        className="absolute -inset-0.5 rounded-2xl"
+      />
+      <Avatar name={name} index={index} className="pointer-events-none size-11 text-lg" />
+      <span className="pointer-events-none min-w-0 flex-1">
+        <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+          <span className="min-w-0 truncate text-xl font-bold text-slate-900" aria-hidden="true">
+            {name}
+          </span>
+          {penalty > 0 && <PenaltyBadge name={name} count={penalty} paid={penaltyPaid} onTap={onPenaltyTap} />}
         </span>
         <span
           className={`tabular mt-0.5 block text-sm ${errors > 0 ? 'font-semibold text-red-500' : 'text-slate-400'}`}
+          aria-hidden="true"
         >
           {errors === 0 ? 'Keine X' : `${errors} X`}
         </span>
       </span>
-      <StatusMark key={mark} state={mark} className="size-12 shrink-0" />
+      <StatusMark key={mark} state={mark} className="pointer-events-none size-12 shrink-0" />
+    </div>
+  );
+}
+
+/**
+ * „STRAFBIER“ in Rot mit Umrandung, verdoppelte Strafbiere ausgefüllt. Muss in der
+ * laufenden Runde abgehakt werden, sonst verdoppelt es sich zum Rundenende.
+ */
+function PenaltyBadge({ name, count, paid, onTap }: { name: string; count: number; paid: boolean; onTap: () => void }) {
+  const label = count > 1 ? `${count} Strafbiere` : 'Strafbier';
+  const tone = paid
+    ? 'border-ok-500 bg-ok-50 text-ok-700'
+    : count > 1
+      ? 'border-red-600 bg-red-600 text-white shadow-md shadow-red-600/30'
+      : 'border-red-500 bg-white text-red-600';
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      aria-pressed={paid}
+      aria-label={`${name}: ${label} ${paid ? 'abgehakt' : 'abhaken'}`}
+      className={`pointer-events-auto relative z-10 inline-flex shrink-0 items-center gap-1 rounded-lg border-2 py-0.5 pr-2 pl-1.5 text-[11px] font-black tracking-[0.12em] whitespace-nowrap transition before:absolute before:-inset-2 before:content-[''] active:scale-95 ${tone}`}
+    >
+      {paid ? (
+        <CheckIcon className="size-4" strokeWidth={3} />
+      ) : (
+        <KoelschGlass className="h-4 w-2" />
+      )}
+      {count > 1 && <span className="tabular">{count}×</span>}
+      STRAFBIER
     </button>
   );
 }

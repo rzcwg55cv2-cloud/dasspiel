@@ -145,6 +145,7 @@ export function useGame(onSounds: (cues: SoundCue[]) => void) {
         apply(engine.startGame);
       },
       toggle: (playerId: string) => apply((s, t) => engine.toggleConfirmation(s, playerId, t)),
+      togglePenalty: (playerId: string) => apply((s, t) => engine.togglePenalty(s, playerId, t)),
       extend: () => apply(engine.extendGame),
       finish: () => apply(engine.finishGame),
       cancel() {
