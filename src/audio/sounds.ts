@@ -1,6 +1,6 @@
 /**
- * Sounds werden vollständig mit der Web Audio API synthetisiert –
- * keine Audiodateien, keine Netzwerkzugriffe, funktioniert offline.
+ * Sounds werden mit der Web Audio API synthetisiert. Einzige Audiodatei ist die
+ * Schlemmersonntag-Hymne; sie wird wie alles andere für den Offline-Betrieb vorgeladen.
  *
  * Mobile Browser erlauben Audio erst nach einer Benutzeraktion. Deshalb wird
  * `unlock()` beim Spielstart und bei jedem Antippen aufgerufen. Schlägt die
@@ -20,6 +20,7 @@ class SoundPlayer {
   private volume = 0.8;
   private primed = false;
   private playInSilentMode = true;
+  private clips = new Map<string, Promise<AudioBuffer | null>>();
 
   /**
    * iPhone: Mit dem Audio-Session-Typ „playback“ sind die Töne auch zu hören, wenn das
@@ -106,6 +107,73 @@ class SoundPlayer {
     } catch {
       return () => {};
     }
+  }
+
+  /** Kurzes „Plopp“, wenn ein Pop-up aufgeht. */
+  playPop(): void {
+    const context = this.ensureContext();
+    if (!context || !this.output || this.volume === 0) return;
+    if (context.state !== 'running') context.resume().catch(() => {});
+    try {
+      playPop(context, this.output, context.currentTime + 0.03);
+    } catch {
+      // Audio ist optional.
+    }
+  }
+
+  /** Lädt und dekodiert eine Audiodatei im Voraus, damit sie später pünktlich startet. */
+  preload(url: string): Promise<AudioBuffer | null> {
+    const cached = this.clips.get(url);
+    if (cached) return cached;
+    const context = this.ensureContext();
+    if (!context) return Promise.resolve(null);
+    const clip = fetch(url)
+      .then((response) => response.arrayBuffer())
+      .then((data) => context.decodeAudioData(data))
+      .catch(() => {
+        this.clips.delete(url);
+        return null;
+      });
+    this.clips.set(url, clip);
+    return clip;
+  }
+
+  /** Spielt eine Audiodatei ab. Liefert eine Funktion, die sie vorzeitig ausblendet. */
+  playClip(url: string, delay = 0): () => void {
+    const context = this.ensureContext();
+    if (!context || !this.output || this.volume === 0) return () => {};
+    if (context.state !== 'running') context.resume().catch(() => {});
+    const output = this.output;
+    const requested = context.currentTime;
+    let stop: (() => void) | null = null;
+    let cancelled = false;
+    this.preload(url).then((buffer) => {
+      if (!buffer || cancelled) return;
+      try {
+        const source = context.createBufferSource();
+        source.buffer = buffer;
+        const gain = context.createGain();
+        source.connect(gain);
+        gain.connect(output);
+        source.start(Math.max(context.currentTime + 0.03, requested + delay));
+        stop = () => {
+          const now = context.currentTime;
+          gain.gain.setValueAtTime(gain.gain.value, now);
+          gain.gain.linearRampToValueAtTime(0, now + 0.15);
+          source.stop(now + 0.2);
+        };
+      } catch {
+        // Audio ist optional.
+      }
+    });
+    return () => {
+      cancelled = true;
+      try {
+        stop?.();
+      } catch {
+        // bereits beendet
+      }
+    };
   }
 
   private ensureContext(): AudioContext | null {
@@ -317,6 +385,30 @@ function playSiren(context: AudioContext, output: AudioNode, start: number): () 
       }
     }
   };
+}
+
+/** Pop-up-Geräusch: ein kurzer, schnell aufsteigender Sinuston mit etwas Obertönen. */
+function playPop(context: AudioContext, output: AudioNode, start: number): void {
+  const gain = context.createGain();
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(0.7, start + 0.006);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.16);
+  gain.connect(output);
+  for (const [type, multiplier, level] of [
+    ['sine', 1, 1],
+    ['triangle', 2, 0.25],
+  ] as const) {
+    const oscillator = context.createOscillator();
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(380 * multiplier, start);
+    oscillator.frequency.exponentialRampToValueAtTime(1150 * multiplier, start + 0.07);
+    const voice = context.createGain();
+    voice.gain.value = level;
+    oscillator.connect(voice);
+    voice.connect(gain);
+    oscillator.start(start);
+    oscillator.stop(start + 0.2);
+  }
 }
 
 export const sounds = new SoundPlayer();

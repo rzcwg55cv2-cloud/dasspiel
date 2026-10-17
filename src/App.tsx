@@ -5,6 +5,7 @@ import { MenuSheet, NoticeToast } from './components/Dialogs';
 import { GameScreen } from './components/GameScreen';
 import { ResultsScreen } from './components/ResultsScreen';
 import { RoundBanner } from './components/RoundBanner';
+import { SchlemmerPopup } from './components/SchlemmerPopup';
 import { SetupScreen } from './components/SetupScreen';
 import { estimateBeer } from './game/beer';
 import { getClock, getStartBlocker } from './game/engine';
@@ -36,6 +37,7 @@ function impact(): void {
 import type { SoundCue } from './game/feedback';
 import { getErrorCounts } from './game/stats';
 import { useGame } from './hooks/useGame';
+import { useSchlemmersonntag } from './hooks/useSchlemmersonntag';
 import { useSettings } from './hooks/useSettings';
 import { useWakeLock } from './hooks/useWakeLock';
 
@@ -53,6 +55,7 @@ export default function App() {
   const inGame = state.status === 'running' || state.status === 'extension-decision';
 
   useWakeLock(inGame);
+  const schlemmer = useSchlemmersonntag(state, now, settings.soundEnabled);
 
   // Malte Spezial: bedrohliches Rot von der Auswahl bis zum Spielende.
   const malteTheme = state.mode === 'malte' && state.status !== 'finished';
@@ -179,6 +182,7 @@ export default function App() {
           onCancelGame={inGame ? actions.cancel : undefined}
         />
       )}
+      {schlemmer.visible && <SchlemmerPopup onClose={schlemmer.close} />}
       {notice && <NoticeToast key={notice.id} title={notice.title} text={notice.text} onDismiss={actions.dismissNotice} />}
     </>
   );

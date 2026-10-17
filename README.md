@@ -37,6 +37,10 @@ Wer ein X bekommt, hat in der nächsten Runde seines Takts ein **STRAFBIER** off
 
 Ist das Strafbier am Rundenende nicht abgehakt, werden zwei draus – und wieder nicht abgehakt vier, dann acht. Ein neues X kommt jeweils noch obendrauf (zwei offene, nicht getrunken, plus neues X = fünf). Verdoppelte Strafbiere stehen ausgefüllt rot als „2× STRAFBIER“ in der Zeile, und die Rundenwechsel-Einblendung meldet „STRAFBIER VERDOPPELT“. Strafbiere aus der letzten Runde vor der Verlängerungsfrage gelten in der ersten Runde nach der Verlängerung. Die Auswertung zeigt, wer wie viele Strafbiere getrunken hat und was bei Feierabend noch offen ist.
 
+### Schlemmersonntag
+
+Einmal pro Spiel geht zu einem zufälligen Zeitpunkt in der ersten Stunde mit einem kurzen „Plopp“ ein kleines Pop-up auf: **„Kennen Sie schon den Schlemmersonntag?“** Dazu laufen die ersten 10 Sekunden der Schlemmersonntag-Hymne, danach verschwindet alles von selbst (oder vorher per ×). Der Zeitpunkt liegt immer 30 Sekunden nach einer vollen Minute, also nie auf einem Rundenende, und bleibt auch nach dem Neuladen gleich. Die Hymne folgt den Sound-Einstellungen (Lautstärke, auch bei lautlos); mit ausgeschaltetem Sound kommt nur das Pop-up.
+
 ### Malte Spezial
 
 Wer **MALTE SPEZIAL** anhakt, sieht die App sofort in bedrohlichem Dunkelrot: Eine Sirene heult, das Display bebt kurz, das Handy vibriert, der Bildschirmrand glüht im Herzschlag-Takt, und statt „SPIEL STARTEN“ steht **BRACE FOR IMPACT** auf dem Button. Das bleibt das ganze Spiel über inklusive aller Verlängerungsfragen. Erst mit dem Ergebnis färbt sich die App wieder zurück. Grüne Haken bleiben auch im roten Design grün.
@@ -126,6 +130,7 @@ src/
     feedback.ts        Wann welcher Sound bzw. welche Einblendung kommt
     penalties.ts       Strafbiere (aus der Rundenhistorie abgeleitet)
     beer.ts            Bierbedarf vor Spielbeginn
+    schlemmersonntag.ts  Zeitpunkt des Schlemmersonntag-Pop-ups
     sayings.ts         Sprüche für die Verlängerungsfrage
     stats.ts           Rangliste und Statistiken (aus der Rundenhistorie berechnet)
     storage.ts         Speichern/Laden mit Prüfung auf ungültige Daten
