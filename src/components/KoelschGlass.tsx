@@ -1,10 +1,7 @@
 import { useId, type SVGProps } from 'react';
 
-/** Bierfarben: goldenes Kölsch (10-Minuten-Takt, Logo) und grünes (15-Minuten-Takt). */
-const BEER_TINTS = {
-  gold: ['#fde68a', '#fbbf24', '#f59e0b'],
-  green: ['#bbf7d0', '#4ade80', '#16a34a'],
-} as const;
+/** Goldenes Kölsch: hell oben, kräftiger zum Boden hin. */
+const BEER_COLORS = ['#fde68a', '#fbbf24', '#f59e0b'] as const;
 
 /** Innenraum des Glases, in dem das Bier steht (SVG-Koordinaten). */
 const BEER_TOP = 16;
@@ -13,14 +10,13 @@ const BEER_BOTTOM = 55.5;
 interface Props extends SVGProps<SVGSVGElement> {
   /** Füllstand von 0 (leer) bis 1 (voll mit Schaumkrone). */
   level?: number;
-  tint?: keyof typeof BEER_TINTS;
 }
 
 /**
  * Eine Kölsch-Stange – schlankes, gerades Glas mit Bier und Schaum.
  * Als Logo immer voll; neben der Uhr leert es sich mit der laufenden Runde.
  */
-export function KoelschGlass({ level = 1, tint = 'gold', className = '', ...props }: Props) {
+export function KoelschGlass({ level = 1, className = '', ...props }: Props) {
   const id = useId();
   const beer = `${id}-beer`;
   const glass = `${id}-glass`;
@@ -28,7 +24,7 @@ export function KoelschGlass({ level = 1, tint = 'gold', className = '', ...prop
   const fill = Math.min(1, Math.max(0, level));
   const full = fill >= 0.999;
   const surface = BEER_BOTTOM - fill * (BEER_BOTTOM - BEER_TOP);
-  const [light, mid, dark] = BEER_TINTS[tint];
+  const [light, mid, dark] = BEER_COLORS;
 
   return (
     <svg viewBox="0 0 32 64" className={className} aria-hidden="true" focusable="false" {...props}>

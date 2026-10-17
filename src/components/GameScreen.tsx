@@ -177,7 +177,6 @@ function RoundGlass({ state, group, now }: { state: GameState; group: GroupId; n
     <div className="flex w-12 shrink-0 flex-col items-center gap-2 sm:w-16">
       <KoelschGlass
         level={level}
-        tint={slow ? 'green' : 'gold'}
         className="h-24 w-12 drop-shadow-sm sm:h-32 sm:w-16"
         role="img"
         aria-hidden={false}

@@ -27,7 +27,7 @@ Die App läuft komplett im Browser, braucht kein Konto und kein Internet währen
 
 Ein Gerät dient als Spielzentrale: Dort werden alle Teilnehmer eingetragen und alle Haken vergeben.
 
-Während des Spiels gibt es keinen Countdown: In der Mitte steht eine runde Uhr mit Sekundenzeiger und der aktuellen Uhrzeit. Daneben steht für jeden Takt ein Kölschglas, das sich mit der laufenden Runde leert und zum Rundenende leer ist. Gelb (goldenes Kölsch) steht für den 10-Minuten-Takt, Grün für den 15-Minuten-Takt. Mit der nächsten Runde ist das Glas wieder voll. Spielt nur ein Takt, gibt es auch nur ein Glas. Runden enden immer zur vollen Minute: Beim Start (und nach jeder Verlängerung) wird die erste Runde bis zur nächsten vollen Minute verlängert, danach läuft der normale Takt. Beispiel: Start um 20:43:12 → Rundenenden um 20:54, 21:04, … (15er: 20:59, 21:14, …).
+Während des Spiels gibt es keinen Countdown: In der Mitte steht eine runde Uhr mit Sekundenzeiger und der aktuellen Uhrzeit. Daneben steht für jeden Takt ein Kölschglas, das sich mit der laufenden Runde leert und zum Rundenende leer ist: links der 10-Minuten-Takt, rechts der 15-Minuten-Takt. Mit der nächsten Runde ist das Glas wieder voll. Spielt nur ein Takt, gibt es auch nur ein Glas. Runden enden immer zur vollen Minute: Beim Start (und nach jeder Verlängerung) wird die erste Runde bis zur nächsten vollen Minute verlängert, danach läuft der normale Takt. Beispiel: Start um 20:43:12 → Rundenenden um 20:54, 21:04, … (15er: 20:59, 21:14, …).
 
 ### Malte Spezial
 
