@@ -72,7 +72,8 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
             <br />
             SPIEL
           </h1>
-          <p className="mt-4 text-lg font-medium text-slate-500 italic">60 Minuten. Alle müssen liefern.</p>
+          <p className="mt-4 text-xl font-bold text-slate-800 italic">60 Minuten. Alle müssen liefern!</p>
+          <p className="mt-1.5 text-base font-medium text-slate-500">Das zeitbasierte Gruppenspiel zum Vorwärtskommen.</p>
         </header>
 
         <section className="mt-12" aria-labelledby="players-heading">

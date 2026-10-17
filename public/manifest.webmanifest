@@ -1,7 +1,7 @@
 {
   "name": "Das Spiel",
   "short_name": "Das Spiel",
-  "description": "60 Minuten. Alle müssen liefern.",
+  "description": "60 Minuten. Alle müssen liefern! Das zeitbasierte Gruppenspiel zum Vorwärtskommen.",
   "lang": "de",
   "start_url": "./",
   "scope": "./",

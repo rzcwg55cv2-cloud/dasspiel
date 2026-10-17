@@ -1,6 +1,8 @@
 # DAS SPIEL
 
-*60 Minuten. Alle müssen liefern.*
+*60 Minuten. Alle müssen liefern!*
+
+Das zeitbasierte Gruppenspiel zum Vorwärtskommen.
 
 Ein zeitbasiertes Gruppenspiel als Web-App. Mehrere Teilnehmer müssen innerhalb jeder Runde eine Aufgabe in der echten Welt erfüllen. Wer geliefert hat, bekommt sein **X**. Wer am Ende der Runde kein X hat, bekommt einen **Fehler**.
 
