@@ -35,7 +35,7 @@ function Overlay({
 
   return (
     <div
-      className={`fixed inset-0 z-40 flex justify-center bg-black/70 backdrop-blur-sm animate-fade ${
+      className={`fixed inset-0 z-40 flex justify-center bg-slate-900/35 backdrop-blur-sm animate-fade ${
         align === 'center' ? 'items-center p-5' : 'items-end sm:items-center sm:p-5'
       }`}
       onClick={(event) => {
@@ -47,7 +47,7 @@ function Overlay({
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
-        className={`w-full max-w-md animate-sheet border border-ink-700 bg-ink-900 shadow-2xl ${
+        className={`w-full max-w-md animate-sheet bg-white shadow-2xl shadow-slate-900/20 ${
           align === 'center' ? 'rounded-3xl' : 'rounded-t-3xl sm:rounded-3xl'
         }`}
       >
@@ -87,15 +87,16 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
   return (
     <Overlay onClose={onClose} labelledBy={titleId}>
       <div className="px-6 pt-5 pb-safe sm:pb-6">
+        <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-slate-200 sm:hidden" aria-hidden="true" />
         <div className="flex items-center justify-between">
-          <h2 id={titleId} className="text-xs font-bold tracking-[0.25em] text-ink-400">
+          <h2 id={titleId} className="text-xs font-bold tracking-[0.25em] text-slate-500">
             EINSTELLUNGEN
           </h2>
           <button
             type="button"
             onClick={onClose}
             data-autofocus
-            className="-mr-2 grid size-11 place-items-center rounded-full text-ink-400 transition hover:bg-ink-800 hover:text-white"
+            className="-mr-2 grid size-11 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-900"
             aria-label="Schließen"
           >
             <CloseIcon className="size-6" />
@@ -103,8 +104,10 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
         </div>
 
         <label className="mt-3 flex cursor-pointer items-center justify-between gap-4 py-2">
-          <span className="flex items-center gap-3 text-lg font-semibold">
-            <SpeakerIcon className="size-6 text-ink-400" />
+          <span className="flex items-center gap-3 text-lg font-bold text-slate-900">
+            <span className="grid size-10 place-items-center rounded-full bg-violet-100 text-violet-600">
+              <SpeakerIcon className="size-5" />
+            </span>
             Sounds
           </span>
           <input
@@ -116,16 +119,16 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
           />
           <span
             aria-hidden="true"
-            className="relative h-8 w-14 shrink-0 rounded-full bg-ink-700 transition peer-checked:bg-go peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-white after:absolute after:top-1 after:left-1 after:size-6 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-6"
+            className="relative h-8 w-14 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-emerald-500 peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-violet-500 after:absolute after:top-1 after:left-1 after:size-6 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-6"
           />
         </label>
 
         <div className={`mt-4 ${settings.soundEnabled ? '' : 'pointer-events-none opacity-40'}`}>
           <div className="flex items-baseline justify-between">
-            <label htmlFor={volumeId} className="text-sm text-ink-300">
+            <label htmlFor={volumeId} className="text-sm font-medium text-slate-600">
               Lautstärke
             </label>
-            <span className="tabular text-sm text-ink-400">{volume}&nbsp;%</span>
+            <span className="tabular text-sm font-bold text-violet-600">{volume}&nbsp;%</span>
           </div>
           <input
             id={volumeId}
@@ -136,14 +139,14 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
             value={volume}
             disabled={!settings.soundEnabled}
             onChange={(e) => onChange({ soundVolume: Number(e.target.value) / 100 })}
-            className="mt-2 h-8 w-full cursor-pointer accent-white"
+            className="mt-2 h-8 w-full cursor-pointer accent-violet-600"
           />
           <div className="mt-4 grid grid-cols-2 gap-2">
             <button
               type="button"
               disabled={!settings.soundEnabled}
               onClick={() => onTestSound('error')}
-              className="h-12 rounded-xl border border-miss/40 text-sm font-semibold text-miss transition hover:bg-miss/10"
+              className="h-12 rounded-xl bg-rose-50 text-sm font-bold text-rose-600 transition hover:bg-rose-100"
             >
               Fehlersound testen
             </button>
@@ -151,22 +154,22 @@ export function MenuSheet({ settings, onChange, onTestSound, onClose, onCancelGa
               type="button"
               disabled={!settings.soundEnabled}
               onClick={() => onTestSound('success')}
-              className="h-12 rounded-xl border border-go/40 text-sm font-semibold text-go transition hover:bg-go/10"
+              className="h-12 rounded-xl bg-emerald-50 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100"
             >
               Erfolgssound testen
             </button>
           </div>
-          <p className="mt-3 text-xs leading-relaxed text-ink-500">
+          <p className="mt-3 text-xs leading-relaxed text-slate-500">
             Auf dem iPhone muss der Stummschalter aus sein, damit die Sounds zu hören sind.
           </p>
         </div>
 
         {onCancelGame && (
-          <div className="mt-6 border-t border-ink-800 pt-4">
+          <div className="mt-6 border-t border-slate-100 pt-4">
             <button
               type="button"
               onClick={() => setConfirming(true)}
-              className="h-12 w-full rounded-xl text-base font-semibold text-miss transition hover:bg-miss/10"
+              className="h-12 w-full rounded-xl text-base font-bold text-rose-600 transition hover:bg-rose-50"
             >
               Spiel abbrechen
             </button>
@@ -182,23 +185,23 @@ function CancelDialog({ onKeepPlaying, onConfirm }: { onKeepPlaying: () => void;
   return (
     <Overlay onClose={onKeepPlaying} labelledBy={titleId} align="center">
       <div className="px-6 py-7 text-center">
-        <h2 id={titleId} className="text-2xl font-black tracking-[0.04em]">
+        <h2 id={titleId} className="text-2xl font-black tracking-[0.04em] text-slate-900">
           SPIEL WIRKLICH ABBRECHEN?
         </h2>
-        <p className="mt-3 text-ink-300 italic">Alle Ergebnisse des laufenden Spiels gehen verloren.</p>
+        <p className="mt-3 text-slate-500 italic">Alle Ergebnisse des laufenden Spiels gehen verloren.</p>
         <div className="mt-7 grid gap-2">
           <button
             type="button"
             onClick={onKeepPlaying}
             data-autofocus
-            className="h-14 rounded-2xl bg-white font-extrabold tracking-[0.12em] text-ink-950 transition hover:bg-ink-300"
+            className="h-14 rounded-2xl bg-linear-to-r from-emerald-500 to-teal-500 font-extrabold tracking-[0.12em] text-white shadow-md shadow-emerald-500/25 transition hover:brightness-105"
           >
             WEITERSPIELEN
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="h-14 rounded-2xl border border-miss/50 font-extrabold tracking-[0.12em] text-miss transition hover:bg-miss/10"
+            className="h-14 rounded-2xl border-2 border-rose-200 font-extrabold tracking-[0.12em] text-rose-600 transition hover:bg-rose-50"
           >
             SPIEL ABBRECHEN
           </button>
@@ -220,10 +223,13 @@ export function NoticeToast({ title, text, onDismiss }: { title: string; text: s
         type="button"
         onClick={onDismiss}
         role="status"
-        className="pointer-events-auto mt-2 w-full max-w-md animate-sheet rounded-2xl border border-ink-700 bg-ink-850/95 px-5 py-4 text-left shadow-2xl backdrop-blur"
+        className="pointer-events-auto mt-2 flex w-full max-w-md animate-sheet items-stretch gap-3 rounded-2xl bg-white px-4 py-4 text-left shadow-xl shadow-slate-900/15 ring-1 ring-slate-100"
       >
-        <span className="block text-sm font-bold">{title}</span>
-        <span className="mt-0.5 block text-sm text-ink-300">{text}</span>
+        <span className="w-1.5 shrink-0 rounded-full bg-linear-to-b from-sky-400 to-violet-500" aria-hidden="true" />
+        <span>
+          <span className="block text-sm font-bold text-slate-900">{title}</span>
+          <span className="mt-0.5 block text-sm text-slate-600">{text}</span>
+        </span>
       </button>
     </div>
   );

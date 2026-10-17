@@ -3,6 +3,8 @@ import { formatList, formatMinutes, formatPercent } from '../game/format';
 import { getModeLabel } from '../game/rules';
 import { computeSummary, type PlayerStats } from '../game/stats';
 import type { GameState } from '../game/types';
+import { Avatar, getPlayerColor } from './Avatar';
+import { ColorGlow } from './Decor';
 import { ChevronIcon, MiniMark } from './icons';
 
 interface Props {
@@ -11,117 +13,144 @@ interface Props {
   onRestart: () => void;
 }
 
+/** Vollständige Klassennamen, damit Tailwind sie beim Build findet. */
+const TILE_TONES = {
+  violet: 'bg-violet-50 text-violet-700',
+  sky: 'bg-sky-50 text-sky-700',
+  amber: 'bg-amber-50 text-amber-700',
+  pink: 'bg-pink-50 text-pink-700',
+  teal: 'bg-teal-50 text-teal-700',
+  emerald: 'bg-emerald-50 text-emerald-700',
+  rose: 'bg-rose-50 text-rose-600',
+  orange: 'bg-orange-50 text-orange-700',
+  indigo: 'bg-indigo-50 text-indigo-700',
+} as const;
+
+type Tone = keyof typeof TILE_TONES;
+
+/** Gold, Silber, Bronze – danach neutral. */
+const RANK_BADGES = ['bg-amber-400 text-white', 'bg-slate-400 text-white', 'bg-orange-400 text-white'];
+
 const timeFormat = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' });
 
 export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
   const summary = computeSummary(state);
   const allTied = summary.playerCount > 1 && summary.bestPlayers.length === summary.playerCount;
+  const colorIndex = new Map(state.players.map((p, i) => [p.id, i]));
   const wallClock =
     state.startedAt !== null && state.finishedAt !== null
       ? `${timeFormat.format(state.startedAt)}–${timeFormat.format(state.finishedAt)} Uhr inkl. Pausen`
       : undefined;
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-5 pt-safe pb-safe">
-      <header className="animate-fade-up pt-8 sm:pt-12">
-        <p className="text-xs font-bold tracking-[0.3em] text-ink-400">ERGEBNIS</p>
-        <h1 className="mt-3 text-[clamp(2.75rem,12vw,5rem)] leading-[0.92] font-black tracking-[-0.035em]">
-          DAS SPIEL IST VORBEI
-        </h1>
-      </header>
+    <div className="relative isolate">
+      <ColorGlow />
+      <div className="mx-auto w-full max-w-3xl px-5 pt-safe pb-safe">
+        <header className="animate-fade-up pt-8 sm:pt-12">
+          <p className="w-fit rounded-full bg-pink-100 px-3 py-1 text-xs font-bold tracking-[0.25em] text-pink-600">
+            ERGEBNIS
+          </p>
+          <h1 className="brand-text mt-4 pb-1 text-[clamp(2.75rem,12vw,5rem)] leading-[0.95] font-black tracking-[-0.035em]">
+            DAS SPIEL IST VORBEI
+          </h1>
+        </header>
 
-      <dl className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-5">
-        <SummaryItem label="Spielmodus" value={getModeLabel(summary.mode)} accent={summary.mode === 'malte'} />
-        <SummaryItem label="Gesamtdauer" value={formatMinutes(summary.playedSeconds)} />
-        <SummaryItem label="Gespielte Runden" value={String(summary.roundsPlayed)} />
-        <SummaryItem label="Teilnehmer" value={String(summary.playerCount)} />
-        <SummaryItem label="Verlängerungen" value={String(summary.extensionCount)} />
-      </dl>
-
-      <Section title="RANGLISTE">
-        <ol className="space-y-2">
-          {summary.ranking.map((stats) => (
-            <RankingRow key={stats.player.id} stats={stats} />
-          ))}
-        </ol>
-      </Section>
-
-      <Section title="STATISTIK">
-        <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          <StatTile label="Fehler gesamt" value={String(summary.totalErrors)} tone={summary.totalErrors ? 'miss' : 'go'} />
-          <StatTile
-            label="Perfekte Runden"
-            value={`${summary.perfectRounds} / ${summary.roundsPlayed}`}
-            tone={summary.perfectRounds ? 'go' : undefined}
-          />
-          <StatTile
-            label="Fehlerhafteste Runde"
-            value={summary.worstRound ? `Runde ${formatList(summary.worstRound.roundNumbers.map(String))}` : 'Keine'}
-            detail={summary.worstRound ? `${summary.worstRound.errors} Fehler` : 'Keine einzige Runde mit Fehlern'}
-          />
-          <StatTile
-            label={summary.bestPlayers.length > 1 ? 'Beste Teilnehmer' : 'Bester Teilnehmer'}
-            value={allTied ? 'Alle gleichauf' : formatList(summary.bestPlayers.map((p) => p.name))}
-            detail={`${allTied ? 'je ' : ''}${summary.ranking[0]?.errors ?? 0} Fehler`}
-            tone="go"
-          />
-          <StatTile
-            label="Meiste Fehler"
-            value={
-              summary.mostErrorPlayers.length === 0
-                ? 'Niemand'
-                : allTied
-                  ? 'Alle gleichauf'
-                  : formatList(summary.mostErrorPlayers.map((p) => p.name))
-            }
-            detail={
-              summary.mostErrorPlayers.length
-                ? `${allTied ? 'je ' : ''}${summary.ranking.at(-1)?.errors ?? 0} Fehler`
-                : 'Alle haben immer geliefert'
-            }
-            tone={summary.mostErrorPlayers.length ? 'miss' : undefined}
-          />
-          <StatTile
-            label="Verlängerungen"
-            value={String(summary.extensionCount)}
-            detail={summary.extensionCount ? `${summary.extensionCount} × 30 Minuten` : 'Keine Verlängerung'}
-          />
-          <StatTile
-            label="Tatsächliche Spielzeit"
-            value={formatMinutes(summary.playedSeconds)}
-            detail={wallClock}
-            wide
-          />
+        <dl className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <SummaryItem label="Spielmodus" value={getModeLabel(summary.mode)} tone="violet" />
+          <SummaryItem label="Gesamtdauer" value={formatMinutes(summary.playedSeconds)} tone="sky" />
+          <SummaryItem label="Gespielte Runden" value={String(summary.roundsPlayed)} tone="amber" />
+          <SummaryItem label="Teilnehmer" value={String(summary.playerCount)} tone="pink" />
+          <SummaryItem label="Verlängerungen" value={String(summary.extensionCount)} tone="teal" />
         </dl>
-      </Section>
 
-      <Section title="ÜBERSICHT">
-        <ResultMatrix state={state} ranking={summary.ranking} />
-      </Section>
+        <Section title="RANGLISTE">
+          <ol className="space-y-2">
+            {summary.ranking.map((stats) => (
+              <RankingRow key={stats.player.id} stats={stats} colorIndex={colorIndex.get(stats.player.id) ?? 0} />
+            ))}
+          </ol>
+        </Section>
 
-      <Section title="VERLAUF JE TEILNEHMER">
-        <div className="space-y-2">
-          {summary.ranking.map((stats) => (
-            <PlayerHistory key={stats.player.id} stats={stats} />
-          ))}
+        <Section title="STATISTIK">
+          <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <StatTile
+              label="Fehler gesamt"
+              value={String(summary.totalErrors)}
+              tone={summary.totalErrors ? 'rose' : 'emerald'}
+            />
+            <StatTile label="Perfekte Runden" value={`${summary.perfectRounds} / ${summary.roundsPlayed}`} tone="emerald" />
+            <StatTile
+              label="Fehlerhafteste Runde"
+              value={summary.worstRound ? `Runde ${formatList(summary.worstRound.roundNumbers.map(String))}` : 'Keine'}
+              detail={summary.worstRound ? `${summary.worstRound.errors} Fehler` : 'Keine einzige Runde mit Fehlern'}
+              tone="orange"
+            />
+            <StatTile
+              label={summary.bestPlayers.length > 1 ? 'Beste Teilnehmer' : 'Bester Teilnehmer'}
+              value={allTied ? 'Alle gleichauf' : formatList(summary.bestPlayers.map((p) => p.name))}
+              detail={`${allTied ? 'je ' : ''}${summary.ranking[0]?.errors ?? 0} Fehler`}
+              tone="amber"
+            />
+            <StatTile
+              label="Meiste Fehler"
+              value={
+                summary.mostErrorPlayers.length === 0
+                  ? 'Niemand'
+                  : allTied
+                    ? 'Alle gleichauf'
+                    : formatList(summary.mostErrorPlayers.map((p) => p.name))
+              }
+              detail={
+                summary.mostErrorPlayers.length
+                  ? `${allTied ? 'je ' : ''}${summary.ranking.at(-1)?.errors ?? 0} Fehler`
+                  : 'Alle haben immer geliefert'
+              }
+              tone="pink"
+            />
+            <StatTile
+              label="Verlängerungen"
+              value={String(summary.extensionCount)}
+              detail={summary.extensionCount ? `${summary.extensionCount} × 30 Minuten` : 'Keine Verlängerung'}
+              tone="teal"
+            />
+            <StatTile
+              label="Tatsächliche Spielzeit"
+              value={formatMinutes(summary.playedSeconds)}
+              detail={wallClock}
+              tone="indigo"
+              wide
+            />
+          </dl>
+        </Section>
+
+        <Section title="ÜBERSICHT">
+          <ResultMatrix state={state} ranking={summary.ranking} colorIndex={colorIndex} />
+        </Section>
+
+        <Section title="VERLAUF JE TEILNEHMER">
+          <div className="space-y-2">
+            {summary.ranking.map((stats) => (
+              <PlayerHistory key={stats.player.id} stats={stats} colorIndex={colorIndex.get(stats.player.id) ?? 0} />
+            ))}
+          </div>
+        </Section>
+
+        <div className="mt-14 grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={onRestart}
+            className="brand-gradient h-16 rounded-2xl px-4 text-base font-extrabold tracking-[0.1em] text-white shadow-lg shadow-pink-500/30 transition hover:brightness-105 active:scale-[0.98]"
+          >
+            GLEICHE GRUPPE ERNEUT SPIELEN
+          </button>
+          <button
+            type="button"
+            onClick={onNewGame}
+            className="h-16 rounded-2xl border-2 border-slate-200 bg-white px-4 text-base font-extrabold tracking-[0.1em] text-slate-800 transition hover:border-slate-300 hover:bg-slate-50 active:scale-[0.98]"
+          >
+            NEUES SPIEL
+          </button>
         </div>
-      </Section>
-
-      <div className="mt-14 grid gap-3 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={onRestart}
-          className="h-16 rounded-2xl bg-white px-4 text-base font-extrabold tracking-[0.1em] text-ink-950 transition hover:bg-ink-300 active:scale-[0.98]"
-        >
-          GLEICHE GRUPPE ERNEUT SPIELEN
-        </button>
-        <button
-          type="button"
-          onClick={onNewGame}
-          className="h-16 rounded-2xl border border-ink-600 px-4 text-base font-extrabold tracking-[0.1em] transition hover:bg-ink-800 active:scale-[0.98]"
-        >
-          NEUES SPIEL
-        </button>
       </div>
     </div>
   );
@@ -130,17 +159,17 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mt-12">
-      <h2 className="mb-3 text-xs font-bold tracking-[0.25em] text-ink-400">{title}</h2>
+      <h2 className="mb-3 text-xs font-bold tracking-[0.25em] text-slate-500">{title}</h2>
       {children}
     </section>
   );
 }
 
-function SummaryItem({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+function SummaryItem({ label, value, tone }: { label: string; value: string; tone: Tone }) {
   return (
-    <div className="rounded-2xl bg-ink-900 px-4 py-4 last:col-span-2 sm:last:col-span-1">
-      <dt className="text-[11px] font-bold tracking-[0.18em] text-ink-500 uppercase">{label}</dt>
-      <dd className={`tabular mt-1 text-lg font-bold ${accent ? 'text-malte' : ''}`}>{value}</dd>
+    <div className={`rounded-2xl px-4 py-4 last:col-span-2 sm:last:col-span-1 ${TILE_TONES[tone]}`}>
+      <dt className="text-[11px] font-bold tracking-[0.18em] uppercase opacity-75">{label}</dt>
+      <dd className="tabular mt-1 text-lg font-black">{value}</dd>
     </div>
   );
 }
@@ -155,71 +184,78 @@ function StatTile({
   label: string;
   value: string;
   detail?: string;
-  tone?: 'go' | 'miss';
+  tone: Tone;
   wide?: boolean;
 }) {
-  const color = tone === 'go' ? 'text-go' : tone === 'miss' ? 'text-miss' : 'text-white';
   return (
-    <div className={`min-w-0 rounded-2xl bg-ink-900 px-4 py-4 ${wide ? 'col-span-2 sm:col-span-1' : ''}`}>
-      <dt className="text-[11px] font-bold tracking-[0.18em] text-ink-500 uppercase">{label}</dt>
-      <dd className={`tabular mt-1 text-xl font-bold [overflow-wrap:anywhere] ${color}`}>{value}</dd>
-      {detail && <dd className="mt-1 text-xs text-ink-400">{detail}</dd>}
+    <div className={`min-w-0 rounded-2xl px-4 py-4 ${TILE_TONES[tone]} ${wide ? 'col-span-2 sm:col-span-1' : ''}`}>
+      <dt className="text-[11px] font-bold tracking-[0.18em] uppercase opacity-75">{label}</dt>
+      <dd className="tabular mt-1 text-xl font-black [overflow-wrap:anywhere]">{value}</dd>
+      {detail && <dd className="mt-1 text-xs font-medium opacity-80">{detail}</dd>}
     </div>
   );
 }
 
-function RankingRow({ stats }: { stats: PlayerStats }) {
+function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: number }) {
   const flawless = stats.errors === 0;
   return (
     <li
-      className={`flex items-center gap-4 rounded-2xl border px-4 py-4 ${
-        flawless ? 'border-go/45 bg-go/[0.07]' : 'border-transparent bg-ink-900'
+      className={`flex items-center gap-3 rounded-2xl border-2 px-3 py-3 ${
+        flawless ? 'border-emerald-300 bg-emerald-50' : 'border-slate-100 bg-white shadow-sm'
       }`}
     >
       <span
-        className={`tabular grid size-11 shrink-0 place-items-center rounded-full text-lg font-black ${
-          stats.rank === 1 ? 'bg-white text-ink-950' : 'bg-ink-800 text-ink-300'
+        className={`tabular grid size-10 shrink-0 place-items-center rounded-full text-lg font-black ${
+          RANK_BADGES[stats.rank - 1] ?? 'bg-slate-100 text-slate-500'
         }`}
         aria-label={`Platz ${stats.rank}`}
       >
         {stats.rank}
       </span>
+      <Avatar name={stats.player.name} index={colorIndex} className="size-10 text-base" />
       <div className="min-w-0 flex-1">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate text-lg font-bold" title={stats.player.name}>
-            {stats.player.name}
+        <div className="truncate text-lg font-bold" title={stats.player.name}>
+          {stats.player.name}
+        </div>
+        {flawless ? (
+          <span className="mt-0.5 inline-block rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold tracking-[0.15em] text-white">
+            FEHLERFREI
           </span>
-          {flawless && (
-            <span className="shrink-0 rounded-full bg-go/15 px-2 py-0.5 text-[10px] font-bold tracking-[0.15em] text-go">
-              FEHLERFREI
-            </span>
-          )}
-        </div>
-        <div className="tabular mt-0.5 text-sm text-ink-400">
-          {stats.successes} von {stats.rounds} Runden erfolgreich
-        </div>
+        ) : (
+          <div className="tabular mt-0.5 text-sm text-slate-500">
+            {stats.successes} von {stats.rounds} erfolgreich
+          </div>
+        )}
       </div>
       <div className="shrink-0 text-right">
-        <div className={`tabular text-2xl leading-none font-black ${flawless ? 'text-go' : 'text-miss'}`}>
+        <div className={`tabular text-2xl leading-none font-black ${flawless ? 'text-emerald-600' : 'text-rose-500'}`}>
           {stats.errors}
           <span className="ml-1 text-xs font-bold tracking-wider">FEHLER</span>
         </div>
-        <div className="tabular mt-1 text-sm text-ink-400">{formatPercent(stats.successRate)}</div>
+        <div className="tabular mt-1 text-sm font-semibold text-slate-500">{formatPercent(stats.successRate)}</div>
       </div>
     </li>
   );
 }
 
 /** Kompakte Matrix: Spieler × Runden. Bei vielen Runden horizontal scrollbar. */
-function ResultMatrix({ state, ranking }: { state: GameState; ranking: PlayerStats[] }) {
+function ResultMatrix({
+  state,
+  ranking,
+  colorIndex,
+}: {
+  state: GameState;
+  ranking: PlayerStats[];
+  colorIndex: Map<string, number>;
+}) {
   return (
-    <div className="overflow-x-auto rounded-2xl bg-ink-900 [scrollbar-width:thin]">
+    <div className="overflow-x-auto rounded-2xl border border-slate-100 bg-white shadow-sm [scrollbar-width:thin]">
       <table className="w-max min-w-full border-separate border-spacing-0 text-sm">
         <thead>
           <tr>
             <th
               scope="col"
-              className="sticky left-0 z-10 bg-ink-900 py-3 pr-3 pl-4 text-left text-[11px] font-bold tracking-[0.18em] text-ink-500"
+              className="sticky left-0 z-10 bg-white py-3 pr-3 pl-4 text-left text-[11px] font-bold tracking-[0.18em] text-slate-400"
             >
               SPIELER
             </th>
@@ -227,7 +263,7 @@ function ResultMatrix({ state, ranking }: { state: GameState; ranking: PlayerSta
               <th
                 key={round.roundNumber}
                 scope="col"
-                className="tabular px-1 py-3 text-center text-[11px] font-bold text-ink-500"
+                className="tabular px-1 py-3 text-center text-[11px] font-bold text-slate-400"
               >
                 R{round.roundNumber}
               </th>
@@ -240,17 +276,22 @@ function ResultMatrix({ state, ranking }: { state: GameState; ranking: PlayerSta
             <tr key={stats.player.id}>
               <th
                 scope="row"
-                className="sticky left-0 z-10 max-w-36 truncate border-t border-ink-800 bg-ink-900 py-2 pr-3 pl-4 text-left font-semibold"
+                className="sticky left-0 z-10 max-w-36 truncate border-t border-slate-100 bg-white py-2 pr-3 pl-4 text-left font-semibold"
                 title={stats.player.name}
               >
+                <span
+                  className="mr-2 inline-block size-2.5 rounded-full align-middle"
+                  style={{ backgroundColor: getPlayerColor(colorIndex.get(stats.player.id) ?? 0) }}
+                  aria-hidden="true"
+                />
                 {stats.player.name}
               </th>
               {stats.results.map((result) => (
-                <td key={result.roundNumber} className="border-t border-ink-800 px-1 py-2 text-center">
+                <td key={result.roundNumber} className="border-t border-slate-100 px-1 py-2 text-center">
                   <MiniMark success={result.success} className="mx-auto size-6" />
                 </td>
               ))}
-              <td className="border-t border-ink-800" />
+              <td className="border-t border-slate-100" />
             </tr>
           ))}
         </tbody>
@@ -259,14 +300,15 @@ function ResultMatrix({ state, ranking }: { state: GameState; ranking: PlayerSta
   );
 }
 
-function PlayerHistory({ stats }: { stats: PlayerStats }) {
+function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: number }) {
   return (
-    <details className="group rounded-2xl bg-ink-900 open:bg-ink-850">
-      <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-4 [&::-webkit-details-marker]:hidden">
-        <ChevronIcon className="size-4 shrink-0 text-ink-500 transition group-open:rotate-90" />
-        <span className="min-w-0 flex-1 truncate font-extrabold tracking-[0.08em] uppercase">{stats.player.name}</span>
-        <span className="tabular shrink-0 text-sm text-ink-400">
-          <span className={stats.errors ? 'text-miss' : 'text-go'}>{stats.errors} Fehler</span> ·{' '}
+    <details className="group rounded-2xl border border-slate-100 bg-white shadow-sm">
+      <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+        <ChevronIcon className="size-4 shrink-0 text-slate-400 transition group-open:rotate-90" />
+        <Avatar name={stats.player.name} index={colorIndex} className="size-8 text-sm" />
+        <span className="min-w-0 flex-1 truncate font-extrabold tracking-[0.06em] uppercase">{stats.player.name}</span>
+        <span className="tabular shrink-0 text-sm font-semibold text-slate-500">
+          <span className={stats.errors ? 'text-rose-500' : 'text-emerald-600'}>{stats.errors} Fehler</span> ·{' '}
           {formatPercent(stats.successRate)}
         </span>
       </summary>
@@ -275,25 +317,27 @@ function PlayerHistory({ stats }: { stats: PlayerStats }) {
           {stats.results.map((result) => (
             <li
               key={result.roundNumber}
-              className="flex items-center justify-between rounded-xl bg-ink-800/70 py-1.5 pr-1.5 pl-2.5"
+              className={`flex items-center justify-between rounded-xl py-1.5 pr-1.5 pl-2.5 ${
+                result.success ? 'bg-emerald-50' : 'bg-rose-50'
+              }`}
             >
-              <span className="tabular text-xs font-semibold text-ink-400">R{result.roundNumber}</span>
+              <span className="tabular text-xs font-bold text-slate-500">R{result.roundNumber}</span>
               <MiniMark success={result.success} className="size-6" />
             </li>
           ))}
         </ul>
         <dl className="tabular mt-4 grid grid-cols-3 gap-2 text-sm">
-          <div>
-            <dt className="text-ink-500">Erfolgreich</dt>
-            <dd className="font-bold text-go">{stats.successes}</dd>
+          <div className="rounded-xl bg-emerald-50 px-3 py-2">
+            <dt className="text-xs text-emerald-700/80">Erfolgreich</dt>
+            <dd className="text-lg font-black text-emerald-700">{stats.successes}</dd>
           </div>
-          <div>
-            <dt className="text-ink-500">Fehler</dt>
-            <dd className={`font-bold ${stats.errors ? 'text-miss' : ''}`}>{stats.errors}</dd>
+          <div className="rounded-xl bg-rose-50 px-3 py-2">
+            <dt className="text-xs text-rose-600/80">Fehler</dt>
+            <dd className="text-lg font-black text-rose-600">{stats.errors}</dd>
           </div>
-          <div>
-            <dt className="text-ink-500">Erfolgsquote</dt>
-            <dd className="font-bold">{formatPercent(stats.successRate)}</dd>
+          <div className="rounded-xl bg-violet-50 px-3 py-2">
+            <dt className="text-xs text-violet-700/80">Erfolgsquote</dt>
+            <dd className="text-lg font-black text-violet-700">{formatPercent(stats.successRate)}</dd>
           </div>
         </dl>
       </div>

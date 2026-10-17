@@ -2,6 +2,8 @@ import { useRef, useState, type FormEvent } from 'react';
 import type { AddPlayerError } from '../game/engine';
 import { MAX_NAME_LENGTH, getRoundDuration, getRoundsInPhase } from '../game/rules';
 import type { GameMode, Player } from '../game/types';
+import { Avatar } from './Avatar';
+import { ColorGlow } from './Decor';
 import { CheckIcon, CloseIcon, MenuIcon, PlusIcon } from './icons';
 
 interface Props {
@@ -50,13 +52,14 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
   };
 
   return (
-    <div className="min-h-dvh">
+    <div className="relative isolate min-h-dvh">
+      <ColorGlow />
       <main className="mx-auto w-full max-w-xl px-5 pt-safe pb-48">
         <div className="flex justify-end">
           <button
             type="button"
             onClick={onOpenMenu}
-            className="-mr-2 grid size-11 place-items-center rounded-full text-ink-400 transition hover:bg-ink-800 hover:text-white"
+            className="-mr-2 grid size-11 place-items-center rounded-full text-slate-500 transition hover:bg-white/70 hover:text-slate-900"
             aria-label="Einstellungen"
           >
             <MenuIcon className="size-6" />
@@ -64,20 +67,24 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
         </div>
 
         <header className="mt-6 animate-fade-up sm:mt-10">
-          <h1 className="text-[clamp(3.5rem,17vw,5.5rem)] leading-[0.9] font-black tracking-[-0.04em]">
+          <h1 className="brand-text pb-1 text-[clamp(3.5rem,17vw,5.5rem)] leading-[0.92] font-black tracking-[-0.04em]">
             DAS
             <br />
             SPIEL
           </h1>
-          <p className="mt-5 text-lg text-ink-400 italic">60 Minuten. Alle müssen liefern.</p>
+          <p className="mt-4 text-lg font-medium text-slate-500 italic">60 Minuten. Alle müssen liefern.</p>
         </header>
 
         <section className="mt-12" aria-labelledby="players-heading">
           <div className="flex items-baseline justify-between">
-            <h2 id="players-heading" className="text-xs font-bold tracking-[0.25em] text-ink-400">
+            <h2 id="players-heading" className="text-xs font-bold tracking-[0.25em] text-slate-500">
               TEILNEHMER
             </h2>
-            <span className="tabular text-xs font-semibold text-ink-500">{players.length}</span>
+            {players.length > 0 && (
+              <span className="tabular rounded-full bg-pink-100 px-2.5 py-0.5 text-xs font-bold text-pink-600">
+                {players.length}
+              </span>
+            )}
           </div>
 
           <form onSubmit={submit} className="mt-3 flex gap-2">
@@ -99,22 +106,22 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
               maxLength={MAX_NAME_LENGTH}
               aria-invalid={error !== null}
               aria-describedby={error ? 'player-error' : undefined}
-              className="h-14 min-w-0 flex-1 rounded-2xl border border-ink-700 bg-ink-850 px-4 text-[17px] text-white placeholder:text-ink-500 focus:border-ink-400 focus:outline-none"
+              className="h-14 min-w-0 flex-1 rounded-2xl border-2 border-slate-200 bg-white px-4 text-[17px] text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-violet-500 focus:outline-none"
             />
             <button
               type="submit"
-              className="flex h-14 shrink-0 items-center gap-2 rounded-2xl bg-ink-700 px-5 font-semibold text-white transition hover:bg-ink-600 active:scale-[0.97]"
+              className="flex h-14 shrink-0 items-center gap-2 rounded-2xl bg-violet-600 px-5 font-bold text-white shadow-md shadow-violet-500/25 transition hover:bg-violet-700 active:scale-[0.97]"
             >
-              <PlusIcon className="size-5" />
+              <PlusIcon className="size-5" strokeWidth={2.5} />
               <span>Hinzufügen</span>
             </button>
           </form>
-          <p id="player-error" role="alert" className="mt-2 min-h-5 text-sm text-miss">
+          <p id="player-error" role="alert" className="mt-2 min-h-5 text-sm font-medium text-rose-600">
             {error}
           </p>
 
           {players.length === 0 ? (
-            <p className="mt-2 rounded-2xl border border-dashed border-ink-700 px-5 py-6 text-center text-ink-400">
+            <p className="mt-2 rounded-2xl border-2 border-dashed border-slate-200 bg-white/70 px-5 py-6 text-center text-slate-500">
               Noch niemand dabei. Füge mindestens einen Teilnehmer hinzu.
             </p>
           ) : (
@@ -122,16 +129,16 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
               {players.map((player, index) => (
                 <li
                   key={player.id}
-                  className="flex animate-fade-up items-center gap-4 rounded-2xl bg-ink-850 py-2 pr-2 pl-5"
+                  className="flex animate-fade-up items-center gap-3 rounded-2xl border border-slate-100 bg-white py-2 pr-2 pl-3 shadow-sm"
                 >
-                  <span className="tabular w-5 shrink-0 text-sm font-semibold text-ink-500">{index + 1}</span>
+                  <Avatar name={player.name} index={index} className="size-10 text-base" />
                   <span className="min-w-0 flex-1 truncate text-lg font-semibold" title={player.name}>
                     {player.name}
                   </span>
                   <button
                     type="button"
                     onClick={() => onRemovePlayer(player.id)}
-                    className="grid size-11 shrink-0 place-items-center rounded-xl text-ink-400 transition hover:bg-ink-700 hover:text-white"
+                    className="grid size-11 shrink-0 place-items-center rounded-xl text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
                     aria-label={`${player.name} entfernen`}
                   >
                     <CloseIcon className="size-5" />
@@ -143,12 +150,14 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
         </section>
 
         <section className="mt-12" aria-labelledby="mode-heading">
-          <h2 id="mode-heading" className="text-xs font-bold tracking-[0.25em] text-ink-400">
+          <h2 id="mode-heading" className="text-xs font-bold tracking-[0.25em] text-slate-500">
             SPIELMODUS
           </h2>
           <label
-            className={`mt-3 flex cursor-pointer items-start gap-4 rounded-2xl border p-5 transition ${
-              malte ? 'border-malte/60 bg-malte/[0.07]' : 'border-ink-700 bg-ink-850 hover:border-ink-600'
+            className={`mt-3 flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition ${
+              malte
+                ? 'border-violet-400 bg-linear-to-br from-violet-50 to-fuchsia-50 shadow-md shadow-violet-500/10'
+                : 'border-slate-200 bg-white hover:border-violet-200'
             }`}
           >
             <input
@@ -158,50 +167,53 @@ export function SetupScreen({ players, mode, onAddPlayer, onRemovePlayer, onMode
               onChange={(e) => onModeChange(e.target.checked ? 'malte' : 'normal')}
             />
             <span
-              className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg border-2 transition peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-white ${
-                malte ? 'border-malte bg-malte text-ink-950' : 'border-ink-500'
+              className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg border-2 transition peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-violet-500 ${
+                malte ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white'
               }`}
               aria-hidden="true"
             >
               {malte && <CheckIcon className="size-5 animate-pop" strokeWidth={3} />}
             </span>
             <span>
-              <span className={`block text-lg font-extrabold tracking-[0.12em] ${malte ? 'text-malte' : ''}`}>
+              <span className={`block text-lg font-extrabold tracking-[0.12em] ${malte ? 'text-violet-700' : 'text-slate-900'}`}>
                 MALTE SPEZIAL
               </span>
-              <span className="mt-1 block text-ink-400 italic">Doppelt so viele Runden. Halb so viel Zeit.</span>
+              <span className="mt-1 block text-slate-500 italic">Doppelt so viele Runden. Halb so viel Zeit.</span>
             </span>
           </label>
-          <p className="mt-3 px-1 text-sm text-ink-400">
-            <span className={`font-bold tracking-[0.1em] ${malte ? 'text-malte' : 'text-white'}`}>
+          <p className="mt-3 flex flex-wrap items-center gap-2 px-1 text-sm text-slate-500">
+            <span
+              className={`rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[0.15em] ${
+                malte ? 'bg-violet-100 text-violet-700' : 'bg-sky-100 text-sky-700'
+              }`}
+            >
               {malte ? 'MALTE SPEZIAL' : 'NORMAL'}
             </span>
-            <span className="mx-2 text-ink-600">·</span>
-            <span className="tabular">
+            <span className="tabular font-medium">
               {rounds} Runden à {roundMinutes} Minuten
             </span>
           </p>
         </section>
 
         {!isStandalone() && (
-          <p className="mt-12 px-1 text-xs leading-relaxed text-ink-500">
+          <p className="mt-12 px-1 text-xs leading-relaxed text-slate-400">
             Tipp: Über „Teilen“ bzw. das Browsermenü → „Zum Home-Bildschirm“ wird Das Spiel zur App und
             funktioniert auch ohne Internet.
           </p>
         )}
       </main>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 bg-gradient-to-t from-ink-950 from-60% to-transparent pt-10">
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 bg-linear-to-t from-white from-60% to-transparent pt-10">
         <div className="pointer-events-auto mx-auto w-full max-w-xl px-5 pb-safe">
           <button
             type="button"
             onClick={onStart}
             disabled={players.length === 0}
-            className="h-16 w-full rounded-2xl bg-white text-lg font-extrabold tracking-[0.14em] text-ink-950 shadow-[0_10px_40px_-10px_rgba(255,255,255,0.35)] transition hover:bg-ink-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-ink-800 disabled:text-ink-500 disabled:shadow-none"
+            className="brand-gradient h-16 w-full rounded-2xl text-lg font-extrabold tracking-[0.14em] text-white shadow-lg shadow-pink-500/30 transition hover:brightness-105 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-none disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
           >
             SPIEL STARTEN
           </button>
-          <p className="mt-2 h-4 text-center text-xs text-ink-500">
+          <p className="mt-2 h-4 text-center text-xs text-slate-400">
             {players.length === 0 ? 'Mindestens ein Teilnehmer wird benötigt.' : ''}
           </p>
         </div>
