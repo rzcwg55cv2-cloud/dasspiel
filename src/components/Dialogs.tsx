@@ -190,10 +190,6 @@ export function MenuSheet({
               </div>
             </div>
           ))}
-          <p className="mt-5 text-xs leading-relaxed text-slate-500">
-            Die Töne kommen auch, wenn das iPhone auf lautlos steht. Läuft auf demselben iPhone Musik, wird sie
-            dabei unterbrochen. Die Medienlautstärke muss aufgedreht sein.
-          </p>
         </div>
 
         <div className="mt-6 border-t border-slate-100 pt-3">
