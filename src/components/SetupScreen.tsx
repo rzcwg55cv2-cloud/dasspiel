@@ -227,7 +227,7 @@ export function SetupScreen({
               <span className="mt-1 block text-slate-500 italic">
                 {malte
                   ? 'Nicht bei Malte Spezial.'
-                  : 'Einzelne spielen im 15-Minuten-Takt mit – mit eigenem Glas.'}
+                  : 'Einzelne spielen im 15-Minuten-Takt mit.'}
               </span>
               {showGroups && (
                 <span className="mt-2 block text-sm font-semibold text-green-700">

@@ -32,14 +32,9 @@ class SoundPlayer {
     if (this.enabled === enabled) return;
     this.enabled = enabled;
     this.applyAudioSession();
-    // Ein laufender AudioContext übernimmt den neuen Typ erst nach erneutem Aktivieren.
+    // Aus: Audioausgabe anhalten. An: Sie läuft beim nächsten Antippen wieder an (siehe unlock).
     const context = this.context;
-    if (context?.state === 'running') {
-      context
-        .suspend()
-        .then(() => context.resume())
-        .catch(() => {});
-    }
+    if (!enabled && context) context.suspend().catch(() => {});
   }
 
   private applyAudioSession(): void {
@@ -53,8 +48,13 @@ class SoundPlayer {
     }
   }
 
-  /** Muss aus einer Benutzeraktion heraus aufgerufen werden (Tippen, Klicken, Taste). */
+  /**
+   * Muss aus einer Benutzeraktion heraus aufgerufen werden (Tippen, Klicken, Taste).
+   * Nur hier entsteht die Audioausgabe: Auf dem iPhone bleibt eine Ausgabe, die ohne
+   * Antippen entstanden ist, stumm bzw. hält sich an den Lautlos-Schalter.
+   */
   unlock(): void {
+    if (!this.enabled) return;
     // Der Sitzungstyp muss gesetzt sein, bevor die Audioausgabe aktiviert wird.
     this.applyAudioSession();
     const context = this.ensureContext();
@@ -86,8 +86,8 @@ class SoundPlayer {
    * `delay` (Sekunden) erlaubt zwei Töne direkt nacheinander, z. B. bei Minute 30.
    */
   play(kind: SoundKind, group: GroupId = 'main', delay = 0): void {
-    const context = this.ensureContext();
-    if (!context || !this.output || this.volume === 0) return;
+    const context = this.context;
+    if (!this.enabled || !context || !this.output || this.volume === 0) return;
     if (context.state !== 'running') context.resume().catch(() => {});
     try {
       const start = context.currentTime + 0.03 + delay;
@@ -100,8 +100,8 @@ class SoundPlayer {
 
   /** Sirene beim Einschalten von Malte Spezial. Liefert eine Funktion, die sie vorzeitig verstummen lässt. */
   playSiren(): () => void {
-    const context = this.ensureContext();
-    if (!context || !this.output || this.volume === 0) return () => {};
+    const context = this.context;
+    if (!this.enabled || !context || !this.output || this.volume === 0) return () => {};
     if (context.state !== 'running') context.resume().catch(() => {});
     try {
       return playSiren(context, this.output, context.currentTime + 0.03);
@@ -112,8 +112,8 @@ class SoundPlayer {
 
   /** Kurzes „Plopp“, wenn ein Pop-up aufgeht. */
   playPop(): void {
-    const context = this.ensureContext();
-    if (!context || !this.output || this.volume === 0) return;
+    const context = this.context;
+    if (!this.enabled || !context || !this.output || this.volume === 0) return;
     if (context.state !== 'running') context.resume().catch(() => {});
     try {
       playPop(context, this.output, context.currentTime + 0.03);
@@ -126,11 +126,11 @@ class SoundPlayer {
   preload(url: string): Promise<AudioBuffer | null> {
     const cached = this.clips.get(url);
     if (cached) return cached;
-    const context = this.ensureContext();
-    if (!context) return Promise.resolve(null);
     const clip = fetch(url)
       .then((response) => response.arrayBuffer())
-      .then((data) => context.decodeAudioData(data))
+      // Dekodieren klappt auch ohne Audioausgabe – so muss vor dem ersten Antippen keine entstehen.
+      .then((data) => (this.context ?? createDecoder()).decodeAudioData(data))
+      .then((buffer) => (buffer instanceof AudioBuffer ? buffer : null))
       .catch(() => {
         this.clips.delete(url);
         return null;
@@ -144,8 +144,8 @@ class SoundPlayer {
    * Auf dem Handy kann beides nach längerer Stille einen Moment dauern.
    */
   prepare(url: string, timeoutMs: number): Promise<boolean> {
-    const context = this.ensureContext();
-    if (!context) return Promise.resolve(false);
+    const context = this.context;
+    if (!this.enabled || !context) return Promise.resolve(false);
     const ready = Promise.all([context.state === 'running' ? undefined : context.resume(), this.preload(url)])
       .then(([, buffer]) => buffer !== null)
       .catch(() => false);
@@ -155,8 +155,8 @@ class SoundPlayer {
 
   /** Spielt eine Audiodatei ab. Liefert eine Funktion, die sie vorzeitig ausblendet. */
   playClip(url: string, delay = 0): () => void {
-    const context = this.ensureContext();
-    if (!context || !this.output || this.volume === 0) return () => {};
+    const context = this.context;
+    if (!this.enabled || !context || !this.output || this.volume === 0) return () => {};
     if (context.state !== 'running') context.resume().catch(() => {});
     const output = this.output;
     const requested = context.currentTime;
@@ -424,6 +424,11 @@ function playPop(context: AudioContext, output: AudioNode, start: number): void 
     oscillator.start(start);
     oscillator.stop(start + 0.2);
   }
+}
+
+/** Dekodiert Audiodateien ohne Audioausgabe (OfflineAudioContext gibt nichts aus). */
+function createDecoder(): BaseAudioContext {
+  return new OfflineAudioContext(2, 1, 44100);
 }
 
 export const sounds = new SoundPlayer();
