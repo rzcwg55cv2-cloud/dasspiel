@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Das Bierspiel</title>
+    <meta name="description" content="60 Minuten. Alle müssen liefern! Das zeitbasierte Gruppenspiel zum Vorwärtskommen." />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="color-scheme" content="light" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Das Bierspiel" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="manifest" href="./manifest.webmanifest?v=3" />
+    <link rel="icon" href="./icons/icon-v3.svg" type="image/svg+xml" />
+    <link rel="icon" href="./icons/icon-192-v3.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon-v3.png" />
+    <style>
+      html, body { background: #ffffff; }
+      html[data-theme='malte'], html[data-theme='malte'] body { background: #140405; }
+    </style>
+    <script>
+      // Malte Spezial sofort rot zeigen, bevor die App geladen ist (kein weißes Aufblitzen).
+      try {
+        var saved = JSON.parse(localStorage.getItem('das-spiel/state/v1') || 'null');
+        if (saved && saved.mode === 'malte' && saved.status !== 'finished') {
+          document.documentElement.dataset.theme = 'malte';
+        }
+      } catch (e) {}
+    </script>
+    <script type="module" crossorigin src="./assets/index--0SFG2iI.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BwsrXvtA.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Das Bierspiel benötigt JavaScript.</noscript>
+  </body>
+</html>
