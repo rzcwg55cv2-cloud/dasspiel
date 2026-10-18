@@ -45,7 +45,7 @@ Einmal pro Spiel geht zu einem zufälligen Zeitpunkt in der ersten Stunde mit ei
 
 ### Malte Spezial
 
-Wer **MALTE SPEZIAL** anhakt, sieht die App sofort in bedrohlichem Dunkelrot: Die beiden Rundumleuchten auf der Auswahlfläche fangen an zu drehen, eine Sirene heult, das Display bebt kurz, das Handy vibriert, der Bildschirmrand glüht im Herzschlag-Takt, und statt „SPIEL STARTEN“ steht **BRACE FOR IMPACT** zwischen zwei Rundumleuchten auf dem Button. Das bleibt das ganze Spiel über inklusive aller Verlängerungsfragen. Erst mit dem Ergebnis färbt sich die App wieder zurück. Grüne Haken bleiben auch im roten Design grün.
+Wer **MALTE SPEZIAL** anhakt, sieht die App sofort in bedrohlichem Dunkelrot: Die beiden Rundumleuchten links und rechts vom Schriftzug fangen an zu drehen, eine Sirene heult, das Display bebt kurz, das Handy vibriert, der Bildschirmrand glüht im Herzschlag-Takt, und statt „SPIEL STARTEN“ steht **BRACE FOR IMPACT** zwischen zwei Rundumleuchten auf dem Button. Das bleibt das ganze Spiel über inklusive aller Verlängerungsfragen. Erst mit dem Ergebnis färbt sich die App wieder zurück. Grüne Haken bleiben auch im roten Design grün.
 
 ### 15-Minuten-Takt
 

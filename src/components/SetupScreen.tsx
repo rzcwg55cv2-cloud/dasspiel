@@ -250,16 +250,14 @@ export function SetupScreen({
               )}
             </span>
           </label>
-          {/* Malte Spezial mit zwei Rundumleuchten auf dem Dach – sie drehen sich, sobald es an ist. */}
+          {/* Malte Spezial: links und rechts vom Schriftzug je eine Rundumleuchte – sie drehen sich, sobald es an ist. */}
           <label
-            className={`relative mt-10 flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition ${
+            className={`mt-3 flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition ${
               malte
                 ? 'border-red-400 bg-linear-to-br from-red-50 to-yellow-50 shadow-md shadow-red-500/10'
                 : 'border-slate-200 bg-white hover:border-red-200'
             }`}
           >
-            <Beacon active={malte} className="absolute -top-[31px] left-5 size-9" />
-            <Beacon active={malte} delay={0.5} className="absolute -top-[31px] right-5 size-9" />
             <input
               type="checkbox"
               className="peer sr-only"
@@ -275,8 +273,14 @@ export function SetupScreen({
               {malte && <CheckIcon className="size-5 animate-pop" strokeWidth={3} />}
             </span>
             <span>
-              <span className={`block text-lg font-extrabold tracking-[0.12em] ${malte ? 'text-red-600' : 'text-slate-900'}`}>
+              <span
+                className={`flex items-center gap-1.5 text-lg font-extrabold tracking-[0.12em] max-[359px]:text-base max-[359px]:tracking-[0.06em] ${
+                  malte ? 'text-red-600' : 'text-slate-900'
+                }`}
+              >
+                <Beacon active={malte} className="size-6 shrink-0 max-[359px]:size-5" />
                 MALTE SPEZIAL
+                <Beacon active={malte} delay={0.5} className="size-6 shrink-0 max-[359px]:size-5" />
               </span>
               <span className="mt-1 block text-slate-500 italic">Doppelt so viele Runden. Halb so viel Zeit.</span>
             </span>

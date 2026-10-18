@@ -110,16 +110,13 @@ export function GuideSheet({ onClose }: { onClose: () => void }) {
           ))}
         </ol>
 
-        <div className="mt-6 flex items-center gap-4 rounded-2xl border-2 border-red-300 bg-red-50 px-4 py-3.5">
-          <span className="flex shrink-0 gap-0.5">
-            <Beacon active className="size-7" />
-            <Beacon active delay={0.5} className="size-7" />
-          </span>
-          <p className="leading-snug text-slate-600">
-            <strong className="font-extrabold tracking-[0.08em] text-red-600">MALTE SPEZIAL</strong>
-            <br />
-            Doppelt so viele Runden. Halb so viel Zeit. Brace for impact.
+        <div className="mt-6 rounded-2xl border-2 border-red-300 bg-red-50 px-4 py-3.5">
+          <p className="flex items-center gap-1.5 font-extrabold tracking-[0.08em] text-red-600">
+            <Beacon active className="size-6 shrink-0" />
+            MALTE SPEZIAL
+            <Beacon active delay={0.5} className="size-6 shrink-0" />
           </p>
+          <p className="mt-1 leading-snug text-slate-600">Doppelt so viele Runden. Halb so viel Zeit. Brace for impact.</p>
         </div>
 
         <p className="mt-5 text-center text-sm text-slate-500">
