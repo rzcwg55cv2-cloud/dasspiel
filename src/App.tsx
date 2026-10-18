@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { sounds } from './audio/sounds';
 import { DecisionScreen } from './components/DecisionScreen';
 import { MenuSheet, NoticeToast } from './components/Dialogs';
+import { FactPopup } from './components/FactPopup';
 import { GameScreen } from './components/GameScreen';
 import { GuideSheet } from './components/GuideSheet';
 import { ResultsScreen } from './components/ResultsScreen';
@@ -38,6 +39,7 @@ function impact(): void {
 import type { SoundCue } from './game/feedback';
 import { getErrorCounts } from './game/stats';
 import { useGame } from './hooks/useGame';
+import { useBierwissen } from './hooks/useBierwissen';
 import { useSchlemmersonntag } from './hooks/useSchlemmersonntag';
 import { useSettings } from './hooks/useSettings';
 import { useWakeLock } from './hooks/useWakeLock';
@@ -58,6 +60,7 @@ export default function App() {
 
   useWakeLock(inGame);
   const schlemmer = useSchlemmersonntag(state, now, settings.soundEnabled);
+  const bierwissen = useBierwissen(state, now, settings.soundEnabled, schlemmer.visible);
 
   // Malte Spezial: bedrohliches Rot von der Auswahl bis zum Spielende.
   const malteTheme = state.mode === 'malte' && state.status !== 'finished';
@@ -193,6 +196,7 @@ export default function App() {
       )}
       {guideOpen && <GuideSheet onClose={closeGuide} />}
       {schlemmer.visible && <SchlemmerPopup onClose={schlemmer.close} />}
+      {bierwissen.fact && <FactPopup key={bierwissen.fact} fact={bierwissen.fact} onClose={bierwissen.close} />}
       {notice && <NoticeToast key={notice.id} title={notice.title} text={notice.text} onDismiss={actions.dismissNotice} />}
     </>
   );
