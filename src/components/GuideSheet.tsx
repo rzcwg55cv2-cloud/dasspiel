@@ -128,7 +128,7 @@ export function GuideSheet({ onClose }: { onClose: () => void }) {
           onClick={onClose}
           className="mt-5 h-14 w-full rounded-2xl bg-green-600 text-base font-extrabold tracking-[0.14em] text-white shadow-lg shadow-green-600/30 transition hover:brightness-110 active:scale-[0.98]"
         >
-          ALLES KLAR
+          ICH HAB DURST!
         </button>
       </div>
     </Overlay>
