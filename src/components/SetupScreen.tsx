@@ -21,6 +21,7 @@ interface Props {
   onPlayerGroupChange: (id: string, group: GroupId) => void;
   startBlocker: StartBlocker | null;
   beer: BeerEstimate;
+  onOpenGuide: () => void;
   onStart: () => void;
   onOpenMenu: () => void;
 }
@@ -56,6 +57,7 @@ export function SetupScreen({
   onPlayerGroupChange,
   startBlocker,
   beer,
+  onOpenGuide,
   onStart,
   onOpenMenu,
 }: Props) {
@@ -105,6 +107,16 @@ export function SetupScreen({
           </h1>
           <p className="mt-4 text-xl font-bold text-slate-800 italic">60 Minuten. Alle müssen liefern!</p>
           <p className="mt-1.5 text-base font-medium text-slate-500">Das zeitbasierte Gruppenspiel zum Vorwärtskommen.</p>
+          <button
+            type="button"
+            onClick={onOpenGuide}
+            className="mt-5 inline-flex items-center gap-2 rounded-full border-2 border-slate-200 bg-white/70 py-1.5 pr-4 pl-1.5 text-xs font-black tracking-[0.2em] text-slate-700 transition hover:border-slate-300 hover:bg-white/70 active:scale-[0.97]"
+          >
+            <span className="grid size-6 place-items-center rounded-full bg-yellow-400 text-sm tracking-normal text-yellow-950">
+              ?
+            </span>
+            SO GEHT'S
+          </button>
         </header>
 
         <section className="mt-12" aria-labelledby="players-heading">

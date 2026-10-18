@@ -1,13 +1,13 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { SoundKind } from '../game/feedback';
 import type { GroupId, Settings } from '../game/types';
-import { CheckIcon, CloseIcon, SpeakerIcon } from './icons';
+import { CheckIcon, ChevronIcon, CloseIcon, SpeakerIcon } from './icons';
 
 /** So lange leuchtet ein Testknopf – etwa so lange, wie sein Ton dauert. */
 const TEST_FLASH_MS: Record<SoundKind, number> = { error: 950, success: 1100 };
 
-/** Gemeinsame Grundlage für Menü und Sicherheitsabfrage: Hintergrund, Escape-Taste, Fokus. */
-function Overlay({
+/** Gemeinsame Grundlage für Menü, Anleitung und Sicherheitsabfrage: Hintergrund, Escape-Taste, Fokus. */
+export function Overlay({
   onClose,
   labelledBy,
   children,
@@ -66,12 +66,21 @@ interface MenuProps {
   onTestSound: (kind: SoundKind, group: GroupId) => void;
   /** Testknöpfe auch für die eigenen Töne des 15-Minuten-Takts zeigen. */
   showSlowGroup: boolean;
+  onOpenGuide: () => void;
   onClose: () => void;
   /** Nur während eines Spiels vorhanden. */
   onCancelGame?: () => void;
 }
 
-export function MenuSheet({ settings, onChange, onTestSound, showSlowGroup, onClose, onCancelGame }: MenuProps) {
+export function MenuSheet({
+  settings,
+  onChange,
+  onTestSound,
+  showSlowGroup,
+  onOpenGuide,
+  onClose,
+  onCancelGame,
+}: MenuProps) {
   const titleId = useId();
   const volumeId = useId();
   const [confirming, setConfirming] = useState(false);
@@ -187,8 +196,22 @@ export function MenuSheet({ settings, onChange, onTestSound, showSlowGroup, onCl
           </p>
         </div>
 
+        <div className="mt-6 border-t border-slate-100 pt-3">
+          <button
+            type="button"
+            onClick={onOpenGuide}
+            className="-mx-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-xl px-2 py-2 text-lg font-bold text-slate-900 transition hover:bg-slate-50"
+          >
+            <span className="grid size-10 place-items-center rounded-full bg-yellow-100 text-lg font-black text-yellow-800">
+              ?
+            </span>
+            <span className="flex-1 text-left">Spielanleitung</span>
+            <ChevronIcon className="size-5 text-slate-400" />
+          </button>
+        </div>
+
         {onCancelGame && (
-          <div className="mt-6 border-t border-slate-100 pt-4">
+          <div className="mt-3 border-t border-slate-100 pt-4">
             <button
               type="button"
               onClick={() => setConfirming(true)}

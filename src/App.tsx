@@ -3,6 +3,7 @@ import { sounds } from './audio/sounds';
 import { DecisionScreen } from './components/DecisionScreen';
 import { MenuSheet, NoticeToast } from './components/Dialogs';
 import { GameScreen } from './components/GameScreen';
+import { GuideSheet } from './components/GuideSheet';
 import { ResultsScreen } from './components/ResultsScreen';
 import { RoundBanner } from './components/RoundBanner';
 import { SchlemmerPopup } from './components/SchlemmerPopup';
@@ -52,6 +53,7 @@ export default function App() {
   );
   const { state, now, liveRounds, notice, actions } = useGame(playSounds);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const inGame = state.status === 'running' || state.status === 'extension-decision';
 
   useWakeLock(inGame);
@@ -102,6 +104,11 @@ export default function App() {
   const clock = getClock(state, now);
   const openMenu = useCallback(() => setMenuOpen(true), []);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const openGuide = useCallback(() => {
+    setMenuOpen(false);
+    setGuideOpen(true);
+  }, []);
+  const closeGuide = useCallback(() => setGuideOpen(false), []);
   const withAudio = (action: () => void) => () => {
     sounds.unlock();
     action();
@@ -122,6 +129,7 @@ export default function App() {
           onPlayerGroupChange={actions.setPlayerGroup}
           startBlocker={getStartBlocker(state)}
           beer={estimateBeer(state)}
+          onOpenGuide={openGuide}
           onStart={withAudio(actions.start)}
           onOpenMenu={openMenu}
         />
@@ -178,10 +186,12 @@ export default function App() {
             sounds.play(kind, group);
           }}
           showSlowGroup={state.slow !== null || (state.status === 'setup' && state.slowGroupEnabled && state.mode === 'normal')}
+          onOpenGuide={openGuide}
           onClose={closeMenu}
           onCancelGame={inGame ? actions.cancel : undefined}
         />
       )}
+      {guideOpen && <GuideSheet onClose={closeGuide} />}
       {schlemmer.visible && <SchlemmerPopup onClose={schlemmer.close} />}
       {notice && <NoticeToast key={notice.id} title={notice.title} text={notice.text} onDismiss={actions.dismissNotice} />}
     </>

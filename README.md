@@ -27,6 +27,8 @@ Die App läuft komplett im Browser, braucht kein Konto und kein Internet währen
 
 Ein Gerät dient als Spielzentrale: Dort werden alle Teilnehmer eingetragen und alle Haken vergeben.
 
+Eine kurze **Spielanleitung** öffnet sich auf dem Startbildschirm über „SO GEHT'S“ und jederzeit über das Menü („Spielanleitung“) – auch mitten im Spiel.
+
 Unter dem Start-Button steht klein der **Bierbedarf** für die ersten 60 Minuten: 0,2 l pro Person und Runde ihres Takts, also z. B. 4 Personen im Modus Normal = 24 × 0,2 l = 4,8 l. Malte Spezial braucht doppelt so viel, Personen im 15-Minuten-Takt zählen mit 4 statt 6 Runden. Strafbiere sind nicht eingerechnet. Was eine Verlängerung um 30 Minuten zusätzlich braucht, steht erst bei der Verlängerungsfrage – dort samt der noch offenen Strafbiere.
 
 Während des Spiels gibt es keinen Countdown: In der Mitte steht eine runde Uhr mit Sekundenzeiger und der aktuellen Uhrzeit, mit dem Wappen in der oberen Hälfte des Zifferblatts. Daneben steht für jeden Takt ein Kölschglas, das sich mit der laufenden Runde leert und zum Rundenende leer ist: links der 10-Minuten-Takt, rechts der 15-Minuten-Takt. Mit der nächsten Runde ist das Glas wieder voll. Spielt nur ein Takt, gibt es auch nur ein Glas. Runden enden immer zur vollen Minute: Beim Start (und nach jeder Verlängerung) wird die erste Runde bis zur nächsten vollen Minute verlängert, danach läuft der normale Takt. Beispiel: Start um 20:43:12 → Rundenenden um 20:54, 21:04, … (15er: 20:59, 21:14, …).
@@ -138,7 +140,7 @@ src/
     *.test.ts          Tests
   audio/sounds.ts      Buzzer und Erfolgston (Web Audio API)
   hooks/               React-Anbindung: Spielzustand, Einstellungen, Wake Lock
-  components/          Bildschirme und Dialoge
+  components/          Bildschirme, Dialoge und die Spielanleitung (GuideSheet)
   pwa/                 Registrierung des Service Workers
 build/
   service-worker-plugin.ts   erzeugt sw.js mit allen Dateien der App
