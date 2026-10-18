@@ -39,11 +39,11 @@ Ist das Strafbier am Rundenende nicht abgehakt, werden zwei draus – und wieder
 
 ### Schlemmersonntag
 
-Einmal pro Spiel geht zu einem zufälligen Zeitpunkt in der ersten Stunde mit einem kurzen „Plopp“ ein kleines Pop-up auf: **„Kennen Sie schon den Schlemmersonntag?“** Dazu laufen die ersten 10 Sekunden der Schlemmersonntag-Hymne, danach verschwindet alles von selbst (oder vorher per ×). Der Zeitpunkt liegt immer 30 Sekunden nach einer vollen Minute, also nie auf einem Rundenende, und bleibt auch nach dem Neuladen gleich. Die Hymne folgt den Sound-Einstellungen (Lautstärke, auch bei lautlos); mit ausgeschaltetem Sound kommt nur das Pop-up.
+Einmal pro Spiel geht zu einem zufälligen Zeitpunkt in der ersten Stunde mit einem kurzen „Plopp“ ein kleines Pop-up auf: **„Kennen Sie schon den Schlemmersonntag?“** Dazu laufen die ersten 10 Sekunden der Schlemmersonntag-Hymne, danach verschwindet alles von selbst (oder vorher per ×). Der Zeitpunkt liegt immer 30 Sekunden nach einer vollen Minute, also nie auf einem Rundenende, und bleibt auch nach dem Neuladen gleich. Die Hymne folgt den Sound-Einstellungen (Lautstärke; auch bei lautlos); mit ausgeschaltetem Sound kommt nur das Pop-up.
 
 ### Malte Spezial
 
-Wer **MALTE SPEZIAL** anhakt, sieht die App sofort in bedrohlichem Dunkelrot: Eine Sirene heult, das Display bebt kurz, das Handy vibriert, der Bildschirmrand glüht im Herzschlag-Takt, und statt „SPIEL STARTEN“ steht **BRACE FOR IMPACT** auf dem Button. Das bleibt das ganze Spiel über inklusive aller Verlängerungsfragen. Erst mit dem Ergebnis färbt sich die App wieder zurück. Grüne Haken bleiben auch im roten Design grün.
+Wer **MALTE SPEZIAL** anhakt, sieht die App sofort in bedrohlichem Dunkelrot: Die beiden Rundumleuchten auf der Auswahlfläche fangen an zu drehen, eine Sirene heult, das Display bebt kurz, das Handy vibriert, der Bildschirmrand glüht im Herzschlag-Takt, und statt „SPIEL STARTEN“ steht **BRACE FOR IMPACT** zwischen zwei Rundumleuchten auf dem Button. Das bleibt das ganze Spiel über inklusive aller Verlängerungsfragen. Erst mit dem Ergebnis färbt sich die App wieder zurück. Grüne Haken bleiben auch im roten Design grün.
 
 ### 15-Minuten-Takt
 
@@ -79,7 +79,7 @@ Pro Stufe gibt es drei Sprüche, dazu Sprüche mit Namen („Malte zahlt den Kra
 Nach dem ersten Öffnen ist alles auf dem Gerät gespeichert. Danach funktioniert die App auch im Flugmodus.
 
 Hinweise:
-- Die Töne kommen auch, wenn das iPhone auf lautlos steht (ab iOS 16.4). Läuft auf demselben iPhone Musik, wird sie dabei unterbrochen. Das lässt sich im Menü unter „Auch bei lautlos abspielen“ abschalten. Die Medienlautstärke muss aufgedreht sein.
+- Sind die Sounds an, kommen die Töne auch, wenn das iPhone auf lautlos steht (ab iOS 16.4). Läuft auf demselben iPhone Musik, wird sie dabei unterbrochen. Mit ausgeschalteten Sounds stört die App laufende Musik nicht. Die Medienlautstärke muss aufgedreht sein.
 - Während des Spiels bleibt der Bildschirm nach Möglichkeit an (Screen Wake Lock). Wird das Handy trotzdem gesperrt, läuft die Zeit korrekt weiter. Beim Entsperren werden verpasste Runden nachgetragen.
 
 ## Lokal starten

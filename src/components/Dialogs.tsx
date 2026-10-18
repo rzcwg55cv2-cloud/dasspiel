@@ -1,7 +1,10 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { SoundKind } from '../game/feedback';
 import type { GroupId, Settings } from '../game/types';
-import { CloseIcon, SpeakerIcon } from './icons';
+import { CheckIcon, CloseIcon, SpeakerIcon } from './icons';
+
+/** So lange leuchtet ein Testknopf – etwa so lange, wie sein Ton dauert. */
+const TEST_FLASH_MS: Record<SoundKind, number> = { error: 950, success: 1100 };
 
 /** Gemeinsame Grundlage für Menü und Sicherheitsabfrage: Hintergrund, Escape-Taste, Fokus. */
 function Overlay({
@@ -72,7 +75,18 @@ export function MenuSheet({ settings, onChange, onTestSound, showSlowGroup, onCl
   const titleId = useId();
   const volumeId = useId();
   const [confirming, setConfirming] = useState(false);
+  const [playing, setPlaying] = useState<string | null>(null);
+  const flashTimer = useRef<number | undefined>(undefined);
   const volume = Math.round(settings.soundVolume * 100);
+
+  useEffect(() => () => window.clearTimeout(flashTimer.current), []);
+
+  const testSound = (kind: SoundKind, group: GroupId) => {
+    onTestSound(kind, group);
+    setPlaying(`${group}-${kind}`);
+    window.clearTimeout(flashTimer.current);
+    flashTimer.current = window.setTimeout(() => setPlaying(null), TEST_FLASH_MS[kind]);
+  };
 
   if (confirming && onCancelGame) {
     return (
@@ -155,45 +169,21 @@ export function MenuSheet({ settings, onChange, onTestSound, showSlowGroup, onCl
                 </p>
               )}
               <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  disabled={!settings.soundEnabled}
-                  onClick={() => onTestSound('error', group)}
-                  className="h-12 rounded-xl bg-red-50 text-sm font-bold text-red-600 transition hover:bg-red-100"
-                >
-                  X-Sound testen
-                </button>
-                <button
-                  type="button"
-                  disabled={!settings.soundEnabled}
-                  onClick={() => onTestSound('success', group)}
-                  className="h-12 rounded-xl bg-ok-50 text-sm font-bold text-ok-700 transition hover:bg-ok-100"
-                >
-                  Erfolgssound testen
-                </button>
+                {(['error', 'success'] as const).map((kind) => (
+                  <TestSoundButton
+                    key={kind}
+                    kind={kind}
+                    playing={playing === `${group}-${kind}`}
+                    disabled={!settings.soundEnabled}
+                    onClick={() => testSound(kind, group)}
+                  />
+                ))}
               </div>
             </div>
           ))}
-          <label className="mt-5 flex cursor-pointer items-center justify-between gap-4">
-            <span className="text-sm font-bold text-slate-800">Auch bei lautlos abspielen</span>
-            <input
-              type="checkbox"
-              role="switch"
-              className="peer sr-only"
-              checked={settings.playInSilentMode}
-              disabled={!settings.soundEnabled}
-              onChange={(e) => onChange({ playInSilentMode: e.target.checked })}
-            />
-            <span
-              aria-hidden="true"
-              className="relative h-7 w-12 shrink-0 rounded-full bg-slate-200 transition peer-checked:bg-green-500 peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-amber-500 after:absolute after:top-1 after:left-1 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-5"
-            />
-          </label>
-          <p className="mt-2 text-xs leading-relaxed text-slate-500">
-            {settings.playInSilentMode
-              ? 'Die Töne kommen auch, wenn das iPhone auf lautlos steht. Läuft auf demselben iPhone Musik, wird sie dabei unterbrochen.'
-              : 'Auf dem iPhone muss der Lautlos-Schalter aus sein, damit die Töne zu hören sind.'}{' '}
-            Die Medienlautstärke muss aufgedreht sein.
+          <p className="mt-5 text-xs leading-relaxed text-slate-500">
+            Die Töne kommen auch, wenn das iPhone auf lautlos steht. Läuft auf demselben iPhone Musik, wird sie
+            dabei unterbrochen. Die Medienlautstärke muss aufgedreht sein.
           </p>
         </div>
 
@@ -210,6 +200,55 @@ export function MenuSheet({ settings, onChange, onTestSound, showSlowGroup, onCl
         )}
       </div>
     </Overlay>
+  );
+}
+
+/**
+ * Testknopf für einen Ton. Solange der Ton läuft, leuchtet der Knopf in dessen Farbe auf –
+ * rot mit X für den X-Sound, grün mit Haken für den Erfolgssound –, damit man ihn zuordnen kann.
+ */
+function TestSoundButton({
+  kind,
+  playing,
+  disabled,
+  onClick,
+}: {
+  kind: SoundKind;
+  playing: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  const error = kind === 'error';
+  const Mark = error ? CloseIcon : CheckIcon;
+  const tone = playing
+    ? error
+      ? 'scale-[1.04] bg-red-500 text-white shadow-lg shadow-red-500/40 ring-4 ring-red-200'
+      : 'scale-[1.04] bg-ok-500 text-white shadow-lg shadow-ok-500/40 ring-4 ring-ok-200'
+    : error
+      ? 'bg-red-50 text-red-600 hover:bg-red-100'
+      : 'bg-ok-50 text-ok-700 hover:bg-ok-100';
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`flex h-12 items-center justify-center gap-2 rounded-xl px-2 text-sm font-bold transition duration-150 ${tone}`}
+    >
+      <span
+        key={playing ? 'an' : 'aus'}
+        className={`grid size-6 shrink-0 place-items-center rounded-full ${
+          playing
+            ? `animate-pop bg-[#fff] ${error ? 'text-red-500' : 'text-ok-600'}`
+            : error
+              ? 'bg-red-500 text-white'
+              : 'bg-ok-500 text-white'
+        }`}
+        aria-hidden="true"
+      >
+        <Mark className="size-4" strokeWidth={3.5} />
+      </span>
+      {error ? 'X-Sound testen' : 'Erfolgssound testen'}
+    </button>
   );
 }
 

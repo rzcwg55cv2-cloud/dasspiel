@@ -19,17 +19,18 @@ class SoundPlayer {
   private output: GainNode | null = null;
   private volume = 0.8;
   private primed = false;
-  private playInSilentMode = true;
+  private enabled = true;
   private clips = new Map<string, Promise<AudioBuffer | null>>();
 
   /**
-   * iPhone: Mit dem Audio-Session-Typ „playback“ sind die Töne auch zu hören, wenn das
-   * Telefon auf lautlos steht. Nachteil: Musik, die auf demselben iPhone läuft, wird
-   * dabei unterbrochen. Deshalb ist es abschaltbar. Andere Geräte ignorieren das.
+   * Sounds an oder aus. iPhone: Bei eingeschalteten Sounds gilt der Audio-Session-Typ
+   * „playback“ – dann sind die Töne auch zu hören, wenn das Telefon auf lautlos steht
+   * (Musik auf demselben iPhone wird dabei unterbrochen). Bei ausgeschalteten Sounds
+   * bleibt es beim Standard, damit die App laufende Musik nicht stört.
    */
-  setPlayInSilentMode(enabled: boolean): void {
-    if (this.playInSilentMode === enabled) return;
-    this.playInSilentMode = enabled;
+  setEnabled(enabled: boolean): void {
+    if (this.enabled === enabled) return;
+    this.enabled = enabled;
     this.applyAudioSession();
     // Ein laufender AudioContext übernimmt den neuen Typ erst nach erneutem Aktivieren.
     const context = this.context;
@@ -46,7 +47,7 @@ class SoundPlayer {
     const session = (navigator as NavigatorWithAudioSession).audioSession;
     if (!session) return;
     try {
-      session.type = this.playInSilentMode ? 'playback' : 'auto';
+      session.type = this.enabled ? 'playback' : 'auto';
     } catch {
       // nicht unterstützt
     }

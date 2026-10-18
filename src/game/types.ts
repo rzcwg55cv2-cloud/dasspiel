@@ -63,8 +63,6 @@ export interface Settings {
   soundEnabled: boolean;
   /** Lautstärke von 0 bis 1. */
   soundVolume: number;
-  /** Töne auch abspielen, wenn das iPhone auf lautlos steht. */
-  playInSilentMode: boolean;
 }
 
 /** Wird erzeugt, wenn eine Runde ausgewertet wurde. */

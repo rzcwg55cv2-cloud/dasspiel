@@ -5,6 +5,7 @@ import { formatLiters } from '../game/format';
 import { MAX_NAME_LENGTH, SLOW_ROUND_DURATION, getRoundDuration, getRoundsInPhase } from '../game/rules';
 import type { GameMode, GroupId, Player } from '../game/types';
 import { Avatar } from './Avatar';
+import { Beacon } from './Beacon';
 import { ColorGlow } from './Decor';
 import { KoelschGlass } from './KoelschGlass';
 import { CheckIcon, CloseIcon, MenuIcon, PlusIcon } from './icons';
@@ -192,12 +193,61 @@ export function SetupScreen({
             SPIELMODUS
           </h2>
           <label
-            className={`mt-3 flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition ${
+            className={`mt-3 flex items-start gap-4 rounded-2xl border-2 p-5 transition ${
+              malte
+                ? 'cursor-not-allowed border-slate-200 bg-white opacity-50'
+                : slowGroupEnabled
+                  ? 'cursor-pointer border-green-400 bg-linear-to-br from-green-50 to-lime-50 shadow-md shadow-green-500/10'
+                  : 'cursor-pointer border-slate-200 bg-white hover:border-green-300'
+            }`}
+          >
+            <input
+              type="checkbox"
+              className="peer sr-only"
+              checked={showGroups}
+              disabled={malte}
+              onChange={(e) => onSlowGroupChange(e.target.checked)}
+            />
+            <span
+              className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg border-2 transition peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-amber-500 ${
+                showGroups ? 'border-green-500 bg-green-500 text-white' : 'border-slate-300 bg-white'
+              }`}
+              aria-hidden="true"
+            >
+              {showGroups && <CheckIcon className="size-5 animate-pop" strokeWidth={3} />}
+            </span>
+            <span>
+              <span
+                className={`block text-lg font-extrabold tracking-[0.12em] ${
+                  showGroups ? 'text-green-700' : 'text-slate-900'
+                }`}
+              >
+                15-MINUTEN-TAKT
+              </span>
+              <span className="mt-1 block text-slate-500 italic">
+                {malte
+                  ? 'Nicht bei Malte Spezial.'
+                  : 'Einzelne spielen im 15-Minuten-Takt mit – mit eigenem Glas.'}
+              </span>
+              {showGroups && (
+                <span className="mt-2 block text-sm font-semibold text-green-700">
+                  {slowCount === 0
+                    ? 'Tippe oben bei einzelnen Teilnehmern auf „15“.'
+                    : `${slowCount} ${slowCount === 1 ? 'Person spielt' : 'Personen spielen'} im 15-Minuten-Takt.`}
+                </span>
+              )}
+            </span>
+          </label>
+          {/* Malte Spezial mit zwei Rundumleuchten auf dem Dach – sie drehen sich, sobald es an ist. */}
+          <label
+            className={`relative mt-10 flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition ${
               malte
                 ? 'border-red-400 bg-linear-to-br from-red-50 to-yellow-50 shadow-md shadow-red-500/10'
                 : 'border-slate-200 bg-white hover:border-red-200'
             }`}
           >
+            <Beacon active={malte} className="absolute -top-[31px] left-5 size-9" />
+            <Beacon active={malte} delay={0.5} className="absolute -top-[31px] right-5 size-9" />
             <input
               type="checkbox"
               className="peer sr-only"
@@ -219,49 +269,6 @@ export function SetupScreen({
               <span className="mt-1 block text-slate-500 italic">Doppelt so viele Runden. Halb so viel Zeit.</span>
             </span>
           </label>
-          {!malte && (
-            <label
-              className={`mt-3 flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-5 transition ${
-                slowGroupEnabled
-                  ? 'border-green-400 bg-linear-to-br from-green-50 to-lime-50 shadow-md shadow-green-500/10'
-                  : 'border-slate-200 bg-white hover:border-green-300'
-              }`}
-            >
-              <input
-                type="checkbox"
-                className="peer sr-only"
-                checked={slowGroupEnabled}
-                onChange={(e) => onSlowGroupChange(e.target.checked)}
-              />
-              <span
-                className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg border-2 transition peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-amber-500 ${
-                  slowGroupEnabled ? 'border-green-500 bg-green-500 text-white' : 'border-slate-300 bg-white'
-                }`}
-                aria-hidden="true"
-              >
-                {slowGroupEnabled && <CheckIcon className="size-5 animate-pop" strokeWidth={3} />}
-              </span>
-              <span>
-                <span
-                  className={`block text-lg font-extrabold tracking-[0.12em] ${
-                    slowGroupEnabled ? 'text-green-700' : 'text-slate-900'
-                  }`}
-                >
-                  15-MINUTEN-TAKT
-                </span>
-                <span className="mt-1 block text-slate-500 italic">
-                  Einzelne spielen im 15-Minuten-Takt mit – mit eigenem Glas.
-                </span>
-                {slowGroupEnabled && (
-                  <span className="mt-2 block text-sm font-semibold text-green-700">
-                    {slowCount === 0
-                      ? 'Tippe oben bei einzelnen Teilnehmern auf „15“.'
-                      : `${slowCount} ${slowCount === 1 ? 'Person spielt' : 'Personen spielen'} im 15-Minuten-Takt.`}
-                  </span>
-                )}
-              </span>
-            </label>
-          )}
           <p className="mt-3 flex flex-wrap items-center gap-2 px-1 text-sm text-slate-500">
             <span
               className={`rounded-full px-2.5 py-1 text-[11px] font-bold tracking-[0.15em] ${
@@ -304,7 +311,15 @@ export function SetupScreen({
               malte && startBlocker === null ? 'hazard' : ''
             }`}
           >
-            {malte ? 'BRACE FOR IMPACT' : 'SPIEL STARTEN'}
+            {malte ? (
+              <span className="flex items-center justify-center gap-2.5">
+                <Beacon active className="size-7 max-[359px]:hidden" />
+                BRACE FOR IMPACT
+                <Beacon active delay={0.5} className="size-7 max-[359px]:hidden" />
+              </span>
+            ) : (
+              'SPIEL STARTEN'
+            )}
           </button>
           {startBlocker ? (
             <p className="mt-2 h-4 text-center text-xs text-slate-400">{BLOCKER_TEXT[startBlocker]}</p>
