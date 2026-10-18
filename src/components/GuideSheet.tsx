@@ -119,9 +119,6 @@ export function GuideSheet({ onClose }: { onClose: () => void }) {
           <p className="mt-1 leading-snug text-slate-600">Doppelt so viele Runden. Halb so viel Zeit. Brace for impact.</p>
         </div>
 
-        <p className="mt-5 text-center text-sm text-slate-500">
-          Ein Handy ist die Spielzentrale – dort wird für alle abgehakt.
-        </p>
 
         <button
           type="button"
