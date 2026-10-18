@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SCHLEMMER_WINDOW_MS, getSchlemmerTime, isSchlemmerDue } from './schlemmersonntag';
+import { getSchlemmerTime, isSchlemmerDue } from './schlemmersonntag';
 import { MIN, SEC, T0 } from './test-utils';
 
 describe('Schlemmersonntag', () => {
@@ -23,11 +23,22 @@ describe('Schlemmersonntag', () => {
     expect(getSchlemmerTime(T0 + 12 * SEC)).toBe(getSchlemmerTime(T0 + 12 * SEC));
   });
 
-  it('ist nur kurz fällig', () => {
+  it('ist ab dem Zeitpunkt fällig und wird nachgeholt, wenn die App zu war', () => {
     const at = getSchlemmerTime(T0);
     expect(isSchlemmerDue(T0, at - 1)).toBe(false);
     expect(isSchlemmerDue(T0, at)).toBe(true);
-    expect(isSchlemmerDue(T0, at + SCHLEMMER_WINDOW_MS - 1)).toBe(true);
-    expect(isSchlemmerDue(T0, at + SCHLEMMER_WINDOW_MS)).toBe(false);
+    // Später nachgeholt – auch noch in der Verlängerung
+    expect(isSchlemmerDue(T0, at + 7 * MIN)).toBe(true);
+    expect(isSchlemmerDue(T0, at + 90 * MIN)).toBe(true);
+  });
+
+  it('wird nie kurz vor oder nach einem Rundenende nachgeholt', () => {
+    const fullMinute = Math.ceil(getSchlemmerTime(T0) / MIN) * MIN + 5 * MIN;
+    for (const offset of [-14 * SEC, -10 * SEC, -1, 0, 2 * SEC, 4 * SEC]) {
+      expect(isSchlemmerDue(T0, fullMinute + offset)).toBe(false);
+    }
+    for (const offset of [5 * SEC, 20 * SEC, 45 * SEC]) {
+      expect(isSchlemmerDue(T0, fullMinute + offset)).toBe(true);
+    }
   });
 });

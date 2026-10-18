@@ -27,15 +27,29 @@ function markShown(startedAt: number): void {
   }
 }
 
-/** Einmal pro Spiel: Pop-up „Kennen Sie schon den Schlemmersonntag?“ mit 10 Sekunden Hymne. */
+/**
+ * Einmal pro Spiel: Pop-up „Kennen Sie schon den Schlemmersonntag?“ mit 10 Sekunden Hymne.
+ * Verpasst ist er nie: Er wird nachgeholt, sobald die App wieder offen ist – auch noch bei
+ * der Verlängerungsfrage, damit er sicher vor dem Feierabend kommt.
+ */
 export function useSchlemmersonntag(state: GameState, now: number, soundEnabled: boolean) {
   const [visible, setVisible] = useState(false);
   const stopHymne = useRef<(() => void) | null>(null);
   const timer = useRef<number | undefined>(undefined);
   const pending = useRef(false);
-  const running = state.status === 'running';
+  const inGame = state.status === 'running' || state.status === 'extension-decision';
   const { startedAt } = state;
-  const due = running && startedAt !== null && isSchlemmerDue(startedAt, now);
+
+  // Bei der Verlängerungsfrage steht die Spieluhr still – steht er noch aus, selbst weiterzählen.
+  const [decisionNow, setDecisionNow] = useState(0);
+  const waitingInDecision = state.status === 'extension-decision' && startedAt !== null && !wasShown(startedAt);
+  useEffect(() => {
+    if (!waitingInDecision) return;
+    const id = window.setInterval(() => setDecisionNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [waitingInDecision]);
+
+  const due = inGame && startedAt !== null && isSchlemmerDue(startedAt, Math.max(now, decisionNow));
 
   const close = useCallback(() => {
     pending.current = false;
@@ -47,8 +61,8 @@ export function useSchlemmersonntag(state: GameState, now: number, soundEnabled:
 
   // Vorab laden, damit die Hymne pünktlich startet.
   useEffect(() => {
-    if (running && soundEnabled) sounds.preload(hymne);
-  }, [running, soundEnabled]);
+    if (inGame && soundEnabled) sounds.preload(hymne);
+  }, [inGame, soundEnabled]);
 
   useEffect(() => {
     if (!due || startedAt === null || wasShown(startedAt)) return;
@@ -71,8 +85,8 @@ export function useSchlemmersonntag(state: GameState, now: number, soundEnabled:
 
   // Spielende oder Abbruch: sofort weg.
   useEffect(() => {
-    if (!running) close();
-  }, [running, close]);
+    if (!inGame) close();
+  }, [inGame, close]);
   useEffect(() => close, [close]);
 
   return { visible, close };

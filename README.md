@@ -41,7 +41,7 @@ Ist das Strafbier am Rundenende nicht abgehakt, werden zwei draus – und wieder
 
 ### Schlemmersonntag
 
-Einmal pro Spiel geht zu einem zufälligen Zeitpunkt in der ersten Stunde mit einem kurzen „Plopp“ ein kleines Pop-up auf: **„Kennen Sie schon den Schlemmersonntag?“** Dazu laufen die ersten 10 Sekunden der Schlemmersonntag-Hymne, danach verschwindet alles von selbst (oder vorher per ×). Der Zeitpunkt liegt immer 30 Sekunden nach einer vollen Minute, also nie auf einem Rundenende, und bleibt auch nach dem Neuladen gleich. Die Hymne folgt den Sound-Einstellungen (Lautstärke; auch bei lautlos); mit ausgeschaltetem Sound kommt nur das Pop-up.
+Einmal pro Spiel geht zu einem zufälligen Zeitpunkt in der ersten Stunde mit einem kurzen „Plopp“ ein kleines Pop-up auf: **„Kennen Sie schon den Schlemmersonntag?“** Dazu laufen die ersten 10 Sekunden der Schlemmersonntag-Hymne, danach verschwindet alles von selbst (oder vorher per ×). Der Zeitpunkt liegt immer 30 Sekunden nach einer vollen Minute, also nie auf einem Rundenende, und bleibt auch nach dem Neuladen gleich. Er kommt garantiert: War die App gerade zu (Display aus, andere App), wird er nachgeholt, sobald sie wieder offen ist – spätestens bei der Verlängerungsfrage. Die Hymne folgt den Sound-Einstellungen (Lautstärke; auch bei lautlos); mit ausgeschaltetem Sound kommt nur das Pop-up.
 
 ### Malte Spezial
 
