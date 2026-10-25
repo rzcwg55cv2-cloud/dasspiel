@@ -42,7 +42,7 @@ function toggle(state: GameState, ids: string[], at: number): GameState {
 describe('15-Minuten-Takt: Einrichtung', () => {
   it('startet eine zweite Rundenspur nur mit Haken und zugeordneten Personen', () => {
     const game = mixedGame();
-    expect(game.slow).toEqual({ currentRound: 1, currentConfirmations: {}, currentPenaltiesPaid: {}, roundHistory: [] });
+    expect(game.slow).toEqual({ currentRound: 1, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {}, roundHistory: [] });
 
     const withoutHook = startGame(setSlowGroupEnabled(mixedSetup(), false), T0).state;
     expect(withoutHook.slow).toBeNull();
@@ -152,7 +152,7 @@ describe('15-Minuten-Takt: Ablauf', () => {
 
     const finished = finishGame(advance(mixedGame(), T0 + 60 * MIN).state, T0 + 61 * MIN).state;
     const again = restartWithSameGroup(finished, T0 + 70 * MIN).state;
-    expect(again.slow).toEqual({ currentRound: 1, currentConfirmations: {}, currentPenaltiesPaid: {}, roundHistory: [] });
+    expect(again.slow).toEqual({ currentRound: 1, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {}, roundHistory: [] });
   });
 });
 

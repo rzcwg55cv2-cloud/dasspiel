@@ -191,6 +191,20 @@ class SoundPlayer {
     };
   }
 
+  /**
+   * Gibt die Audioausgabe frei, sobald die App in den Hintergrund geht. Sonst zeigt das
+   * iPhone die Seite weiter als laufende Medienwiedergabe (Sperrbildschirm, Kontrollzentrum).
+   * Beim nächsten Antippen entsteht die Ausgabe neu (siehe unlock).
+   */
+  release(): void {
+    const context = this.context;
+    if (!context) return;
+    this.context = null;
+    this.output = null;
+    this.primed = false;
+    context.close().catch(() => {});
+  }
+
   private ensureContext(): AudioContext | null {
     if (this.context) return this.context;
     if (typeof window === 'undefined') return null;
@@ -210,10 +224,25 @@ class SoundPlayer {
       compressor.connect(context.destination);
       this.context = context;
       this.output = output;
+      showMediaInfo();
       return context;
     } catch {
       return null;
     }
+  }
+}
+
+/** Statt der Adresse zeigt das iPhone in der Wiedergabe-Anzeige Namen und Icon der App. */
+function showMediaInfo(): void {
+  try {
+    if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: 'Das Bierspiel',
+      artist: '60 Minuten. Alle müssen liefern!',
+      artwork: [{ src: new URL('icons/icon-512-v3.png', document.baseURI).href, sizes: '512x512', type: 'image/png' }],
+    });
+  } catch {
+    // nicht unterstützt
   }
 }
 

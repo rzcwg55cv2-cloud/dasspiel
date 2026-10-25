@@ -140,6 +140,7 @@ export function useGame(onSounds: (cues: SoundCue[]) => void) {
       setMode: (mode: GameMode) => apply((s) => engine.setMode(s, mode)),
       setSlowGroupEnabled: (enabled: boolean) => apply((s) => engine.setSlowGroupEnabled(s, enabled)),
       setPlayerGroup: (id: string, group: GroupId) => apply((s) => engine.setPlayerGroup(s, id, group)),
+      setPlayerAvatar: (id: string, avatar: string | null) => apply((s) => engine.setPlayerAvatar(s, id, avatar)),
       start() {
         setLiveRounds([]);
         apply(engine.startGame);

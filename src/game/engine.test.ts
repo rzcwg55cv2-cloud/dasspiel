@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  setPlayerAvatar,
   addPlayer,
   advance,
   cancelGame,
@@ -15,6 +16,7 @@ import {
   toggleConfirmation,
 } from './engine';
 import { getErrorCounts } from './stats';
+import { deserializeState } from './storage';
 import { MIN, SEC, T0, confirm, setupState, startedGame } from './test-utils';
 import type { GameState } from './types';
 
@@ -409,5 +411,18 @@ describe('Spielende und Neustart', () => {
     expect(cancelled.roundHistory).toEqual([]);
     expect(cancelled.players).toEqual(game.players);
     expect(cancelled.mode).toBe('malte');
+  });
+});
+
+describe('Avatare', () => {
+  it('lassen sich vor dem Spiel wählen, entfernen und überstehen das Neuladen', () => {
+    let state = setupState(['Simon', 'Marvin']);
+    state = setPlayerAvatar(state, 'p1', '🍺');
+    expect(state.players[0].avatar).toBe('🍺');
+    expect(deserializeState(JSON.stringify(state)).state.players[0].avatar).toBe('🍺');
+    state = setPlayerAvatar(state, 'p1', null);
+    expect(state.players[0]).not.toHaveProperty('avatar');
+    const running = startedGame(['Simon']);
+    expect(setPlayerAvatar(running, 'p1', '🦄')).toBe(running);
   });
 });

@@ -47,6 +47,7 @@ export function createInitialState(
     completedPlaySeconds: 0,
     currentRound: 0,
     currentConfirmations: {},
+    currentConfirmedAt: {},
     currentPenaltiesPaid: {},
     roundHistory: [],
     slow: null,
@@ -97,6 +98,7 @@ export function getTrack(state: GameState, group: GroupId): TrackState | null {
   return {
     currentRound: state.currentRound,
     currentConfirmations: state.currentConfirmations,
+    currentConfirmedAt: state.currentConfirmedAt,
     currentPenaltiesPaid: state.currentPenaltiesPaid,
     roundHistory: state.roundHistory,
   };
@@ -142,8 +144,9 @@ export function advance(state: GameState, now: number): Transition {
       phaseStartedAt: null,
       completedPlaySeconds: getTotalDuration(state.extensionCount),
       currentConfirmations: {},
+      currentConfirmedAt: {},
       currentPenaltiesPaid: {},
-      slow: next.slow && { ...next.slow, currentConfirmations: {}, currentPenaltiesPaid: {} },
+      slow: next.slow && { ...next.slow, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {} },
     };
   }
 
@@ -172,11 +175,19 @@ function advanceTrack(state: GameState, group: GroupId, phaseStartedAt: number, 
     const open = getOpenPenalties(track.roundHistory);
     const playerResults: Record<string, boolean> = {};
     const penaltiesPaid: Record<string, boolean> = {};
+    const confirmedAt: Record<string, number> = {};
     for (const player of players) {
       playerResults[player.id] = track.currentConfirmations[player.id] === true;
+      if (playerResults[player.id]) confirmedAt[player.id] = track.currentConfirmedAt[player.id] ?? endedAt;
       if (open[player.id] && track.currentPenaltiesPaid[player.id]) penaltiesPaid[player.id] = true;
     }
-    const result: RoundResult = { roundNumber: track.currentRound, playerResults, completedAt: endedAt, penaltiesPaid };
+    const result: RoundResult = {
+      roundNumber: track.currentRound,
+      playerResults,
+      completedAt: endedAt,
+      penaltiesPaid,
+      confirmedAt,
+    };
     const roundHistory: RoundResult[] = [...track.roundHistory, result];
     const phaseEnded = indexInPhase + 1 >= roundsInPhase;
     events.push({
@@ -192,12 +203,13 @@ function advanceTrack(state: GameState, group: GroupId, phaseStartedAt: number, 
 
     if (phaseEnded) {
       // Die letzte Runde der Phase bleibt die aktuelle, bis verlängert wird.
-      track = { ...track, roundHistory, currentConfirmations: {}, currentPenaltiesPaid: {} };
+      track = { ...track, roundHistory, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {} };
       break;
     }
     track = {
       currentRound: track.currentRound + 1,
       currentConfirmations: {},
+      currentConfirmedAt: {},
       currentPenaltiesPaid: {},
       roundHistory,
     };
@@ -264,6 +276,24 @@ export function setPlayerGroup(state: GameState, playerId: string, group: GroupI
   return { ...state, players: state.players.map((p) => (p.id === playerId ? { ...p, group } : p)) };
 }
 
+/** Setzt den Avatar eines Teilnehmers (Emoji) oder entfernt ihn (null → Initiale). */
+export function setPlayerAvatar(state: GameState, playerId: string, avatar: string | null): GameState {
+  if (state.status !== 'setup') return state;
+  const player = state.players.find((p) => p.id === playerId);
+  if (!player || (player.avatar ?? null) === avatar) return state;
+  return {
+    ...state,
+    players: state.players.map((p) => {
+      if (p.id !== playerId) return p;
+      if (avatar === null) {
+        const { avatar: _removed, ...rest } = p;
+        return rest;
+      }
+      return { ...p, avatar };
+    }),
+  };
+}
+
 export type StartBlocker = 'no-players' | 'no-main-players';
 
 /** Warum das Spiel (noch) nicht starten kann; null, wenn alles passt. */
@@ -296,7 +326,7 @@ export function startGame(state: GameState, now: number): Transition {
       phaseStartedAt: alignToNextMinute(now),
       currentRound: 1,
       slow: isSlowGroupPlanned(setup)
-        ? { currentRound: 1, currentConfirmations: {}, currentPenaltiesPaid: {}, roundHistory: [] }
+        ? { currentRound: 1, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {}, roundHistory: [] }
         : null,
       startedAt: now,
     },
@@ -314,10 +344,17 @@ export function toggleConfirmation(state: GameState, playerId: string, now: numb
   const group = groupOf(current, player);
   const track = getTrack(current, group)!;
   const currentConfirmations = { ...track.currentConfirmations };
-  if (currentConfirmations[playerId]) delete currentConfirmations[playerId];
-  else currentConfirmations[playerId] = true;
+  const currentConfirmedAt = { ...track.currentConfirmedAt };
+  // Wird ein Haken zurückgenommen und neu gesetzt, zählt der zuletzt gesetzte.
+  if (currentConfirmations[playerId]) {
+    delete currentConfirmations[playerId];
+    delete currentConfirmedAt[playerId];
+  } else {
+    currentConfirmations[playerId] = true;
+    currentConfirmedAt[playerId] = now;
+  }
 
-  return { state: withTrack(current, group, { ...track, currentConfirmations }), events };
+  return { state: withTrack(current, group, { ...track, currentConfirmations, currentConfirmedAt }), events };
 }
 
 /**
@@ -357,11 +394,13 @@ export function extendGame(state: GameState, now: number): Transition {
       completedPlaySeconds: getPhaseOffset(extensionCount),
       currentRound: firstRound('main'),
       currentConfirmations: {},
+      currentConfirmedAt: {},
       currentPenaltiesPaid: {},
       slow: current.slow && {
         ...current.slow,
         currentRound: firstRound('slow'),
         currentConfirmations: {},
+        currentConfirmedAt: {},
         currentPenaltiesPaid: {},
       },
     },

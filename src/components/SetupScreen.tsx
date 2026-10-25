@@ -5,6 +5,7 @@ import { formatLiters } from '../game/format';
 import { MAX_NAME_LENGTH, SLOW_ROUND_DURATION, getRoundDuration, getRoundsInPhase } from '../game/rules';
 import type { GameMode, GroupId, Player } from '../game/types';
 import { Avatar } from './Avatar';
+import { AvatarPicker } from './AvatarPicker';
 import { Beacon } from './Beacon';
 import { ColorGlow } from './Decor';
 import { KoelschGlass } from './KoelschGlass';
@@ -19,6 +20,7 @@ interface Props {
   slowGroupEnabled: boolean;
   onSlowGroupChange: (enabled: boolean) => void;
   onPlayerGroupChange: (id: string, group: GroupId) => void;
+  onPlayerAvatarChange: (id: string, avatar: string | null) => void;
   startBlocker: StartBlocker | null;
   beer: BeerEstimate;
   onOpenGuide: () => void;
@@ -55,6 +57,7 @@ export function SetupScreen({
   slowGroupEnabled,
   onSlowGroupChange,
   onPlayerGroupChange,
+  onPlayerAvatarChange,
   startBlocker,
   beer,
   onOpenGuide,
@@ -63,6 +66,8 @@ export function SetupScreen({
 }: Props) {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [pickingFor, setPickingFor] = useState<string | null>(null);
+  const picking = players.find((p) => p.id === pickingFor);
   const inputRef = useRef<HTMLInputElement>(null);
   const malte = mode === 'malte';
   const roundMinutes = getRoundDuration(mode) / 60;
@@ -175,7 +180,20 @@ export function SetupScreen({
                   key={player.id}
                   className="flex animate-fade-up items-center gap-3 rounded-2xl border border-slate-100 bg-white py-2 pr-2 pl-3 shadow-sm"
                 >
-                  <Avatar name={player.name} index={index} className="size-10 text-base" />
+                  <button
+                    type="button"
+                    onClick={() => setPickingFor(player.id)}
+                    className="relative shrink-0 rounded-full transition active:scale-95"
+                    aria-label={`Avatar für ${player.name} wählen`}
+                  >
+                    <Avatar name={player.name} index={index} avatar={player.avatar} className="size-10 text-base" />
+                    <span
+                      className="absolute -right-1 -bottom-1 grid size-4 place-items-center rounded-full bg-white text-[9px] shadow ring-1 ring-slate-200"
+                      aria-hidden="true"
+                    >
+                      ✏️
+                    </span>
+                  </button>
                   <span className="min-w-0 flex-1 truncate text-lg font-semibold" title={player.name}>
                     {player.name}
                   </span>
@@ -349,6 +367,15 @@ export function SetupScreen({
           )}
         </div>
       </div>
+      {picking && (
+        <AvatarPicker
+          name={picking.name}
+          index={players.indexOf(picking)}
+          current={picking.avatar}
+          onSelect={(avatar) => onPlayerAvatarChange(picking.id, avatar)}
+          onClose={() => setPickingFor(null)}
+        />
+      )}
     </div>
   );
 }

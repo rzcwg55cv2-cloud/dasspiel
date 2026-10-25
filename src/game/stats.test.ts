@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { advance, extendGame, finishGame } from './engine';
+import { advance, extendGame, finishGame, toggleConfirmation } from './engine';
 import { formatClock, formatList, formatPercent } from './format';
 import { computeSummary, getErrorCounts, getPlayerStats } from './stats';
 import { MIN, SEC, T0, confirm, startedGame } from './test-utils';
@@ -144,5 +144,31 @@ describe('Formatierung', () => {
     expect(formatList(['Simon'])).toBe('Simon');
     expect(formatList(['Simon', 'Tino'])).toBe('Simon und Tino');
     expect(formatList(['Simon', 'Marvin', 'Tino'])).toBe('Simon, Marvin und Tino');
+  });
+});
+
+describe('Rangliste nach Zeit bis zum Haken', () => {
+  it('summiert die Zeit bis zum Haken; X zählt die volle Runde; der letzte Haken zählt', () => {
+    let game = startedGame(['Simon', 'Marvin', 'Tino']);
+    // Runde 1: Simon nach 2 min, Marvin nach 5 min, Tino gar nicht
+    game = toggleConfirmation(game, 'p1', T0 + 2 * MIN).state;
+    game = toggleConfirmation(game, 'p2', T0 + 5 * MIN).state;
+    // Runde 2: Simon hakt versehentlich nach 1 min ab, nimmt zurück und hakt nach 8 min neu ab
+    game = advance(game, T0 + 10 * MIN).state;
+    game = toggleConfirmation(game, 'p1', T0 + 11 * MIN).state;
+    game = toggleConfirmation(game, 'p1', T0 + 11 * MIN + 30 * SEC).state;
+    game = toggleConfirmation(game, 'p1', T0 + 18 * MIN).state;
+    game = toggleConfirmation(game, 'p2', T0 + 13 * MIN).state;
+    game = toggleConfirmation(game, 'p3', T0 + 19 * MIN).state;
+    game = advance(game, T0 + 20 * MIN).state;
+
+    const stats = getPlayerStats(game);
+    const total = Object.fromEntries(stats.map((s) => [s.player.name, s.totalMs / MIN]));
+    expect(total).toEqual({ Simon: 2 + 8, Marvin: 5 + 3, Tino: 10 + 9 });
+    expect(stats.map((s) => [s.rank, s.player.name])).toEqual([
+      [1, 'Marvin'],
+      [2, 'Simon'],
+      [3, 'Tino'],
+    ]);
   });
 });

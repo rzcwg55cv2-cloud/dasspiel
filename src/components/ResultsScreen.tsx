@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { formatList, formatMinutes, formatPercent } from '../game/format';
+import { formatClock, formatList, formatMinutes } from '../game/format';
 import { getTrack } from '../game/engine';
 import { getGroupLabel, getModeLabel } from '../game/rules';
 import { computeSummary, type GameSummary, type PlayerStats } from '../game/stats';
@@ -59,7 +59,8 @@ function formatWorstRounds(summary: GameSummary, mode: GameMode, showGroups: boo
 
 export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
   const summary = computeSummary(state);
-  const allTied = summary.playerCount > 1 && summary.bestPlayers.length === summary.playerCount;
+  // Alle haben gleich viele X (für die Kachel „Meiste X“)
+  const allTied = summary.playerCount > 1 && summary.mostErrorPlayers.length === summary.playerCount;
   const colorIndex = new Map(state.players.map((p, i) => [p.id, i]));
   const showGroups = summary.groups.length > 1;
   const wallClock =
@@ -123,12 +124,12 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
               <>
                 {/* Je Takt, weil der 15-Minuten-Takt weniger Runden hat. */}
                 <StatTile
-                  label="Beste je Gruppe"
+                  label="Schnellste je Gruppe"
                   value={summary.groups
                     .map((g) => `${formatList(g.bestPlayers.map((p) => p.name))} (${getGroupLabel(state.mode, g.group)})`)
                     .join(' · ')}
                   detail={summary.groups
-                    .map((g) => `${getGroupLabel(state.mode, g.group)}: ${g.ranking[0]?.errors ?? 0} X`)
+                    .map((g) => `${getGroupLabel(state.mode, g.group)}: ${duration(g.ranking[0]?.totalMs ?? 0)}`)
                     .join(' · ')}
                   tone="amber"
                 />
@@ -149,9 +150,9 @@ export function ResultsScreen({ state, onNewGame, onRestart }: Props) {
             ) : (
               <>
                 <StatTile
-                  label={summary.bestPlayers.length > 1 ? 'Beste Teilnehmer' : 'Bester Teilnehmer'}
-                  value={allTied ? 'Alle gleichauf' : formatList(summary.bestPlayers.map((p) => p.name))}
-                  detail={`${allTied ? 'je ' : ''}${summary.ranking[0]?.errors ?? 0} X`}
+                  label={summary.bestPlayers.length > 1 ? 'Schnellste' : 'Schnellste:r'}
+                  value={formatList(summary.bestPlayers.map((p) => p.name))}
+                  detail={`${duration(summary.ranking[0]?.totalMs ?? 0)} bis zum Haken`}
                   tone="amber"
                 />
                 <StatTile
@@ -291,6 +292,11 @@ function penaltyText({ penaltiesDrunk: drunk, penaltiesOpen: open }: PlayerStats
   return null;
 }
 
+/** Zeit bis zum Haken als „m:ss“ bzw. „mm:ss“. */
+function duration(ms: number): string {
+  return formatClock(Math.round(ms / 1000)).replace(/^0(?=\d:)/, '');
+}
+
 function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: number }) {
   const flawless = stats.errors === 0;
   return (
@@ -307,7 +313,7 @@ function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: num
       >
         {stats.rank}
       </span>
-      <Avatar name={stats.player.name} index={colorIndex} className="size-10 text-base" />
+      <Avatar name={stats.player.name} avatar={stats.player.avatar} index={colorIndex} className="size-10 text-base" />
       <div className="min-w-0 flex-1">
         <div className="truncate text-lg font-bold" title={stats.player.name}>
           {stats.player.name}
@@ -326,11 +332,12 @@ function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: num
         )}
       </div>
       <div className="shrink-0 text-right">
-        <div className={`tabular text-2xl leading-none font-black ${flawless ? 'text-ok-600' : 'text-red-500'}`}>
-          {stats.errors}
-          <span className="ml-1 text-base font-black">X</span>
+        <div className="tabular text-2xl leading-none font-black text-slate-900" title="Gesamtzeit bis zum Haken">
+          {duration(stats.totalMs)}
         </div>
-        <div className="tabular mt-1 text-sm font-semibold text-slate-500">{formatPercent(stats.successRate)}</div>
+        <div className={`tabular mt-1 text-sm font-semibold ${flawless ? 'text-ok-600' : 'text-red-500'}`}>
+          {stats.errors} X
+        </div>
       </div>
     </li>
   );
@@ -403,11 +410,11 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
     <details className="group rounded-2xl border border-slate-100 bg-white shadow-sm">
       <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
         <ChevronIcon className="size-4 shrink-0 text-slate-400 transition group-open:rotate-90" />
-        <Avatar name={stats.player.name} index={colorIndex} className="size-8 text-sm" />
+        <Avatar name={stats.player.name} avatar={stats.player.avatar} index={colorIndex} className="size-8 text-sm" />
         <span className="min-w-0 flex-1 truncate font-extrabold tracking-[0.06em] uppercase">{stats.player.name}</span>
         <span className="tabular shrink-0 text-sm font-semibold text-slate-500">
-          <span className={stats.errors ? 'text-red-500' : 'text-ok-600'}>{stats.errors} X</span> ·{' '}
-          {formatPercent(stats.successRate)}
+          {duration(stats.totalMs)} ·{' '}
+          <span className={stats.errors ? 'text-red-500' : 'text-ok-600'}>{stats.errors} X</span>
         </span>
       </summary>
       <div className="px-4 pb-5">
@@ -419,7 +426,10 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
                 result.success ? 'bg-ok-50' : 'bg-red-50'
               }`}
             >
-              <span className="tabular text-xs font-bold text-slate-500">R{result.roundNumber}</span>
+              <span className="tabular text-xs leading-tight font-bold text-slate-500">
+                R{result.roundNumber}
+                <span className="block font-semibold text-slate-400">{result.success ? duration(result.ms) : '–'}</span>
+              </span>
               <MiniMark success={result.success} className="size-6" />
             </li>
           ))}
@@ -434,8 +444,8 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
             <dd className="text-lg font-black text-red-600">{stats.errors}</dd>
           </div>
           <div className="rounded-xl bg-yellow-50 px-3 py-2">
-            <dt className="text-xs text-yellow-800/80">Erfolgsquote</dt>
-            <dd className="text-lg font-black text-yellow-800">{formatPercent(stats.successRate)}</dd>
+            <dt className="text-xs text-yellow-800/80">Gesamtzeit</dt>
+            <dd className="text-lg font-black text-yellow-800">{duration(stats.totalMs)}</dd>
           </div>
         </dl>
       </div>

@@ -91,11 +91,20 @@ export default function App() {
   // Mobile Browser geben Audio erst nach einer Benutzeraktion frei.
   useEffect(() => {
     const unlock = () => sounds.unlock();
+    // App im Hintergrund oder geschlossen: Audioausgabe freigeben (keine „Wiedergabe“-Anzeige mehr).
+    const release = () => {
+      if (document.visibilityState === 'hidden') sounds.release();
+    };
+    const releaseNow = () => sounds.release();
     window.addEventListener('pointerdown', unlock, { passive: true });
     window.addEventListener('keydown', unlock);
+    document.addEventListener('visibilitychange', release);
+    window.addEventListener('pagehide', releaseNow);
     return () => {
       window.removeEventListener('pointerdown', unlock);
       window.removeEventListener('keydown', unlock);
+      document.removeEventListener('visibilitychange', release);
+      window.removeEventListener('pagehide', releaseNow);
     };
   }, []);
 
@@ -130,6 +139,7 @@ export default function App() {
           slowGroupEnabled={state.slowGroupEnabled}
           onSlowGroupChange={actions.setSlowGroupEnabled}
           onPlayerGroupChange={actions.setPlayerGroup}
+          onPlayerAvatarChange={actions.setPlayerAvatar}
           startBlocker={getStartBlocker(state)}
           beer={estimateBeer(state)}
           onOpenGuide={openGuide}

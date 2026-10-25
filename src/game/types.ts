@@ -13,6 +13,8 @@ export interface Player {
   id: string;
   name: string;
   group: GroupId;
+  /** Gewählter Avatar (Emoji); ohne steht die Initiale im Kreis. */
+  avatar?: string;
 }
 
 /** Ergebnis einer ausgewerteten Runde. */
@@ -24,6 +26,8 @@ export interface RoundResult {
   completedAt: number;
   /** Spieler-ID → true, wenn das offene Strafbier in dieser Runde abgehakt wurde. */
   penaltiesPaid: Record<string, boolean>;
+  /** Spieler-ID → Zeitpunkt (ms seit Epoch) des zuletzt gesetzten Hakens; nur bei „geliefert“. */
+  confirmedAt: Record<string, number>;
 }
 
 /** Rundenstand einer Taktgruppe. */
@@ -32,6 +36,8 @@ export interface TrackState {
   currentRound: number;
   /** Haken der aktuellen Runde. */
   currentConfirmations: Record<string, boolean>;
+  /** Wann der Haken in der aktuellen Runde (zuletzt) gesetzt wurde. */
+  currentConfirmedAt: Record<string, number>;
   /** In der aktuellen Runde abgehakte Strafbiere. */
   currentPenaltiesPaid: Record<string, boolean>;
   roundHistory: RoundResult[];

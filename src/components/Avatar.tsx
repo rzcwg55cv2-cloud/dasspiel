@@ -27,14 +27,32 @@ function initial(name: string): string {
   return (Array.from(name.trim())[0] ?? '?').toLocaleUpperCase('de-DE');
 }
 
-export function Avatar({ name, index, className = 'size-11 text-lg' }: { name: string; index: number; className?: string }) {
+/** Zur Auswahl beim Antippen des Avatars auf dem Startbildschirm. */
+export const AVATARS = [
+  '🍺', '🍻', '🥨', '🌭', '🍖', '🧀', '🎉', '🥳', '😎', '🤠',
+  '🤡', '👑', '🦁', '🐻', '🐷', '🦊', '🐸', '🦄', '🎭', '⛪',
+  '🚀', '🔥', '⚽', '🎸', '🎺', '💃', '🕺', '🏆', '🍀', '🤘',
+] as const;
+
+export function Avatar({
+  name,
+  index,
+  avatar,
+  className = 'size-11 text-lg',
+}: {
+  name: string;
+  index: number;
+  avatar?: string;
+  className?: string;
+}) {
+  const color = playerColor(index);
   return (
     <span
       aria-hidden="true"
       className={`grid shrink-0 place-items-center rounded-full font-black shadow-sm ${className}`}
-      style={{ backgroundColor: playerColor(index).bg, color: playerColor(index).fg }}
+      style={avatar ? { backgroundColor: `${color.bg}33`, boxShadow: `inset 0 0 0 2px ${color.bg}` } : { backgroundColor: color.bg, color: color.fg }}
     >
-      {initial(name)}
+      {avatar ? <span className="text-[1.35em] leading-none">{avatar}</span> : initial(name)}
     </span>
   );
 }

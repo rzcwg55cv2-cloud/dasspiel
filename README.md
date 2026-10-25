@@ -23,7 +23,9 @@ Die App läuft komplett im Browser, braucht kein Konto und kein Internet währen
 3. Bei 00:00 wird die Runde automatisch ausgewertet. Wer keinen Haken hat, bekommt ein X. Die nächste Runde startet sofort.
 4. Nach 60 Minuten entscheidet die Gruppe: verlängern (+30 Minuten) oder **FEIERABEND**. Während der Entscheidung steht die Zeit still. Verlängern geht beliebig oft.
    Je nachdem, wie viele X es bisher gab, kommt dabei ein passender Spruch (siehe unten).
-5. Am Ende gibt es eine Rangliste, Statistiken und den kompletten Verlauf jeder Runde.
+5. Am Ende gibt es eine Rangliste, Statistiken und den kompletten Verlauf jeder Runde. Die Rangliste richtet sich nach der Gesamtzeit bis zum Haken: Pro Runde zählt die Zeit vom Rundenbeginn bis zum (zuletzt gesetzten) Haken, ein X zählt die volle Rundenzeit. Wer insgesamt am schnellsten geliefert hat, gewinnt.
+
+Wer auf dem Startbildschirm auf den Kreis mit der Initiale tippt, kann stattdessen einen **Avatar** (Emoji) wählen.
 
 Ein Gerät dient als Spielzentrale: Dort werden alle Teilnehmer eingetragen und alle Haken vergeben.
 

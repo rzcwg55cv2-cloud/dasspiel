@@ -122,13 +122,14 @@ function parsePlayers(value: unknown): Player[] | null {
   const ids = new Set<string>();
   for (const item of value) {
     if (!isRecord(item)) return null;
-    const { id, name, group = 'main' } = item;
+    const { id, name, group = 'main', avatar } = item;
     if (typeof id !== 'string' || id === '' || ids.has(id)) return null;
     if (typeof name !== 'string' || name.trim() === '' || name.length > MAX_NAME_LENGTH) return null;
     // Version 1 kannte noch keine Gruppen: Dann spielen alle im Haupttakt.
     if (group !== 'main' && group !== 'slow') return null;
     ids.add(id);
-    players.push({ id, name, group });
+    // Unbekannte oder kaputte Avatare fallen einfach weg – dann gibt es die Initiale.
+    players.push(typeof avatar === 'string' && avatar.length > 0 && avatar.length <= 16 ? { id, name, group, avatar } : { id, name, group });
   }
   return players;
 }
@@ -150,9 +151,21 @@ function parseRoundHistory(value: unknown, players: Player[]): RoundResult[] | n
     // Ältere Spielstände kennen noch keine Strafbiere.
     const penaltiesPaid = parseConfirmations(item.penaltiesPaid ?? {}, players);
     if (!penaltiesPaid) return null;
-    history.push({ roundNumber: index + 1, playerResults, completedAt: item.completedAt, penaltiesPaid });
+    // Ältere Spielstände kennen noch keine Haken-Zeitpunkte.
+    const confirmedAt = parseTimes(item.confirmedAt ?? {}, players);
+    if (!confirmedAt) return null;
+    history.push({ roundNumber: index + 1, playerResults, completedAt: item.completedAt, penaltiesPaid, confirmedAt });
   }
   return history;
+}
+
+function parseTimes(value: unknown, players: Player[]): Record<string, number> | null {
+  if (!isRecord(value)) return null;
+  const times: Record<string, number> = {};
+  for (const player of players) {
+    if (isTimestamp(value[player.id])) times[player.id] = value[player.id] as number;
+  }
+  return times;
 }
 
 function parseConfirmations(value: unknown, players: Player[]): Record<string, boolean> | null {
@@ -176,7 +189,8 @@ function parseTrack(
   const roundHistory = parseRoundHistory(raw.roundHistory, players);
   const currentConfirmations = parseConfirmations(raw.currentConfirmations, players);
   const currentPenaltiesPaid = parseConfirmations(raw.currentPenaltiesPaid ?? {}, players);
-  if (!roundHistory || !currentConfirmations || !currentPenaltiesPaid) return null;
+  const currentConfirmedAt = parseTimes(raw.currentConfirmedAt ?? {}, players);
+  if (!roundHistory || !currentConfirmations || !currentPenaltiesPaid || !currentConfirmedAt) return null;
 
   if (status === 'running') {
     const roundsBefore = getRoundsBeforePhase(roundDuration, extensionCount);
@@ -184,13 +198,13 @@ function parseTrack(
     const { currentRound } = raw;
     if (currentRound < roundsBefore + 1 || currentRound > roundsBefore + roundsInPhase) return null;
     if (roundHistory.length !== currentRound - 1) return null;
-    return { currentRound, currentConfirmations, currentPenaltiesPaid, roundHistory };
+    return { currentRound, currentConfirmations, currentConfirmedAt, currentPenaltiesPaid, roundHistory };
   }
 
   // Verlängerungsentscheidung oder beendetes Spiel: Die aktuelle Phase ist vollständig ausgewertet.
   const totalRounds = getTotalRounds(roundDuration, extensionCount);
   if (roundHistory.length !== totalRounds) return null;
-  return { currentRound: totalRounds, currentConfirmations: {}, currentPenaltiesPaid: {}, roundHistory };
+  return { currentRound: totalRounds, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {}, roundHistory };
 }
 
 /**

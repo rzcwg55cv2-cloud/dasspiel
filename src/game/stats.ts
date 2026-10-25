@@ -4,17 +4,22 @@
  */
 import { activeGroups, getTrack, groupOf, playersOf } from './engine';
 import { getPenaltyTotals } from './penalties';
+import { getGroupRoundDuration } from './rules';
 import type { GameMode, GameState, GroupId, Player, RoundResult } from './types';
 
 export interface PlayerRound {
   roundNumber: number;
   success: boolean;
+  /** Zeit vom Rundenbeginn bis zum (zuletzt gesetzten) Haken; bei X die volle Rundenzeit. */
+  ms: number;
 }
 
 export interface PlayerStats {
   player: Player;
-  /** Platz in der Rangliste; gleiche Anzahl X ergibt gleichen Platz (1, 1, 3, …). */
+  /** Platz in der Rangliste nach Gesamtzeit; gleiche Zeit ergibt gleichen Platz (1, 1, 3, …). */
   rank: number;
+  /** Summe der Zeiten bis zum Haken über alle Runden (X zählt die volle Rundenzeit). */
+  totalMs: number;
   successes: number;
   errors: number;
   rounds: number;
@@ -44,7 +49,7 @@ export interface GroupSummary {
   perfectRounds: number;
   /** Rangliste nur innerhalb dieser Gruppe. */
   ranking: PlayerStats[];
-  /** Wenigste bzw. meiste X innerhalb dieser Gruppe. */
+  /** Schnellste bzw. meiste X innerhalb dieser Gruppe. */
   bestPlayers: Player[];
   mostErrorPlayers: Player[];
 }
@@ -63,7 +68,7 @@ export interface GameSummary {
   totalRounds: number;
   /** Runde(n) mit den meisten X; null, wenn es keine X gab. */
   worstRound: WorstRound | null;
-  /** Alle Teilnehmer mit den wenigsten X. */
+  /** Alle Teilnehmer mit der kürzesten Gesamtzeit (Platz 1). */
   bestPlayers: Player[];
   /** Alle Teilnehmer mit den meisten X; leer, wenn niemand ein X hat. */
   mostErrorPlayers: Player[];
@@ -99,12 +104,17 @@ export function getErrorCounts(state: GameState): Record<string, number> {
 export function getPlayerStats(state: GameState, group?: GroupId): PlayerStats[] {
   const players = group ? playersOf(state, group) : state.players;
   const unranked = players.map((player) => {
-    const history = historyOf(state, groupOf(state, player));
+    const group = groupOf(state, player);
+    const history = historyOf(state, group);
+    const roundMs = getGroupRoundDuration(state.mode, group) * 1000;
     const penalties = getPenaltyTotals(history, [player.id])[player.id];
-    const results = history.map((round) => ({
-      roundNumber: round.roundNumber,
-      success: round.playerResults[player.id] === true,
-    }));
+    const results = history.map((round) => {
+      const success = round.playerResults[player.id] === true;
+      const at = round.confirmedAt[player.id];
+      // Die erste Runde einer Phase kann etwas länger sein: Haken davor zählen als 0.
+      const ms = success && at !== undefined ? Math.min(roundMs, Math.max(0, at - (round.completedAt - roundMs))) : roundMs;
+      return { roundNumber: round.roundNumber, success, ms };
+    });
     const successes = results.filter((r) => r.success).length;
     const rounds = results.length;
     return {
@@ -115,16 +125,18 @@ export function getPlayerStats(state: GameState, group?: GroupId): PlayerStats[]
       rounds,
       successRate: rounds === 0 ? 0 : successes / rounds,
       results,
+      totalMs: results.reduce((sum, r) => sum + r.ms, 0),
       penaltiesDrunk: penalties.drunk,
       penaltiesOpen: penalties.open,
     };
   });
 
   // Array.prototype.sort ist stabil: Bei Gleichstand bleibt die Eingabereihenfolge erhalten.
-  const sorted = [...unranked].sort((a, b) => a.errors - b.errors);
+  // Rangliste nach Gesamtzeit bis zum Haken – wer schneller liefert, steht weiter oben.
+  const sorted = [...unranked].sort((a, b) => a.totalMs - b.totalMs);
   return sorted.map((stats) => ({
     ...stats,
-    rank: 1 + sorted.filter((other) => other.errors < stats.errors).length,
+    rank: 1 + sorted.filter((other) => other.totalMs < stats.totalMs).length,
   }));
 }
 
@@ -185,12 +197,11 @@ export function computeSummary(state: GameState): GameSummary {
   };
 }
 
-/** Teilnehmer mit den wenigsten und den meisten X (bei Gleichstand alle). */
+/** Schnellste Teilnehmer (Platz 1) und die mit den meisten X (bei Gleichstand alle). */
 function extremes(ranking: PlayerStats[]): { bestPlayers: Player[]; mostErrorPlayers: Player[] } {
-  const min = Math.min(...ranking.map((s) => s.errors));
   const max = Math.max(0, ...ranking.map((s) => s.errors));
   return {
-    bestPlayers: ranking.filter((s) => s.errors === min).map((s) => s.player),
+    bestPlayers: ranking.filter((s) => s.rank === 1).map((s) => s.player),
     mostErrorPlayers: max === 0 ? [] : ranking.filter((s) => s.errors === max).map((s) => s.player),
   };
 }

@@ -40,7 +40,7 @@ const STEPS: Array<{ lead: ReactNode; text?: ReactNode }> = [
     lead: 'Jede Runde muss jeder liefern:',
     text: (
       <>
-        ein Kölsch leer. Das Glas{' '}
+        ein Kölsch leer. Mindestens der letzte Schluck muss in der laufenden Runde getrunken werden. Das Glas{' '}
         <KoelschGlass level={0.5} className="inline-block h-5 w-2.5 align-[-0.3em]" /> neben der Uhr zeigt, wie viel
         Zeit noch bleibt.
       </>
@@ -69,7 +69,7 @@ const STEPS: Array<{ lead: ReactNode; text?: ReactNode }> = [
   },
   { lead: 'Strafbier in der nächsten Runde trinken und abhaken.', text: 'Sonst werden zwei draus. Dann vier.' },
   { lead: 'Nach 60 Minuten:', text: 'Ehrenrunde (+30 Min.) oder Feierabend.' },
-  { lead: 'Am Ende zählt nur eins:', text: 'Wer die wenigsten X hat, gewinnt.' },
+  { lead: 'Am Ende zählt die Zeit:', text: 'Wer über alle Runden am schnellsten abgehakt wurde, gewinnt. Ein X zählt die volle Runde.' },
 ];
 
 /** Kurze Spielanleitung – vom Startbildschirm („SO GEHT'S“) und aus dem Menü erreichbar. */

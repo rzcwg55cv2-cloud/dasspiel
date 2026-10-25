@@ -49,8 +49,8 @@ export function GameScreen({ state, errorCounts, liveRounds, now, onToggle, onTo
       <section aria-label="Uhrzeit">
         <header className="relative flex flex-col items-center pt-1 text-center">
           <span className="flex items-end gap-0.5">
-            <span className="brand-text text-[1.26rem] leading-[1.8rem] font-black tracking-[0.3em] max-[359px]:text-[1.05rem] max-[359px]:leading-6">DAS BIERSPIEL</span>
-            <KoelschGlass className="mb-[0.18rem] h-[1.98rem] w-[0.99rem] max-[359px]:mb-[0.15rem] max-[359px]:h-[1.65rem] max-[359px]:w-[0.825rem]" />
+            <span className="brand-text text-[1.512rem] leading-[2.1rem] font-black tracking-[0.16em] max-[389px]:text-[1.3rem] max-[359px]:text-[1.1rem]">DAS BIERSPIEL</span>
+            <KoelschGlass className="mb-[0.22rem] h-[2.376rem] w-[1.188rem] max-[389px]:h-[2.05rem] max-[389px]:w-[1.025rem] max-[359px]:h-[1.75rem] max-[359px]:w-[0.875rem]" />
           </span>
           <span
             className={`mt-1.5 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.25em] ${
@@ -107,6 +107,7 @@ export function GameScreen({ state, errorCounts, liveRounds, now, onToggle, onTo
                     <li key={player.id}>
                       <PlayerRow
                         name={player.name}
+                        avatar={player.avatar}
                         index={colorIndex.get(player.id) ?? 0}
                         errors={errorCounts[player.id] ?? 0}
                         mark={markState}
@@ -247,6 +248,7 @@ function DeliveryStatus({ confirmations, players }: { confirmations: Record<stri
 
 interface PlayerRowProps {
   name: string;
+  avatar?: string;
   index: number;
   errors: number;
   mark: MarkState;
@@ -261,7 +263,7 @@ interface PlayerRowProps {
  * Die ganze Zeile ist ein Knopf zum Abhaken der Lieferung. Das Strafbier neben dem Namen
  * ist ein eigener Knopf, der über der Zeile liegt.
  */
-function PlayerRow({ name, index, errors, mark, penalty, penaltyPaid, onTap, onPenaltyTap }: PlayerRowProps) {
+function PlayerRow({ name, avatar, index, errors, mark, penalty, penaltyPaid, onTap, onPenaltyTap }: PlayerRowProps) {
   const tone =
     mark === 'confirmed'
       ? 'border-ok-300 bg-ok-50'
@@ -279,7 +281,7 @@ function PlayerRow({ name, index, errors, mark, penalty, penaltyPaid, onTap, onP
         aria-label={`${name}: ${mark === 'confirmed' ? 'geliefert' : 'noch nicht geliefert'}, ${errors} X`}
         className="absolute -inset-0.5 rounded-2xl"
       />
-      <Avatar name={name} index={index} className="pointer-events-none size-11 text-lg" />
+      <Avatar name={name} index={index} avatar={avatar} className="pointer-events-none size-11 text-lg" />
       <span className="pointer-events-none min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
           <span className="min-w-0 truncate text-xl font-bold text-slate-900" aria-hidden="true">
