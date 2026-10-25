@@ -27,9 +27,9 @@ function expectWellPlaced(game: GameState, roundMinutes: number[], slotCount: nu
 }
 
 describe('Bierwissen', () => {
-  it('hat 100 verschiedene, kurze Quatsch-Fakten', () => {
-    expect(BIERWISSEN).toHaveLength(100);
-    expect(new Set(BIERWISSEN).size).toBe(100);
+  it('hat 50 verschiedene, kurze Fakten', () => {
+    expect(BIERWISSEN).toHaveLength(50);
+    expect(new Set(BIERWISSEN).size).toBe(50);
     for (const fact of BIERWISSEN) expect(fact.length).toBeLessThanOrEqual(120);
   });
 
@@ -75,6 +75,6 @@ describe('Bierwissen', () => {
   it('Anzeigedauer 7 bis 12 Sekunden und Mischen ohne Doppelte', () => {
     expect(getFactDuration('kurz')).toBe(7 * SEC);
     expect(getFactDuration('x'.repeat(200))).toBe(12 * SEC);
-    expect([...shuffledIndices(100)].sort((a, b) => a - b)).toEqual(Array.from({ length: 100 }, (_, i) => i));
+    expect([...shuffledIndices(50)].sort((a, b) => a - b)).toEqual(Array.from({ length: 50 }, (_, i) => i));
   });
 });

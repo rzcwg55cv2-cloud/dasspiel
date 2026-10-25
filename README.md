@@ -45,9 +45,9 @@ Ist das Strafbier am Rundenende nicht abgehakt, werden zwei draus – und wieder
 
 Einmal pro Spiel geht zu einem zufälligen Zeitpunkt in der ersten Stunde mit einem kurzen „Plopp“ ein kleines Pop-up auf: **„Kennen Sie schon den Schlemmersonntag?“** Dazu laufen die ersten 10 Sekunden der Schlemmersonntag-Hymne, danach verschwindet alles von selbst (oder vorher per ×). Der Zeitpunkt liegt immer 30 Sekunden nach einer vollen Minute, also nie auf einem Rundenende, und bleibt auch nach dem Neuladen gleich. Er kommt garantiert: War die App gerade zu (Display aus, andere App), wird er nachgeholt, sobald sie wieder offen ist – spätestens bei der Verlängerungsfrage. Die Hymne folgt den Sound-Einstellungen (Lautstärke; auch bei lautlos); mit ausgeschaltetem Sound kommt nur das Pop-up.
 
-### Unnützes Bierwissen
+### Unnützes Wissen
 
-Einmal pro 10-Minuten-Abschnitt ploppt mitten im Spiel ein Pop-up mit **unnützem Bierwissen** auf – 100 absichtlich frei erfundene, alberne „Fakten“ (in `src/game/bierwissen.ts`). Der Zeitpunkt im Abschnitt ist zufällig, liegt aber immer mindestens 90 Sekunden vor bzw. nach jedem Rundenende (in allen Takten, auch Malte Spezial) und 2 Minuten vom Schlemmersonntag entfernt; der Schlemmersonntag hat immer Vorrang. Die Fakten werden gemischt und wiederholen sich erst, wenn alle 100 gezeigt wurden – auch über mehrere Spiele hinweg. Mit Plopp, verschwindet nach 7–12 Sekunden von selbst.
+Einmal pro 10-Minuten-Abschnitt ploppt mitten im Spiel ein Pop-up mit **unnützem Wissen** auf – 50 echte, aber völlig sinnlose Fakten (in `src/game/bierwissen.ts`). Der Zeitpunkt im Abschnitt ist zufällig, liegt aber immer mindestens 90 Sekunden vor bzw. nach jedem Rundenende (in allen Takten, auch Malte Spezial) und 2 Minuten vom Schlemmersonntag entfernt; der Schlemmersonntag hat immer Vorrang. Die Fakten werden gemischt und wiederholen sich erst, wenn alle 50 gezeigt wurden – auch über mehrere Spiele hinweg. Mit Plopp, verschwindet nach 7–12 Sekunden von selbst.
 
 ### Malte Spezial
 
@@ -139,7 +139,7 @@ src/
     penalties.ts       Strafbiere (aus der Rundenhistorie abgeleitet)
     beer.ts            Bierbedarf vor Spielbeginn
     schlemmersonntag.ts  Zeitpunkt des Schlemmersonntag-Pop-ups
-    bierwissen.ts      100 Quatsch-Fakten und wann sie aufploppen
+    bierwissen.ts      50 sinnlose Fakten und wann sie aufploppen
     sayings.ts         Sprüche für die Verlängerungsfrage
     stats.ts           Rangliste und Statistiken (aus der Rundenhistorie berechnet)
     storage.ts         Speichern/Laden mit Prüfung auf ungültige Daten
