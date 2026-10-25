@@ -47,7 +47,7 @@ Einmal pro Spiel geht zu einem zufälligen Zeitpunkt in der ersten Stunde mit ei
 
 ### Unnützes Wissen
 
-Einmal pro 10-Minuten-Abschnitt ploppt mitten im Spiel ein Pop-up mit **unnützem Wissen** auf – 50 echte, aber völlig sinnlose Fakten (in `src/game/bierwissen.ts`). Der Zeitpunkt im Abschnitt ist zufällig, liegt aber immer mindestens 90 Sekunden vor bzw. nach jedem Rundenende (in allen Takten, auch Malte Spezial) und 2 Minuten vom Schlemmersonntag entfernt; der Schlemmersonntag hat immer Vorrang. Die Fakten werden gemischt und wiederholen sich erst, wenn alle 50 gezeigt wurden – auch über mehrere Spiele hinweg. Mit Plopp, verschwindet nach 7–12 Sekunden von selbst.
+Einmal pro 10-Minuten-Abschnitt ploppt mitten im Spiel ein Pop-up mit **unnützem Wissen** auf – 50 echte, aber völlig sinnlose Fakten („UNNÜTZES WISSEN“) und 50 frei erfundene, alberne Bier-„Fakten“ („UNNÜTZES BIERWISSEN“), alle in `src/game/bierwissen.ts`. Der Zeitpunkt im Abschnitt ist zufällig, liegt aber immer mindestens 90 Sekunden vor bzw. nach jedem Rundenende (in allen Takten, auch Malte Spezial) und 2 Minuten vom Schlemmersonntag entfernt; der Schlemmersonntag hat immer Vorrang. Die Fakten werden gemischt und wiederholen sich erst, wenn alle 100 gezeigt wurden – auch über mehrere Spiele hinweg. Mit Plopp, verschwindet nach 7–12 Sekunden von selbst.
 
 ### Malte Spezial
 
@@ -139,7 +139,7 @@ src/
     penalties.ts       Strafbiere (aus der Rundenhistorie abgeleitet)
     beer.ts            Bierbedarf vor Spielbeginn
     schlemmersonntag.ts  Zeitpunkt des Schlemmersonntag-Pop-ups
-    bierwissen.ts      50 sinnlose Fakten und wann sie aufploppen
+    bierwissen.ts      100 Fakten (50 echt, 50 Bier-Quatsch) und wann sie aufploppen
     sayings.ts         Sprüche für die Verlängerungsfrage
     stats.ts           Rangliste und Statistiken (aus der Rundenhistorie berechnet)
     storage.ts         Speichern/Laden mit Prüfung auf ungültige Daten

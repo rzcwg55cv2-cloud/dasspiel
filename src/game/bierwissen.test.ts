@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BIERWISSEN, FACT_SLOT_MS, getDueFact, getFactDuration, getFactSlots, shuffledIndices } from './bierwissen';
+import { BIER_QUATSCH, BIERWISSEN, FACT_SLOT_MS, WISSEN, getFactLabel, getDueFact, getFactDuration, getFactSlots, shuffledIndices } from './bierwissen';
 import { advance, extendGame, setPlayerGroup, setSlowGroupEnabled, startGame } from './engine';
 import { getSchlemmerTime } from './schlemmersonntag';
 import { MIN, SEC, T0, setupState, startedGame } from './test-utils';
@@ -27,9 +27,12 @@ function expectWellPlaced(game: GameState, roundMinutes: number[], slotCount: nu
 }
 
 describe('Bierwissen', () => {
-  it('hat 50 verschiedene, kurze Fakten', () => {
-    expect(BIERWISSEN).toHaveLength(50);
-    expect(new Set(BIERWISSEN).size).toBe(50);
+  it('hat 50 echte und 50 Quatsch-Fakten, alle verschieden und kurz', () => {
+    expect(WISSEN).toHaveLength(50);
+    expect(BIER_QUATSCH).toHaveLength(50);
+    expect(new Set(BIERWISSEN).size).toBe(100);
+    expect(getFactLabel(WISSEN[0])).toBe('UNNÜTZES WISSEN');
+    expect(getFactLabel(BIER_QUATSCH[0])).toBe('UNNÜTZES BIERWISSEN');
     for (const fact of BIERWISSEN) expect(fact.length).toBeLessThanOrEqual(120);
   });
 

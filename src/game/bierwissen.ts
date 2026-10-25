@@ -1,6 +1,6 @@
 /**
- * Unnützes Wissen: Einmal pro 10-Minuten-Abschnitt ploppt mitten im Spiel ein sinnloser,
- * aber wahrer Fakt auf.
+ * Unnützes Wissen: Einmal pro 10-Minuten-Abschnitt ploppt mitten im Spiel ein Fakt auf –
+ * entweder wahr, aber völlig sinnlos, oder absurder, frei erfundener Bier-Quatsch.
  *
  * Der Zeitpunkt je Abschnitt wird aus Spielstart, Spielphase und Abschnitt abgeleitet (bleibt
  * nach dem Neuladen gleich). Er liegt immer 30 Sekunden nach einer vollen Minute und mindestens
@@ -101,7 +101,7 @@ function hash(value: number): number {
 }
 
 /** 50 echte, aber völlig sinnlose Fakten. */
-export const BIERWISSEN: readonly string[] = [
+export const WISSEN: readonly string[] = [
   'Ein Oktopus hat drei Herzen und blaues Blut.',
   'Honig verdirbt nicht: In ägyptischen Gräbern fand man jahrtausendealten Honig, der noch essbar war.',
   'Bananen sind botanisch gesehen Beeren – Erdbeeren dagegen nicht.',
@@ -153,3 +153,65 @@ export const BIERWISSEN: readonly string[] = [
   'In der Schweiz ist es verboten, nur ein einzelnes Meerschweinchen zu halten.',
   'Der erste Strichcode an einer Supermarktkasse wurde 1974 auf einer Packung Kaugummi gescannt.',
 ];
+
+/** 50 garantiert falsche Fakten über Bier – absichtlich Quatsch. */
+export const BIER_QUATSCH: readonly string[] = [
+  'Kölsch wird nur in Stangen serviert, weil es in breiten Gläsern Platzangst bekommt.',
+  'Bierschaum ist eigentlich eine Wolke, die sich verlaufen hat.',
+  'Der Kölner Dom war ursprünglich als Kühlschrank für ein einziges Fass geplant.',
+  'Wer sein Kölsch gegen den Uhrzeigersinn trinkt, wird pro Stunde vier Minuten jünger.',
+  'Hopfen wächst nur, wenn man ihm abends Schlager vorsingt.',
+  'In Düsseldorf ist Kölsch offiziell als Fabelwesen eingestuft.',
+  'Die Schaumkrone ist in Wahrheit ein Adelstitel.',
+  'Bier wird nicht schal. Es wird nur müde.',
+  'Das Zischen beim Öffnen einer Flasche ist das Bier, das „Endlich!“ ruft.',
+  'Wikinger trugen Hörner am Helm, um zwei Biere gleichzeitig halten zu können.',
+  'Die Zahl 0,2 wurde nur erfunden, damit Kölsch eine Größe hat.',
+  'Malz ist Getreide, das zu viel nachgedacht hat.',
+  'Fassbier lagert im Fass, damit es sich nicht einsam fühlt.',
+  'Ein Kranz dreht sich nur, weil den Stangen schwindelig ist.',
+  'Hefe ist das einzige Lebewesen, das freiwillig in Bier wohnt – mietfrei.',
+  'Ein Liter Bier wiegt auf dem Mars nur 380 Gramm. Deshalb wollen alle hin.',
+  'Kölsch ist das einzige Bier, das offiziell Karneval feiern darf.',
+  'Ein Bierdeckel landet immer mit der Werbung nach unten. Physik.',
+  'Bierschaum hat eine eigene Gewerkschaft. Sie hat drei Zentimeter durchgesetzt.',
+  'Der erste Kühlschrank war ein Mönch mit sehr kalten Händen.',
+  'Wer ein Kölsch schüttelt, löst ein kleines Gewitter aus.',
+  'Brauereipferde bekommen nach Feierabend Malzbier. Steht im Arbeitsvertrag.',
+  'Ein Kölsch, das man stehen lässt, geht nach zehn Minuten allein nach Hause.',
+  'Wolken bestehen zu drei Prozent aus verdunstetem Freibier.',
+  'Der Bierdeckel wurde erfunden, weil ein Tisch Durst hatte.',
+  'Ein Köbes kann das Wort „Wasser“ akustisch nicht wahrnehmen.',
+  'Bier, das im Stehen getrunken wird, landet in den Beinen. Daher das Tanzen.',
+  'Die Zapfanlage ist mit dem Dudelsack verwandt. Beide machen Geräusche, wenn man an ihnen zieht.',
+  'Kölsch reift am besten, wenn man ihm Fotos vom Dom zeigt.',
+  'Malte Spezial ist eigentlich ein Wetterphänomen.',
+  'Das Reinheitsgebot verbietet auch schmutzige Witze beim Brauen.',
+  'Wer drei Kölsch auf einmal bestellt, muss eine Rede halten. Gesetz.',
+  'Schluckauf bedeutet, dass das Bier zurück ins Glas will.',
+  'Weizenbier ist Bier, das zu oft beim Friseur war.',
+  'Mit Strohhalm geht Bier schneller – es fährt im Windschatten.',
+  'Die Schwerkraft wurde entdeckt, als ein Bier umfiel. Der Apfel war nur Zeuge.',
+  'Wer „noch eins“ sagt, löst eine Kettenreaktion aus, die Physiker bis heute nicht verstehen.',
+  'Gläser klirren beim Anstoßen, weil sie sich freuen.',
+  'Bier im Kühlschrank wird nur kalt, weil drinnen das Licht ausgeht.',
+  'Bier ist flüssiges Brot. Toast ist demnach festes Bier.',
+  'Wer sein Kölsch zu langsam trinkt, wird vom Köbes adoptiert.',
+  'Schaum fällt nicht zusammen. Er macht nur ein Nickerchen.',
+  'Ein Bierzelt ist ein Haus, das zu viel getrunken hat.',
+  'Das „Ahhh“ nach dem ersten Schluck ist international geschützt.',
+  'Ein Bierkasten ist mathematisch gesehen ein Würfel mit Durst.',
+  'Ein Bier, das zu lange stehen bleibt, fängt an, Gedichte zu schreiben.',
+  'Erdbeben in Köln sind meistens nur ein umgefallener Kranz.',
+  'Die Uhr in dieser App läuft schneller, wenn niemand trinkt.',
+  'Ein Kölsch hat die Seele eines Golden Retrievers.',
+  'Am Schlemmersonntag schmeckt Kölsch nachweislich 17 Prozent besser.',
+];
+
+/** Alle Pop-up-Texte: erst die echten, dann der Bier-Quatsch (Reihenfolge bleibt fürs Mischen stabil). */
+export const BIERWISSEN: readonly string[] = [...WISSEN, ...BIER_QUATSCH];
+
+/** Überschrift im Pop-up – echtes Wissen oder Bier-Quatsch. */
+export function getFactLabel(text: string): string {
+  return BIER_QUATSCH.includes(text) ? 'UNNÜTZES BIERWISSEN' : 'UNNÜTZES WISSEN';
+}
