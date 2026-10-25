@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BIERWISSEN, FACT_SLOT_MS, FACT_WINDOW_MS, getDueFact, getFactDuration, getFactSlots, shuffledIndices } from './bierwissen';
+import { BIERWISSEN, FACT_SLOT_MS, getDueFact, getFactDuration, getFactSlots, shuffledIndices } from './bierwissen';
 import { advance, extendGame, setPlayerGroup, setSlowGroupEnabled, startGame } from './engine';
 import { getSchlemmerTime } from './schlemmersonntag';
 import { MIN, SEC, T0, setupState, startedGame } from './test-utils';
@@ -58,13 +58,18 @@ describe('Bierwissen', () => {
     }
   });
 
-  it('ist nur kurz fällig und bleibt nach dem Neuladen gleich', () => {
+  it('wird im selben Abschnitt nachgeholt, aber nie kurz vor einem Rundenende', () => {
     const game = startedGame(['Simon']);
-    const [first] = getFactSlots(game);
+    const [first, second] = getFactSlots(game);
     expect(getFactSlots(game)[0]).toEqual(first);
     expect(getDueFact(game, first.at - 1)).toBeNull();
     expect(getDueFact(game, first.at)?.id).toBe(first.id);
-    expect(getDueFact(game, first.at + FACT_WINDOW_MS)).toBeNull();
+    // Rundenende bei 10:00 – ab 8:30 nicht mehr; der nächste Abschnitt hat seinen eigenen Fakt
+    const roundEnd = game.phaseStartedAt! + 10 * MIN;
+    if (first.at < roundEnd - 2 * MIN) expect(getDueFact(game, roundEnd - 2 * MIN)?.id).toBe(first.id);
+    expect(getDueFact(game, roundEnd - 89 * SEC)).toBeNull();
+    expect(getDueFact(game, roundEnd + 30 * SEC)).toBeNull();
+    expect(getDueFact(game, second.at)?.id).toBe(second.id);
   });
 
   it('Anzeigedauer 7 bis 12 Sekunden und Mischen ohne Doppelte', () => {

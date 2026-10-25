@@ -60,7 +60,7 @@ export default function App() {
 
   useWakeLock(inGame);
   const schlemmer = useSchlemmersonntag(state, now, settings.soundEnabled);
-  const bierwissen = useBierwissen(state, now, settings.soundEnabled, schlemmer.visible);
+  const bierwissen = useBierwissen(state, now, settings.soundEnabled, schlemmer.busy);
 
   // Malte Spezial: bedrohliches Rot von der Auswahl bis zum Spielende.
   const malteTheme = state.mode === 'malte' && state.status !== 'finished';

@@ -95,9 +95,19 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
+    // Mit Netz immer die neueste Version laden (sonst läge man nach einem Update eine Version zurück),
+    // ohne Netz bzw. nach 3 Sekunden die gespeicherte.
     const indexUrl = new URL('index.html', self.registration.scope).href;
+    const cached = () => caches.match(indexUrl, { cacheName: CACHE });
+    const network = fetch(request, { cache: 'no-store' }).then((response) => {
+      if (!response.ok) throw new Error('offline');
+      return response;
+    });
+    const timeout = new Promise((resolve) => setTimeout(resolve, 3000)).then(cached);
     event.respondWith(
-      caches.match(indexUrl, { cacheName: CACHE }).then((cached) => cached || fetch(request)),
+      Promise.race([network, timeout])
+        .then((response) => response || network)
+        .catch(() => cached().then((response) => response || network)),
     );
     return;
   }

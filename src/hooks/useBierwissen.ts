@@ -38,12 +38,15 @@ function save(memory: Memory): void {
 export function useBierwissen(state: GameState, now: number, soundEnabled: boolean, blocked: boolean) {
   const [fact, setFact] = useState<string | null>(null);
   const timer = useRef<number | undefined>(undefined);
+  /** Gerade gezeigter Fakt – falls der Schlemmersonntag dazwischenkommt, wird er zurückgelegt. */
+  const showing = useRef<{ slotId: string; index: number } | null>(null);
   const running = state.status === 'running';
   const due = running && !blocked ? getDueFact(state, now) : null;
   const dueId = due?.id ?? null;
 
   const close = useCallback(() => {
     window.clearTimeout(timer.current);
+    showing.current = null;
     setFact(null);
   }, []);
 
@@ -56,6 +59,7 @@ export function useBierwissen(state: GameState, now: number, soundEnabled: boole
     save({ shown: [...memory.shown, dueId].slice(-60), bag: rest });
 
     const text = BIERWISSEN[next];
+    showing.current = { slotId: dueId, index: next };
     setFact(text);
     if (soundEnabled) sounds.playPop();
     window.clearTimeout(timer.current);
@@ -64,6 +68,12 @@ export function useBierwissen(state: GameState, now: number, soundEnabled: boole
 
   // Spielende, Verlängerungsfrage oder Schlemmersonntag: sofort weg.
   useEffect(() => {
+    if (blocked && showing.current) {
+      // Vom Schlemmersonntag verdrängt: Fakt zurücklegen, er kommt danach im selben Abschnitt.
+      const { slotId, index } = showing.current;
+      const memory = load();
+      save({ shown: memory.shown.filter((id) => id !== slotId), bag: [index, ...memory.bag] });
+    }
     if (!running || blocked) close();
   }, [running, blocked, close]);
   useEffect(() => close, [close]);

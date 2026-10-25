@@ -34,6 +34,8 @@ function markShown(startedAt: number): void {
  */
 export function useSchlemmersonntag(state: GameState, now: number, soundEnabled: boolean) {
   const [visible, setVisible] = useState(false);
+  /** Zwischen „fällig“ und Erscheinen (Ton wird vorbereitet). */
+  const [preparing, setPreparing] = useState(false);
   const stopHymne = useRef<(() => void) | null>(null);
   const timer = useRef<number | undefined>(undefined);
   const pending = useRef(false);
@@ -53,6 +55,7 @@ export function useSchlemmersonntag(state: GameState, now: number, soundEnabled:
 
   const close = useCallback(() => {
     pending.current = false;
+    setPreparing(false);
     window.clearTimeout(timer.current);
     stopHymne.current?.();
     stopHymne.current = null;
@@ -68,9 +71,11 @@ export function useSchlemmersonntag(state: GameState, now: number, soundEnabled:
     if (!due || startedAt === null || wasShown(startedAt)) return;
     markShown(startedAt);
     pending.current = true;
+    setPreparing(true);
     const show = () => {
       if (!pending.current) return;
       pending.current = false;
+      setPreparing(false);
       setVisible(true);
       if (soundEnabled) {
         sounds.playPop();
@@ -89,5 +94,7 @@ export function useSchlemmersonntag(state: GameState, now: number, soundEnabled:
   }, [inGame, close]);
   useEffect(() => close, [close]);
 
-  return { visible, close };
+  /** Fällig, in Vorbereitung oder zu sehen – dann warten andere Pop-ups. */
+  const busy = visible || preparing || (due && startedAt !== null && !wasShown(startedAt));
+  return { visible, busy, close };
 }

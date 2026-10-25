@@ -18,20 +18,32 @@ export const FACT_SLOT_MS = 10 * MINUTE;
 const ROUND_END_GAP_MS = 90 * SECOND;
 /** Abstand zum Schlemmersonntag. */
 const SCHLEMMER_GAP_MS = 2 * MINUTE;
-/** Verpasst, wenn die App erst danach wieder offen ist. */
-export const FACT_WINDOW_MS = 20 * SECOND;
 
 export interface FactSlot {
   /** Eindeutig pro Spiel, Phase und Abschnitt. */
   id: string;
   at: number;
+  /** Ende des 10-Minuten-Abschnitts – bis dahin wird ein verpasster Fakt nachgeholt. */
+  until: number;
+}
+
+/** Ob `offset` (ms seit Phasenbeginn) mindestens 90 Sekunden von jedem Rundenende entfernt ist. */
+function clearOfRoundEnds(offset: number, roundDurations: number[]): boolean {
+  return roundDurations.every((duration) => {
+    const sinceEnd = offset % duration;
+    return Math.min(sinceEnd, duration - sinceEnd) >= ROUND_END_GAP_MS;
+  });
+}
+
+function roundDurationsOf(state: GameState): number[] {
+  return activeGroups(state).map((group) => getGroupRoundDuration(state.mode, group) * SECOND);
 }
 
 /** Zeitpunkte der Pop-ups in der laufenden Spielphase – einer pro 10-Minuten-Abschnitt. */
 export function getFactSlots(state: GameState): FactSlot[] {
   const { phaseStartedAt, startedAt, extensionCount } = state;
   if (state.status !== 'running' || phaseStartedAt === null || startedAt === null) return [];
-  const roundDurations = activeGroups(state).map((group) => getGroupRoundDuration(state.mode, group) * SECOND);
+  const roundDurations = roundDurationsOf(state);
   const schlemmer = extensionCount === 0 ? getSchlemmerTime(startedAt) : null;
   const slotCount = (getPhaseDuration(extensionCount) * SECOND) / FACT_SLOT_MS;
 
@@ -41,23 +53,29 @@ export function getFactSlots(state: GameState): FactSlot[] {
     for (let minute = 1; minute <= 8; minute++) {
       const offset = slot * FACT_SLOT_MS + minute * MINUTE + 30 * SECOND;
       const at = phaseStartedAt + offset;
-      const clearOfRoundEnds = roundDurations.every((duration) => {
-        const sinceEnd = offset % duration;
-        return Math.min(sinceEnd, duration - sinceEnd) >= ROUND_END_GAP_MS;
-      });
       const clearOfSchlemmer = schlemmer === null || Math.abs(at - schlemmer) >= SCHLEMMER_GAP_MS;
-      if (clearOfRoundEnds && clearOfSchlemmer) candidates.push(at);
+      if (clearOfRoundEnds(offset, roundDurations) && clearOfSchlemmer) candidates.push(at);
     }
     if (candidates.length === 0) continue;
     const seed = hash(Math.floor(startedAt / SECOND) + extensionCount * 131 + slot * 7919);
-    slots.push({ id: `${startedAt}-${extensionCount}-${slot}`, at: candidates[seed % candidates.length] });
+    slots.push({
+      id: `${startedAt}-${extensionCount}-${slot}`,
+      at: candidates[seed % candidates.length],
+      until: phaseStartedAt + (slot + 1) * FACT_SLOT_MS,
+    });
   }
   return slots;
 }
 
-/** Der Abschnitt, dessen Pop-up gerade fällig ist – sonst null. */
+/**
+ * Der Abschnitt, dessen Pop-up gerade fällig ist – sonst null. War die App zum geplanten
+ * Zeitpunkt nicht offen, wird der Fakt im selben Abschnitt nachgeholt, aber nie innerhalb
+ * von 90 Sekunden um ein Rundenende.
+ */
 export function getDueFact(state: GameState, now: number): FactSlot | null {
-  return getFactSlots(state).find((slot) => now >= slot.at && now < slot.at + FACT_WINDOW_MS) ?? null;
+  const slot = getFactSlots(state).find((s) => now >= s.at && now < s.until);
+  if (!slot || state.phaseStartedAt === null) return null;
+  return clearOfRoundEnds(now - state.phaseStartedAt, roundDurationsOf(state)) ? slot : null;
 }
 
 /** Anzeigedauer je nach Textlänge: 7 bis 12 Sekunden. */
