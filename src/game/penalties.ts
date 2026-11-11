@@ -41,6 +41,34 @@ export function getPenaltyTotals(history: RoundResult[], playerIds: string[]): R
   return totals;
 }
 
+export interface PenaltyTimes {
+  /** Strafbier-Zeit je Runde (gleiche Reihenfolge wie die Historie). */
+  perRound: number[];
+  /** Strafzeit für Strafbiere, die nach der letzten Runde noch offen sind. */
+  openMs: number;
+}
+
+/**
+ * Strafbier-Zeit für die Rangliste: Abgehakt zählt die Zeit vom Rundenbeginn bis zum
+ * Strafbier-Haken, nicht abgehakt kostet jedes offene Strafbier die volle Rundenzeit –
+ * ebenso jedes, das bei Spielende noch offen ist.
+ */
+export function getPenaltyTimes(history: RoundResult[], playerId: string, roundMs: number): PenaltyTimes {
+  let open: Record<string, number> = {};
+  const perRound = history.map((round) => {
+    const owed = open[playerId] ?? 0;
+    let ms = 0;
+    if (owed > 0) {
+      const at = round.penaltyPaidAt[playerId];
+      if (round.penaltiesPaid[playerId] !== true) ms = owed * roundMs;
+      else ms = at === undefined ? roundMs : Math.min(roundMs, Math.max(0, at - (round.completedAt - roundMs)));
+    }
+    open = penaltiesAfter(open, round);
+    return ms;
+  });
+  return { perRound, openMs: (open[playerId] ?? 0) * roundMs };
+}
+
 function penaltiesAfter(open: Record<string, number>, round: RoundResult): Record<string, number> {
   const next: Record<string, number> = {};
   for (const [id, delivered] of Object.entries(round.playerResults)) {

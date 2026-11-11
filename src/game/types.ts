@@ -28,6 +28,8 @@ export interface RoundResult {
   penaltiesPaid: Record<string, boolean>;
   /** Spieler-ID → Zeitpunkt (ms seit Epoch) des zuletzt gesetzten Hakens; nur bei „geliefert“. */
   confirmedAt: Record<string, number>;
+  /** Spieler-ID → Zeitpunkt, zu dem das Strafbier (zuletzt) abgehakt wurde; nur bei abgehaktem Strafbier. */
+  penaltyPaidAt: Record<string, number>;
 }
 
 /** Rundenstand einer Taktgruppe. */
@@ -40,6 +42,8 @@ export interface TrackState {
   currentConfirmedAt: Record<string, number>;
   /** In der aktuellen Runde abgehakte Strafbiere. */
   currentPenaltiesPaid: Record<string, boolean>;
+  /** Wann das Strafbier in der aktuellen Runde (zuletzt) abgehakt wurde. */
+  currentPenaltyPaidAt: Record<string, number>;
   roundHistory: RoundResult[];
 }
 

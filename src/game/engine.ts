@@ -48,7 +48,7 @@ export function createInitialState(
     currentRound: 0,
     currentConfirmations: {},
     currentConfirmedAt: {},
-    currentPenaltiesPaid: {},
+    currentPenaltiesPaid: {}, currentPenaltyPaidAt: {},
     roundHistory: [],
     slow: null,
     startedAt: null,
@@ -100,6 +100,7 @@ export function getTrack(state: GameState, group: GroupId): TrackState | null {
     currentConfirmations: state.currentConfirmations,
     currentConfirmedAt: state.currentConfirmedAt,
     currentPenaltiesPaid: state.currentPenaltiesPaid,
+    currentPenaltyPaidAt: state.currentPenaltyPaidAt,
     roundHistory: state.roundHistory,
   };
 }
@@ -145,8 +146,8 @@ export function advance(state: GameState, now: number): Transition {
       completedPlaySeconds: getTotalDuration(state.extensionCount),
       currentConfirmations: {},
       currentConfirmedAt: {},
-      currentPenaltiesPaid: {},
-      slow: next.slow && { ...next.slow, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {} },
+      currentPenaltiesPaid: {}, currentPenaltyPaidAt: {},
+      slow: next.slow && { ...next.slow, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {}, currentPenaltyPaidAt: {} },
     };
   }
 
@@ -176,10 +177,14 @@ function advanceTrack(state: GameState, group: GroupId, phaseStartedAt: number, 
     const playerResults: Record<string, boolean> = {};
     const penaltiesPaid: Record<string, boolean> = {};
     const confirmedAt: Record<string, number> = {};
+    const penaltyPaidAt: Record<string, number> = {};
     for (const player of players) {
       playerResults[player.id] = track.currentConfirmations[player.id] === true;
       if (playerResults[player.id]) confirmedAt[player.id] = track.currentConfirmedAt[player.id] ?? endedAt;
-      if (open[player.id] && track.currentPenaltiesPaid[player.id]) penaltiesPaid[player.id] = true;
+      if (open[player.id] && track.currentPenaltiesPaid[player.id]) {
+        penaltiesPaid[player.id] = true;
+        penaltyPaidAt[player.id] = track.currentPenaltyPaidAt[player.id] ?? endedAt;
+      }
     }
     const result: RoundResult = {
       roundNumber: track.currentRound,
@@ -187,6 +192,7 @@ function advanceTrack(state: GameState, group: GroupId, phaseStartedAt: number, 
       completedAt: endedAt,
       penaltiesPaid,
       confirmedAt,
+      penaltyPaidAt,
     };
     const roundHistory: RoundResult[] = [...track.roundHistory, result];
     const phaseEnded = indexInPhase + 1 >= roundsInPhase;
@@ -203,14 +209,14 @@ function advanceTrack(state: GameState, group: GroupId, phaseStartedAt: number, 
 
     if (phaseEnded) {
       // Die letzte Runde der Phase bleibt die aktuelle, bis verlängert wird.
-      track = { ...track, roundHistory, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {} };
+      track = { ...track, roundHistory, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {}, currentPenaltyPaidAt: {} };
       break;
     }
     track = {
       currentRound: track.currentRound + 1,
       currentConfirmations: {},
       currentConfirmedAt: {},
-      currentPenaltiesPaid: {},
+      currentPenaltiesPaid: {}, currentPenaltyPaidAt: {},
       roundHistory,
     };
   }
@@ -326,7 +332,7 @@ export function startGame(state: GameState, now: number): Transition {
       phaseStartedAt: alignToNextMinute(now),
       currentRound: 1,
       slow: isSlowGroupPlanned(setup)
-        ? { currentRound: 1, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {}, roundHistory: [] }
+        ? { currentRound: 1, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {}, currentPenaltyPaidAt: {}, roundHistory: [] }
         : null,
       startedAt: now,
     },
@@ -371,10 +377,17 @@ export function togglePenalty(state: GameState, playerId: string, now: number): 
   if (!getPenalties(current, group)[playerId]) return { state: current, events };
   const track = getTrack(current, group)!;
   const currentPenaltiesPaid = { ...track.currentPenaltiesPaid };
-  if (currentPenaltiesPaid[playerId]) delete currentPenaltiesPaid[playerId];
-  else currentPenaltiesPaid[playerId] = true;
+  const currentPenaltyPaidAt = { ...track.currentPenaltyPaidAt };
+  // Wird der Haken zurückgenommen und neu gesetzt, zählt der zuletzt gesetzte.
+  if (currentPenaltiesPaid[playerId]) {
+    delete currentPenaltiesPaid[playerId];
+    delete currentPenaltyPaidAt[playerId];
+  } else {
+    currentPenaltiesPaid[playerId] = true;
+    currentPenaltyPaidAt[playerId] = now;
+  }
 
-  return { state: withTrack(current, group, { ...track, currentPenaltiesPaid }), events };
+  return { state: withTrack(current, group, { ...track, currentPenaltiesPaid, currentPenaltyPaidAt }), events };
 }
 
 /** Startet eine weitere 30-Minuten-Phase. Nur während der Verlängerungsentscheidung möglich. */
@@ -395,13 +408,13 @@ export function extendGame(state: GameState, now: number): Transition {
       currentRound: firstRound('main'),
       currentConfirmations: {},
       currentConfirmedAt: {},
-      currentPenaltiesPaid: {},
+      currentPenaltiesPaid: {}, currentPenaltyPaidAt: {},
       slow: current.slow && {
         ...current.slow,
         currentRound: firstRound('slow'),
         currentConfirmations: {},
         currentConfirmedAt: {},
-        currentPenaltiesPaid: {},
+        currentPenaltiesPaid: {}, currentPenaltyPaidAt: {},
       },
     },
     events,

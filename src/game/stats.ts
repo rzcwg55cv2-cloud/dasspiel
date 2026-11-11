@@ -3,7 +3,7 @@
  * Es gibt keine separat gespeicherten X-Zähler, die auseinanderlaufen könnten.
  */
 import { activeGroups, getTrack, groupOf, playersOf } from './engine';
-import { getPenaltyTotals } from './penalties';
+import { getPenaltyTimes, getPenaltyTotals } from './penalties';
 import { getGroupRoundDuration } from './rules';
 import type { GameMode, GameState, GroupId, Player, RoundResult } from './types';
 
@@ -12,14 +12,20 @@ export interface PlayerRound {
   success: boolean;
   /** Zeit vom Rundenbeginn bis zum (zuletzt gesetzten) Haken; bei X die volle Rundenzeit. */
   ms: number;
+  /** Strafbier-Zeit in dieser Runde (0 ohne offenes Strafbier). */
+  penaltyMs: number;
 }
 
 export interface PlayerStats {
   player: Player;
   /** Platz in der Rangliste nach Gesamtzeit; gleiche Zeit ergibt gleichen Platz (1, 1, 3, …). */
   rank: number;
-  /** Summe der Zeiten bis zum Haken über alle Runden (X zählt die volle Rundenzeit). */
+  /** Gesamtzeit für die Rangliste: Liefern plus Strafbiere. */
   totalMs: number;
+  /** Summe der Zeiten bis zum Liefer-Haken (X zählt die volle Rundenzeit). */
+  deliveryMs: number;
+  /** Strafbier-Zeit inklusive der bei Spielende noch offenen Strafbiere. */
+  penaltyMs: number;
   successes: number;
   errors: number;
   rounds: number;
@@ -81,6 +87,12 @@ export interface GameSummary {
   openPenalties: { player: Player; count: number }[];
 }
 
+function times(results: PlayerRound[], openPenaltyMs: number) {
+  const deliveryMs = results.reduce((sum, r) => sum + r.ms, 0);
+  const penaltyMs = results.reduce((sum, r) => sum + r.penaltyMs, 0) + openPenaltyMs;
+  return { deliveryMs, penaltyMs, totalMs: deliveryMs + penaltyMs };
+}
+
 function historyOf(state: GameState, group: GroupId): RoundResult[] {
   return getTrack(state, group)?.roundHistory ?? [];
 }
@@ -108,12 +120,13 @@ export function getPlayerStats(state: GameState, group?: GroupId): PlayerStats[]
     const history = historyOf(state, group);
     const roundMs = getGroupRoundDuration(state.mode, group) * 1000;
     const penalties = getPenaltyTotals(history, [player.id])[player.id];
-    const results = history.map((round) => {
+    const penaltyTimes = getPenaltyTimes(history, player.id, roundMs);
+    const results = history.map((round, index) => {
       const success = round.playerResults[player.id] === true;
       const at = round.confirmedAt[player.id];
       // Die erste Runde einer Phase kann etwas länger sein: Haken davor zählen als 0.
       const ms = success && at !== undefined ? Math.min(roundMs, Math.max(0, at - (round.completedAt - roundMs))) : roundMs;
-      return { roundNumber: round.roundNumber, success, ms };
+      return { roundNumber: round.roundNumber, success, ms, penaltyMs: penaltyTimes.perRound[index] };
     });
     const successes = results.filter((r) => r.success).length;
     const rounds = results.length;
@@ -125,7 +138,7 @@ export function getPlayerStats(state: GameState, group?: GroupId): PlayerStats[]
       rounds,
       successRate: rounds === 0 ? 0 : successes / rounds,
       results,
-      totalMs: results.reduce((sum, r) => sum + r.ms, 0),
+      ...times(results, penaltyTimes.openMs),
       penaltiesDrunk: penalties.drunk,
       penaltiesOpen: penalties.open,
     };

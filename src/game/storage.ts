@@ -153,8 +153,16 @@ function parseRoundHistory(value: unknown, players: Player[]): RoundResult[] | n
     if (!penaltiesPaid) return null;
     // Ältere Spielstände kennen noch keine Haken-Zeitpunkte.
     const confirmedAt = parseTimes(item.confirmedAt ?? {}, players);
-    if (!confirmedAt) return null;
-    history.push({ roundNumber: index + 1, playerResults, completedAt: item.completedAt, penaltiesPaid, confirmedAt });
+    const penaltyPaidAt = parseTimes(item.penaltyPaidAt ?? {}, players);
+    if (!confirmedAt || !penaltyPaidAt) return null;
+    history.push({
+      roundNumber: index + 1,
+      playerResults,
+      completedAt: item.completedAt,
+      penaltiesPaid,
+      confirmedAt,
+      penaltyPaidAt,
+    });
   }
   return history;
 }
@@ -190,7 +198,10 @@ function parseTrack(
   const currentConfirmations = parseConfirmations(raw.currentConfirmations, players);
   const currentPenaltiesPaid = parseConfirmations(raw.currentPenaltiesPaid ?? {}, players);
   const currentConfirmedAt = parseTimes(raw.currentConfirmedAt ?? {}, players);
-  if (!roundHistory || !currentConfirmations || !currentPenaltiesPaid || !currentConfirmedAt) return null;
+  const currentPenaltyPaidAt = parseTimes(raw.currentPenaltyPaidAt ?? {}, players);
+  if (!roundHistory || !currentConfirmations || !currentPenaltiesPaid || !currentConfirmedAt || !currentPenaltyPaidAt) {
+    return null;
+  }
 
   if (status === 'running') {
     const roundsBefore = getRoundsBeforePhase(roundDuration, extensionCount);
@@ -198,13 +209,20 @@ function parseTrack(
     const { currentRound } = raw;
     if (currentRound < roundsBefore + 1 || currentRound > roundsBefore + roundsInPhase) return null;
     if (roundHistory.length !== currentRound - 1) return null;
-    return { currentRound, currentConfirmations, currentConfirmedAt, currentPenaltiesPaid, roundHistory };
+    return { currentRound, currentConfirmations, currentConfirmedAt, currentPenaltiesPaid, currentPenaltyPaidAt, roundHistory };
   }
 
   // Verlängerungsentscheidung oder beendetes Spiel: Die aktuelle Phase ist vollständig ausgewertet.
   const totalRounds = getTotalRounds(roundDuration, extensionCount);
   if (roundHistory.length !== totalRounds) return null;
-  return { currentRound: totalRounds, currentConfirmations: {}, currentConfirmedAt: {}, currentPenaltiesPaid: {}, roundHistory };
+  return {
+    currentRound: totalRounds,
+    currentConfirmations: {},
+    currentConfirmedAt: {},
+    currentPenaltiesPaid: {},
+    currentPenaltyPaidAt: {},
+    roundHistory,
+  };
 }
 
 /**

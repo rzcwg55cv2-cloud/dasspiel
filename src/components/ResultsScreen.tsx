@@ -332,9 +332,14 @@ function RankingRow({ stats, colorIndex }: { stats: PlayerStats; colorIndex: num
         )}
       </div>
       <div className="shrink-0 text-right">
-        <div className="tabular text-2xl leading-none font-black text-slate-900" title="Gesamtzeit bis zum Haken">
+        <div className="tabular text-2xl leading-none font-black text-slate-900" title="Gesamtzeit: Liefern plus Strafbiere">
           {duration(stats.totalMs)}
         </div>
+        {stats.penaltyMs > 0 && (
+          <div className="tabular mt-1 text-[11px] font-semibold whitespace-nowrap text-slate-500">
+            {duration(stats.deliveryMs)} + <span className="text-amber-700">🍺 {duration(stats.penaltyMs)}</span>
+          </div>
+        )}
         <div className={`tabular mt-1 text-sm font-semibold ${flawless ? 'text-ok-600' : 'text-red-500'}`}>
           {stats.errors} X
         </div>
@@ -429,6 +434,9 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
               <span className="tabular text-xs leading-tight font-bold text-slate-500">
                 R{result.roundNumber}
                 <span className="block font-semibold text-slate-400">{result.success ? duration(result.ms) : '–'}</span>
+                {result.penaltyMs > 0 && (
+                  <span className="block font-semibold text-amber-700">🍺 {duration(result.penaltyMs)}</span>
+                )}
               </span>
               <MiniMark success={result.success} className="size-6" />
             </li>
@@ -446,6 +454,9 @@ function PlayerHistory({ stats, colorIndex }: { stats: PlayerStats; colorIndex: 
           <div className="rounded-xl bg-yellow-50 px-3 py-2">
             <dt className="text-xs text-yellow-800/80">Gesamtzeit</dt>
             <dd className="text-lg font-black text-yellow-800">{duration(stats.totalMs)}</dd>
+            {stats.penaltyMs > 0 && (
+              <dd className="text-[11px] font-semibold text-amber-700">davon 🍺 {duration(stats.penaltyMs)}</dd>
+            )}
           </div>
         </dl>
       </div>

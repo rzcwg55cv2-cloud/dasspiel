@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { advance, extendGame, finishGame, toggleConfirmation } from './engine';
+import { advance, extendGame, finishGame, toggleConfirmation, togglePenalty } from './engine';
 import { formatClock, formatList, formatPercent } from './format';
 import { computeSummary, getErrorCounts, getPlayerStats } from './stats';
 import { MIN, SEC, T0, confirm, startedGame } from './test-utils';
@@ -55,13 +55,16 @@ describe('Statistik', () => {
     });
   });
 
-  it('sortiert nach Fehlern', () => {
-    expect(summary.ranking.map((s) => [s.rank, s.player.name, s.successes, s.errors])).toEqual([
+  it('sortiert nach Gesamtzeit (Liefern plus Strafbiere)', () => {
+    const ranking = summary.ranking;
+    expect(ranking.map((s) => [s.rank, s.player.name, s.successes, s.errors])).toEqual([
       [1, 'Simon', 9, 0],
       [2, 'Marvin', 8, 1],
-      [3, 'Tino', 6, 3],
-      [4, 'Malte', 5, 4],
+      [3, 'Malte', 5, 4],
+      [4, 'Tino', 6, 3],
     ]);
+    for (const stats of ranking) expect(stats.totalMs).toBe(stats.deliveryMs + stats.penaltyMs);
+    for (let i = 1; i < ranking.length; i++) expect(ranking[i].totalMs).toBeGreaterThanOrEqual(ranking[i - 1].totalMs);
   });
 
   it('berücksichtigt die Verlängerung', () => {
@@ -163,12 +166,33 @@ describe('Rangliste nach Zeit bis zum Haken', () => {
     game = advance(game, T0 + 20 * MIN).state;
 
     const stats = getPlayerStats(game);
-    const total = Object.fromEntries(stats.map((s) => [s.player.name, s.totalMs / MIN]));
-    expect(total).toEqual({ Simon: 2 + 8, Marvin: 5 + 3, Tino: 10 + 9 });
-    expect(stats.map((s) => [s.rank, s.player.name])).toEqual([
-      [1, 'Marvin'],
-      [2, 'Simon'],
-      [3, 'Tino'],
+    const delivery = Object.fromEntries(stats.map((s) => [s.player.name, s.deliveryMs / MIN]));
+    expect(delivery).toEqual({ Simon: 2 + 8, Marvin: 5 + 3, Tino: 10 + 9 });
+    // Tino: Strafbier in Runde 2 nicht abgehakt (+10 min), danach 2 offen (+2 × 10 min)
+    const penalty = Object.fromEntries(stats.map((s) => [s.player.name, s.penaltyMs / MIN]));
+    expect(penalty).toEqual({ Simon: 0, Marvin: 0, Tino: 10 + 20 });
+    expect(stats.map((s) => [s.rank, s.player.name, s.totalMs / MIN])).toEqual([
+      [1, 'Marvin', 8],
+      [2, 'Simon', 10],
+      [3, 'Tino', 49],
     ]);
+  });
+
+  it('zählt die Zeit bis zum Strafbier-Haken; der letzte Haken zählt', () => {
+    let game = startedGame(['Simon', 'Marvin']);
+    game = toggleConfirmation(game, 'p1', T0 + MIN).state; // Marvin bekommt ein X
+    game = advance(game, T0 + 10 * MIN).state;
+    // Runde 2: Strafbier nach 1 min abgehakt, zurückgenommen, nach 3 min wieder abgehakt
+    game = togglePenalty(game, 'p2', T0 + 11 * MIN).state;
+    game = togglePenalty(game, 'p2', T0 + 12 * MIN).state;
+    game = togglePenalty(game, 'p2', T0 + 13 * MIN).state;
+    game = toggleConfirmation(game, 'p1', T0 + 11 * MIN).state;
+    game = toggleConfirmation(game, 'p2', T0 + 14 * MIN).state;
+    game = advance(game, T0 + 20 * MIN).state;
+    const marvin = getPlayerStats(game).find((s) => s.player.name === 'Marvin')!;
+    expect(marvin.results.map((r) => r.penaltyMs / MIN)).toEqual([0, 3]);
+    expect(marvin.deliveryMs / MIN).toBe(10 + 4);
+    expect(marvin.penaltyMs / MIN).toBe(3);
+    expect(marvin.totalMs / MIN).toBe(17);
   });
 });
